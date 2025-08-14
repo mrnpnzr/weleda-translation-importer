@@ -191,28 +191,37 @@ figma.ui.onmessage = async (msg) => {
       console.log(`Found ${frameGroups.length} frames with exportable children`);
       
       // Generate thumbnails for preview
-      const frameGroupsWithThumbnails = await Promise.all(
-        frameGroups.slice(0, 20).map(async (frameGroup) => { // Limit to 20 for performance
-          try {
-            const frame = figma.getNodeById(frameGroup.frameId);
-            const thumbnailBytes = await frame.exportAsync({
-              format: 'PNG',
-              constraint: { type: 'SCALE', value: 0.1 } // Very small thumbnail
-            });
-            
-            return {
-              ...frameGroup,
-              thumbnail: Array.from(thumbnailBytes)
-            };
-          } catch (error) {
-            console.log(`Thumbnail generation failed for ${frameGroup.frameName}:`, error.message);
-            return {
-              ...frameGroup,
-              thumbnail: null
-            };
-          }
-        })
-      );
+      const frameGroupsWithThumbnails = [];
+      const limitedFrameGroups = frameGroups.slice(0, 20); // Limit to 20 for performance
+      
+      for (const frameGroup of limitedFrameGroups) {
+        try {
+          const frame = figma.getNodeById(frameGroup.frameId);
+          const thumbnailBytes = await frame.exportAsync({
+            format: 'PNG',
+            constraint: { type: 'SCALE', value: 0.1 } // Very small thumbnail
+          });
+          
+          frameGroupsWithThumbnails.push({
+            frameId: frameGroup.frameId,
+            frameName: frameGroup.frameName,
+            frameWidth: frameGroup.frameWidth,
+            frameHeight: frameGroup.frameHeight,
+            children: frameGroup.children,
+            thumbnail: Array.from(thumbnailBytes)
+          });
+        } catch (error) {
+          console.log(`Thumbnail generation failed for ${frameGroup.frameName}:`, error.message);
+          frameGroupsWithThumbnails.push({
+            frameId: frameGroup.frameId,
+            frameName: frameGroup.frameName,
+            frameWidth: frameGroup.frameWidth,
+            frameHeight: frameGroup.frameHeight,
+            children: frameGroup.children,
+            thumbnail: null
+          });
+        }
+      }
       
       figma.ui.postMessage({
         type: 'frames-loaded',
