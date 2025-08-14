@@ -155,99 +155,111 @@ figma.ui.onmessage = async (msg) => {
   
   if (msg.type === 'load-layers') {
     try {
-      const allLayers = [];
+      const frameGroups = [];
       
-      // Function to recursively traverse all nodes
-      function traverseNode(node, depth = 0, parentName = '') {
-        // Only include visible and exportable nodes
-        if (node.visible !== false && canBeExported(node)) {
-          const fullPath = parentName ? `${parentName} > ${node.name}` : node.name;
+      // Find all frames and their immediate children (one level deep)
+      const allFrames = figma.currentPage.findAll(node => 
+        node.type === 'FRAME' || node.type === 'COMPONENT'
+      );
+      
+      console.log(`Found ${allFrames.length} frames to analyze`);
+      
+      allFrames.forEach(frame => {
+        if ('children' in frame && frame.children && frame.children.length > 0) {
+          const exportableChildren = frame.children.filter(child => canBeExported(child));
           
-          allLayers.push({
-            id: node.id,
-            name: node.name,
-            type: node.type,
-            depth: depth,
-            fullPath: fullPath,
-            width: Math.round(node.width || 0),
-            height: Math.round(node.height || 0),
-            parentName: parentName,
-            hasChildren: ('children' in node && node.children && node.children.length > 0)
-          });
+          if (exportableChildren.length > 0) {
+            frameGroups.push({
+              frameId: frame.id,
+              frameName: frame.name,
+              frameWidth: Math.round(frame.width),
+              frameHeight: Math.round(frame.height),
+              children: exportableChildren.map(child => ({
+                id: child.id,
+                name: child.name,
+                type: child.type,
+                width: Math.round(child.width || 0),
+                height: Math.round(child.height || 0),
+                x: Math.round(child.x || 0),
+                y: Math.round(child.y || 0)
+              }))
+            });
+          }
         }
-        
-        // Traverse children if they exist
-        if ('children' in node && node.children) {
-          node.children.forEach(child => {
-            traverseNode(child, depth + 1, fullPath || node.name);
-          });
-        }
-      }
-      
-      // Start traversal from current page
-      figma.currentPage.children.forEach(node => {
-        traverseNode(node, 0);
       });
       
-      console.log(`Found ${allLayers.length} exportable layers with hierarchy`);
+      console.log(`Found ${frameGroups.length} frames with exportable children`);
+      
+      // Generate thumbnails for preview
+      const frameGroupsWithThumbnails = await Promise.all(
+        frameGroups.slice(0, 20).map(async (frameGroup) => { // Limit to 20 for performance
+          try {
+            const frame = figma.getNodeById(frameGroup.frameId);
+            const thumbnailBytes = await frame.exportAsync({
+              format: 'PNG',
+              constraint: { type: 'SCALE', value: 0.1 } // Very small thumbnail
+            });
+            
+            return {
+              ...frameGroup,
+              thumbnail: Array.from(thumbnailBytes)
+            };
+          } catch (error) {
+            console.log(`Thumbnail generation failed for ${frameGroup.frameName}:`, error.message);
+            return {
+              ...frameGroup,
+              thumbnail: null
+            };
+          }
+        })
+      );
       
       figma.ui.postMessage({
-        type: 'layers-loaded',
-        layers: allLayers.map(layer => ({
-          id: layer.id,
-          name: layer.name,
-          type: layer.type,
-          depth: layer.depth,
-          fullPath: layer.fullPath,
-          width: layer.width,
-          height: layer.height,
-          parentName: layer.parentName,
-          hasChildren: layer.hasChildren
-        }))
+        type: 'frames-loaded',
+        frames: frameGroupsWithThumbnails
       });
       
     } catch (error) {
-      console.error('Error loading layers:', error);
+      console.error('Error loading frames:', error);
       figma.ui.postMessage({
         type: 'error',
-        message: `Fehler beim Laden der Ebenen: ${error.message}`
+        message: `Fehler beim Laden der Frames: ${error.message}`
       });
     }
   }
   
   if (msg.type === 'download-layers-direct') {
     try {
-      const selectedLayerIds = msg.layers.map(layer => layer.id);
-      const settings = msg.settings || { format: 'PNG', scale: 2 };
-      const nodesToExport = [];
+      const selectedItems = msg.selectedItems || [];
+      const settings = msg.settings || { 
+        format: 'PNG', 
+        scale: 2, 
+        naming: 'frame_element_scale_date'
+      };
       
-      // Find the actual nodes by their IDs
-      selectedLayerIds.forEach(layerId => {
-        const node = figma.getNodeById(layerId);
-        if (node && canBeExported(node)) {
-          nodesToExport.push(node);
-        }
-      });
-      
-      if (nodesToExport.length === 0) {
+      if (selectedItems.length === 0) {
         figma.ui.postMessage({
           type: 'error',
-          message: 'Keine exportierbaren Elemente gefunden.'
+          message: 'Keine Elemente zum Export ausgewählt.'
         });
         return;
       }
       
-      console.log(`Starting direct download of ${nodesToExport.length} nodes`);
+      console.log(`Starting export of ${selectedItems.length} elements with settings:`, settings);
       
-      // Export each node individually
-      const exportPromises = nodesToExport.map(async (node, index) => {
+      const exportPromises = selectedItems.map(async (item, index) => {
         try {
           figma.ui.postMessage({
             type: 'download-progress',
             current: index + 1,
-            total: nodesToExport.length,
-            nodeName: node.name
+            total: selectedItems.length,
+            itemName: `${item.frameName} > ${item.elementName}`
           });
+          
+          const node = figma.getNodeById(item.elementId);
+          if (!node || !canBeExported(node)) {
+            throw new Error(`Element ${item.elementName} nicht exportierbar`);
+          }
           
           // Generate export settings
           const exportSettings = {
@@ -258,24 +270,23 @@ figma.ui.onmessage = async (msg) => {
             }
           };
           
-          // Export the node
+          // Export the element
           const bytes = await node.exportAsync(exportSettings);
           
-          // Generate filename
-          const timestamp = new Date().toISOString().split('T')[0];
-          const safeName = node.name.replace(/[^a-zA-Z0-9]/g, '_');
-          const filename = `${safeName}_${settings.scale}x_${timestamp}.${settings.format.toLowerCase()}`;
+          // Generate filename based on naming pattern
+          const filename = generateFilename(item, settings);
           
           return {
             name: filename,
             bytes: bytes,
-            nodeName: node.name,
-            width: Math.round(node.width || 0),
-            height: Math.round(node.height || 0)
+            frameName: item.frameName,
+            elementName: item.elementName,
+            width: item.width,
+            height: item.height
           };
           
         } catch (error) {
-          console.error(`Export failed for node ${node.name}:`, error);
+          console.error(`Export failed for ${item.elementName}:`, error);
           return null;
         }
       });
@@ -298,20 +309,21 @@ figma.ui.onmessage = async (msg) => {
         count: successfulExports.length,
         exports: successfulExports.map(exp => ({
           name: exp.name,
-          bytes: Array.from(exp.bytes), // Convert Uint8Array to Array for message passing
-          nodeName: exp.nodeName,
+          bytes: Array.from(exp.bytes),
+          frameName: exp.frameName,
+          elementName: exp.elementName,
           width: exp.width,
           height: exp.height
         }))
       });
       
-      console.log(`✅ Direct download ready: ${successfulExports.length} files`);
+      console.log(`✅ Export completed: ${successfulExports.length}/${selectedItems.length} files ready`);
       
     } catch (error) {
-      console.error('Direct download error:', error);
+      console.error('Export error:', error);
       figma.ui.postMessage({
         type: 'error',
-        message: `Download-Fehler: ${error.message}`
+        message: `Export-Fehler: ${error.message}`
       });
     }
   }
@@ -611,6 +623,29 @@ function parseCSVLine(line) {
   
   result.push(current);
   return result;
+}
+
+// Helper function to generate filename based on naming pattern
+function generateFilename(item, settings) {
+  const timestamp = new Date().toISOString().split('T')[0];
+  const safeFrameName = item.frameName.replace(/[^a-zA-Z0-9]/g, '_');
+  const safeElementName = item.elementName.replace(/[^a-zA-Z0-9]/g, '_');
+  const extension = settings.format.toLowerCase();
+  
+  switch (settings.naming) {
+    case 'frame_element_scale_date':
+      return `${safeFrameName}_${safeElementName}_${settings.scale}x_${timestamp}.${extension}`;
+    case 'element_frame_scale_date':
+      return `${safeElementName}_${safeFrameName}_${settings.scale}x_${timestamp}.${extension}`;
+    case 'frame_element_scale':
+      return `${safeFrameName}_${safeElementName}_${settings.scale}x.${extension}`;
+    case 'element_frame_scale':
+      return `${safeElementName}_${safeFrameName}_${settings.scale}x.${extension}`;
+    case 'custom':
+      return `${settings.customPattern || 'export'}_${safeElementName}_${timestamp}.${extension}`;
+    default:
+      return `${safeFrameName}_${safeElementName}_${settings.scale}x_${timestamp}.${extension}`;
+  }
 }
 
 console.log('Weleda Transcreate Workspace loaded successfully! 🌿');
