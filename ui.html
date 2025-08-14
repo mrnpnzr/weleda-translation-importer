@@ -974,54 +974,37 @@
       }
     });
     
-    // Plugin "andocken" - bleibt offen
-    window.addEventListener('beforeunload', (e) => {
-      // Verhindere automatisches Schließen
-      e.preventDefault();
-      e.returnValue = '';
-    });
-    
-    // Keep-alive Signal senden
-    setInterval(() => {
-      parent.postMessage({
-        pluginMessage: { type: 'keep-alive' }
-      }, '*');
-    }, 30000); // Alle 30 Sekunden
-    
-    // Tab Navigation - mit verbessertem Debug
+    // Section-System (ersetzt Tabs)
     document.addEventListener('DOMContentLoaded', function() {
-      console.log('DOM loaded, initializing tabs...');
+      console.log('DOM loaded, initializing sections...');
       
-      const tabButtons = document.querySelectorAll('.tab-button');
-      const tabContents = document.querySelectorAll('.tab-content');
+      const sectionHeaders = document.querySelectorAll('.section-header');
       
-      console.log('Found', tabButtons.length, 'tab buttons');
-      console.log('Found', tabContents.length, 'tab contents');
-      
-      tabButtons.forEach(button => {
-        button.addEventListener('click', () => {
-          const targetTab = button.dataset.tab;
-          console.log('Tab clicked:', targetTab);
+      sectionHeaders.forEach(header => {
+        header.addEventListener('click', () => {
+          const sectionName = header.dataset.section;
+          const sectionContent = document.getElementById(sectionName + 'Section');
+          const arrow = header.querySelector('.expand-arrow');
           
-          // Tab-Buttons aktualisieren
-          tabButtons.forEach(b => b.classList.remove('active'));
-          button.classList.add('active');
-          
-          // Tab-Content aktualisieren
-          tabContents.forEach(content => {
-            content.classList.remove('active');
-            console.log('Tab content:', content.id);
-          });
-          
-          const targetTabElement = document.getElementById(targetTab + 'Tab');
-          if (targetTabElement) {
-            targetTabElement.classList.add('active');
-            console.log('Activated tab:', targetTab + 'Tab');
+          if (sectionContent.classList.contains('expanded')) {
+            // Zuklappen
+            sectionContent.classList.remove('expanded');
+            header.classList.remove('expanded');
+            arrow.textContent = '▶';
           } else {
-            console.error('Tab element not found:', targetTab + 'Tab');
+            // Aufklappen
+            sectionContent.classList.add('expanded');
+            header.classList.add('expanded');
+            arrow.textContent = '▼';
           }
         });
       });
+      
+      // Import Section ist standardmäßig offen
+      const importHeader = document.querySelector('[data-section="import"]');
+      if (importHeader) {
+        importHeader.classList.add('expanded');
+      }
     });
     
     // Export Tab: Layer laden
