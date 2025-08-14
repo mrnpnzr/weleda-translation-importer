@@ -268,7 +268,9 @@
     .frame-grid {
       display: grid;
       grid-template-columns: 1fr;
-      gap: 16px;
+      gap: 12px;
+      max-height: 300px;
+      overflow-y: auto;
     }
     
     .frame-card {
@@ -484,8 +486,8 @@
       background: rgba(139,184,133,0.15);
       border: 1px solid rgba(139,184,133,0.3);
       border-radius: 6px;
-      padding: 6px 12px;
-      font-size: 11px;
+      padding: 4px 8px;
+      font-size: 10px;
       color: #8ab885;
       cursor: pointer;
       transition: all 0.2s ease;
@@ -537,55 +539,56 @@
     .auto-export-section {
       background: rgba(139,184,133,0.15);
       border: 2px solid rgba(139,184,133,0.4);
-      border-radius: 12px;
-      padding: 20px;
-      margin-bottom: 20px;
+      border-radius: 8px;
+      padding: 16px;
+      margin-bottom: 16px;
     }
     
     .auto-export-header {
       display: flex;
       align-items: center;
-      gap: 12px;
-      margin-bottom: 16px;
+      gap: 10px;
+      margin-bottom: 12px;
     }
     
     .auto-export-icon {
-      width: 40px;
-      height: 40px;
+      width: 32px;
+      height: 32px;
       background: rgba(139,184,133,0.3);
-      border-radius: 8px;
+      border-radius: 6px;
       display: flex;
       align-items: center;
       justify-content: center;
-      font-size: 20px;
+      font-size: 16px;
+      flex-shrink: 0;
     }
     
     .auto-export-title {
-      font-size: 16px;
+      font-size: 14px;
       font-weight: 700;
       color: #8ab885;
       margin: 0;
     }
     
     .auto-export-subtitle {
-      font-size: 12px;
+      font-size: 11px;
       color: #b8c7ab;
-      margin: 2px 0 0 0;
+      margin: 1px 0 0 0;
     }
     
     .auto-export-rules {
       background: rgba(0,0,0,0.1);
-      border-radius: 8px;
-      padding: 16px;
-      margin-bottom: 16px;
+      border-radius: 6px;
+      padding: 12px;
+      margin-bottom: 12px;
     }
     
     .rule-item {
       display: flex;
       align-items: center;
-      gap: 12px;
-      margin-bottom: 12px;
-      font-size: 13px;
+      gap: 8px;
+      margin-bottom: 8px;
+      font-size: 11px;
     }
     
     .rule-item:last-child {
@@ -595,64 +598,66 @@
     .rule-pattern {
       background: rgba(139,184,133,0.2);
       color: #8ab885;
-      padding: 4px 8px;
-      border-radius: 4px;
+      padding: 3px 6px;
+      border-radius: 3px;
       font-family: monospace;
       font-weight: 600;
-      min-width: 80px;
+      min-width: 70px;
       text-align: center;
+      font-size: 10px;
     }
     
     .rule-arrow {
       color: #b8c7ab;
-      font-size: 16px;
+      font-size: 12px;
     }
     
     .rule-result {
       color: #ffffff;
       font-weight: 500;
+      font-size: 11px;
     }
     
     .auto-export-stats {
       display: grid;
       grid-template-columns: 1fr 1fr;
-      gap: 12px;
-      margin-bottom: 16px;
+      gap: 8px;
+      margin-bottom: 12px;
     }
     
     .stat-card {
       background: rgba(0,0,0,0.15);
-      border-radius: 8px;
-      padding: 12px;
+      border-radius: 6px;
+      padding: 8px;
       text-align: center;
     }
     
     .stat-number {
-      font-size: 20px;
+      font-size: 16px;
       font-weight: 700;
       color: #8ab885;
       margin: 0;
     }
     
     .stat-label {
-      font-size: 11px;
+      font-size: 10px;
       color: #b8c7ab;
-      margin: 4px 0 0 0;
+      margin: 2px 0 0 0;
     }
     
     .auto-export-items {
-      max-height: 200px;
+      max-height: 120px;
       overflow-y: auto;
       background: rgba(0,0,0,0.1);
-      border-radius: 8px;
-      margin-bottom: 16px;
+      border-radius: 6px;
+      margin-bottom: 12px;
     }
     
     .auto-item {
       display: flex;
       align-items: center;
-      gap: 12px;
-      padding: 12px 16px;
+      gap: 8px;
+      padding: 8px 12px;
       border-bottom: 1px solid rgba(255,255,255,0.05);
     }
     
@@ -661,15 +666,16 @@
     }
     
     .auto-item-icon {
-      width: 24px;
-      height: 24px;
+      width: 20px;
+      height: 20px;
       background: rgba(139,184,133,0.2);
-      border-radius: 4px;
+      border-radius: 3px;
       display: flex;
       align-items: center;
       justify-content: center;
-      font-size: 12px;
+      font-size: 10px;
       color: #8ab885;
+      flex-shrink: 0;
     }
     
     .auto-item-info {
@@ -678,16 +684,16 @@
     }
     
     .auto-item-name {
-      font-size: 12px;
+      font-size: 11px;
       color: #ffffff;
-      margin: 0 0 2px 0;
+      margin: 0 0 1px 0;
       white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
     }
     
     .auto-item-frame {
-      font-size: 10px;
+      font-size: 9px;
       color: #b8c7ab;
       opacity: 0.8;
       margin: 0;
@@ -696,9 +702,9 @@
     .auto-item-badge {
       background: rgba(139,184,133,0.2);
       color: #8ab885;
-      padding: 2px 6px;
+      padding: 2px 4px;
       border-radius: 3px;
-      font-size: 9px;
+      font-size: 8px;
       font-weight: 600;
       white-space: nowrap;
     }
@@ -1047,63 +1053,23 @@
                 <div class="selection-details" id="selectionDetails">ausgewählt zum Export</div>
               </div>
               
-              <div class="export-summary-detailed" id="exportSummaryDetailed">
-                <div>📊 <strong>Scan-Ergebnis:</strong> <span id="scanResults">Lade Frames...</span></div>
-                <div class="summary-stats">
-                  <span id="visibleCount">📄 0 sichtbar</span>
-                  <span id="hiddenCount">👁️‍🗨️ 0 ausgeblendet</span>
-                  <span id="lockedCount">🔒 0 gesperrt</span>
-                </div>
-              </div>
-              
               <div class="quick-actions">
-                <div class="quick-btn" id="selectAllBtn">📋 Alle auswählen</div>
-                <div class="quick-btn" id="selectNoneBtn">🗑️ Alle abwählen</div>
-                <div class="quick-btn" id="selectInstancesBtn">◊ Nur Instanzen</div>
-                <div class="quick-btn" id="selectFramesBtn">📄 Nur Frames</div>
+                <div class="quick-btn" id="selectAllBtn">📋 Alle</div>
+                <div class="quick-btn" id="selectNoneBtn">🗑️ Keine</div>
+                <div class="quick-btn" id="selectInstancesBtn">◊ Instanzen</div>
+                <div class="quick-btn" id="selectFramesBtn">📄 Frames</div>
               </div>
               
               <div class="frame-grid" id="frameGrid">
                 <!-- Frame cards with children will be inserted here -->
               </div>
               
-              <div class="export-settings">
-                <div class="setting-group">
-                  <label class="setting-label">📐 Qualität</label>
-                  <div class="setting-options">
-                    <div class="setting-option" data-scale="1">1x</div>
-                    <div class="setting-option active" data-scale="2">2x</div>
-                    <div class="setting-option" data-scale="3">3x</div>
-                    <div class="setting-option" data-scale="4">4x</div>
-                  </div>
-                </div>
-                
-                <div class="setting-group">
-                  <label class="setting-label">📄 Format</label>
-                  <div class="setting-options">
-                    <div class="setting-option active" data-format="PNG">PNG</div>
-                    <div class="setting-option" data-format="JPG">JPG</div>
-                    <div class="setting-option" data-format="SVG">SVG</div>
-                  </div>
-                </div>
-                
-                <div class="setting-group">
-                  <label class="setting-label">🏷️ Dateinamen</label>
-                  <div class="setting-options">
-                    <div class="setting-option active" data-naming="frame_element_scale_date">Frame_Element_2x_Date</div>
-                    <div class="setting-option" data-naming="element_frame_scale_date">Element_Frame_2x_Date</div>
-                    <div class="setting-option" data-naming="frame_element_scale">Frame_Element_2x</div>
-                    <div class="setting-option" data-naming="element_frame_scale">Element_Frame_2x</div>
-                    <div class="setting-option" data-naming="custom">Benutzerdefiniert</div>
-                  </div>
-                  <input type="text" class="custom-input hidden" id="customNaming" placeholder="Muster: {frame}_{element}_{date}">
-                </div>
-                
-                <button class="btn" id="exportLayersBtn" disabled style="width: 100%; margin-top: 16px;">
+              <div class="export-settings" style="margin-top: 12px;">
+                <button class="btn" id="exportLayersBtn" disabled style="width: 100%; margin-bottom: 8px;">
                   📤 0 Elemente exportieren
                 </button>
                 
-                <button class="btn btn-secondary" id="downloadDirectBtn" disabled style="width: 100%; margin-top: 8px;">
+                <button class="btn btn-secondary" id="downloadDirectBtn" disabled style="width: 100%;">
                   💾 Direkt herunterladen
                 </button>
               </div>
