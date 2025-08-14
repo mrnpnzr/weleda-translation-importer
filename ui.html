@@ -974,18 +974,29 @@
       }
     });
     
-    // Tab Navigation
+    // Tab Navigation - mit Debug
     document.querySelectorAll('.tab-button').forEach(button => {
       button.addEventListener('click', () => {
         const targetTab = button.dataset.tab;
+        console.log('Tab clicked:', targetTab);
         
         // Tab-Buttons aktualisieren
         document.querySelectorAll('.tab-button').forEach(b => b.classList.remove('active'));
         button.classList.add('active');
         
         // Tab-Content aktualisieren
-        document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
-        document.getElementById(targetTab + 'Tab').classList.add('active');
+        document.querySelectorAll('.tab-content').forEach(content => {
+          content.classList.remove('active');
+          console.log('Tab content:', content.id);
+        });
+        
+        const targetTabElement = document.getElementById(targetTab + 'Tab');
+        if (targetTabElement) {
+          targetTabElement.classList.add('active');
+          console.log('Activated tab:', targetTab + 'Tab');
+        } else {
+          console.error('Tab element not found:', targetTab + 'Tab');
+        }
       });
     });
     
