@@ -340,6 +340,169 @@ figma.ui.onmessage = async (msg) => {
     }
   }
   
+  if (msg.type === 'load-layers') {
+    try {
+      const allLayers = [];
+      
+      // Funktion zum rekursiven Durchlaufen aller Nodes
+      function traverseNode(node, depth = 0, parentName = '') {
+        // Nur sichtbare und exportierbare Nodes
+        if (node.visible !== false && node.type !== 'PAGE') {
+          const layerInfo = {
+            id: node.id,
+            name: node.name || 'Unnamed',
+            type: node.type,
+            width: node.width || 0,
+            height: node.height || 0,
+            depth: depth,
+            parentName: parentName,
+            fullPath: parentName ? `${parentName} > ${node.name}` : node.name,
+            node: node
+          };
+          
+          allLayers.push(layerInfo);
+        }
+        
+        // Rekursiv durch Kinder
+        if ('children' in node && node.children) {
+          for (const child of node.children) {
+            traverseNode(child, depth + 1, node.name);
+          }
+        }
+      }
+      
+      // Alle Seiten durchsuchen
+      for (const page of figma.root.children) {
+        traverseNode(page, 0);
+      }
+      
+      // Sortieren: Frames zuerst, dann alphabetisch
+      allLayers.sort((a, b) => {
+        if (a.type === 'FRAME' && b.type !== 'FRAME') return -1;
+        if (a.type !== 'FRAME' && b.type === 'FRAME') return 1;
+        if (a.depth !== b.depth) return a.depth - b.depth;
+        return a.name.localeCompare(b.name);
+      });
+      
+      console.log(`Gefunden: ${allLayers.length} Ebenen/Gruppen/Frames`);
+      
+      figma.ui.postMessage({
+        type: 'layers-loaded',
+        layers: allLayers.map(layer => ({
+          id: layer.id,
+          name: layer.name,
+          type: layer.type,
+          width: layer.width,
+          height: layer.height,
+          depth: layer.depth,
+          parentName: layer.parentName,
+          fullPath: layer.fullPath
+        }))
+      });
+      
+    } catch (error) {
+      figma.ui.postMessage({
+        type: 'error',
+        message: `Fehler beim Laden der Ebenen: ${error.message}`
+      });
+    }
+  }
+  
+  if (msg.type === 'export-selected-layers') {
+    try {
+      const layersToExport = msg.layers;
+      const settings = msg.settings || { scale: 2, format: 'PNG', naming: 'layer_name_date' };
+      let exportedCount = 0;
+      const exportData = [];
+      
+      figma.ui.postMessage({
+        type: 'progress',
+        message: `Beginne Export von ${layersToExport.length} ausgewählten Ebenen...`
+      });
+      
+      for (const layerInfo of layersToExport) {
+        try {
+          // Node anhand der ID finden
+          const node = await figma.getNodeByIdAsync(layerInfo.id);
+          
+          if (!node) {
+            console.warn(`Node mit ID ${layerInfo.id} nicht gefunden`);
+            continue;
+          }
+          
+          // Export-Einstellungen
+          const exportSettings = {
+            format: settings.format,
+            constraint: {
+              type: 'SCALE',
+              value: settings.scale
+            }
+          };
+          
+          // Node exportieren
+          const imageData = await node.exportAsync(exportSettings);
+          
+          // Dateiname generieren
+          const timestamp = new Date().toISOString().slice(0, 10);
+          const sanitizedName = layerInfo.name.replace(/[^a-zA-Z0-9]/g, '_');
+          const sanitizedType = layerInfo.type.toLowerCase();
+          
+          let fileName;
+          switch (settings.naming) {
+            case 'type_layer_date':
+              fileName = `${sanitizedType}_${sanitizedName}_${timestamp}.${settings.format.toLowerCase()}`;
+              break;
+            case 'layer_type':
+              fileName = `${sanitizedName}_${sanitizedType}.${settings.format.toLowerCase()}`;
+              break;
+            default: // layer_name_date
+              fileName = `${sanitizedName}_${timestamp}.${settings.format.toLowerCase()}`;
+          }
+          
+          exportData.push({
+            fileName: fileName,
+            imageData: imageData,
+            width: layerInfo.width,
+            height: layerInfo.height,
+            layerName: layerInfo.name,
+            layerType: layerInfo.type
+          });
+          
+          exportedCount++;
+          
+          figma.ui.postMessage({
+            type: 'progress',
+            message: `Exportiert: ${fileName} (${exportedCount}/${layersToExport.length})`
+          });
+          
+        } catch (exportError) {
+          console.warn(`Fehler beim Exportieren von ${layerInfo.name}: ${exportError.message}`);
+        }
+      }
+      
+      figma.ui.postMessage({
+        type: 'export-completed',
+        count: exportedCount,
+        message: `${exportedCount} Ebenen erfolgreich exportiert!`
+      });
+      
+      // Direkter Download
+      if (exportData.length > 0) {
+        figma.ui.postMessage({
+          type: 'download-ready',
+          files: exportData,
+          message: `Download bereit für ${exportData.length} Datei(en)`
+        });
+      }
+      
+    } catch (error) {
+      figma.ui.postMessage({
+        type: 'error',
+        message: `Fehler beim Export: ${error.message}`
+      });
+    }
+  }
+  
   if (msg.type === 'get-frame-ids') {
     try {
       // Alle Frames der aktuellen Seite mit IDs ausgeben
