@@ -990,91 +990,116 @@
     });
     
     // Export Tab: Layer laden
-    loadLayersBtn.addEventListener('click', () => {
-      loadLayersBtn.textContent = '⏳ Lade Ebenen...';
-      loadLayersBtn.disabled = true;
-      
-      parent.postMessage({
-        pluginMessage: { type: 'load-layers' }
-      }, '*');
-    });
+    if (loadLayersBtn) {
+      loadLayersBtn.addEventListener('click', () => {
+        loadLayersBtn.textContent = '⏳ Lade Ebenen...';
+        loadLayersBtn.disabled = true;
+        
+        parent.postMessage({
+          pluginMessage: { type: 'load-layers' }
+        }, '*');
+      });
+    }
     
     // Export Tab: Auswahl-Kontrollen
-    selectAllBtn.addEventListener('click', () => {
-      document.querySelectorAll('.layer-checkbox').forEach(cb => cb.checked = true);
-      updateSelectedLayers();
-    });
-    
-    selectNoneBtn.addEventListener('click', () => {
-      document.querySelectorAll('.layer-checkbox').forEach(cb => cb.checked = false);
-      updateSelectedLayers();
-    });
-    
-    selectFramesBtn.addEventListener('click', () => {
-      document.querySelectorAll('.layer-checkbox').forEach(cb => {
-        const layerType = cb.dataset.type;
-        cb.checked = layerType === 'FRAME' || layerType === 'COMPONENT';
+    if (selectAllBtn) {
+      selectAllBtn.addEventListener('click', () => {
+        document.querySelectorAll('.layer-checkbox').forEach(cb => cb.checked = true);
+        updateSelectedLayers();
       });
-      updateSelectedLayers();
-    });
+    }
     
-    selectInstancesBtn.addEventListener('click', () => {
-      document.querySelectorAll('.layer-checkbox').forEach(cb => {
-        cb.checked = cb.dataset.type === 'INSTANCE';
+    if (selectNoneBtn) {
+      selectNoneBtn.addEventListener('click', () => {
+        document.querySelectorAll('.layer-checkbox').forEach(cb => cb.checked = false);
+        updateSelectedLayers();
       });
-      updateSelectedLayers();
-    });
+    }
     
-    refreshLayersBtn.addEventListener('click', () => {
-      loadLayersBtn.click();
-    });
+    if (selectFramesBtn) {
+      selectFramesBtn.addEventListener('click', () => {
+        document.querySelectorAll('.layer-checkbox').forEach(cb => {
+          const layerType = cb.dataset.type;
+          cb.checked = layerType === 'FRAME' || layerType === 'COMPONENT';
+        });
+        updateSelectedLayers();
+      });
+    }
+    
+    if (selectInstancesBtn) {
+      selectInstancesBtn.addEventListener('click', () => {
+        document.querySelectorAll('.layer-checkbox').forEach(cb => {
+          cb.checked = cb.dataset.type === 'INSTANCE';
+        });
+        updateSelectedLayers();
+      });
+    }
+    
+    if (refreshLayersBtn) {
+      refreshLayersBtn.addEventListener('click', () => {
+        if (loadLayersBtn) loadLayersBtn.click();
+      });
+    }
     
     // Export Tab: Export starten
-    exportSelectedBtn.addEventListener('click', () => {
-      const selectedLayers = [];
-      document.querySelectorAll('.layer-checkbox:checked').forEach(cb => {
-        const layerId = cb.dataset.layerId;
-        const layer = allLayers.find(l => l.id === layerId);
-        if (layer) selectedLayers.push(layer);
-      });
-      
-      if (selectedLayers.length === 0) {
-        showMessage('⚠️ Keine Ebenen ausgewählt!', 'warning');
-        return;
-      }
-      
-      const settings = {
-        scale: parseInt(document.getElementById('exportScale2').value),
-        format: document.getElementById('exportFormat2').value,
-        naming: document.getElementById('exportNaming2').value
-      };
-      
-      exportSelectedBtn.textContent = '⏳ Exportiere...';
-      exportSelectedBtn.disabled = true;
-      
-      parent.postMessage({
-        pluginMessage: {
-          type: 'export-selected-layers',
-          layers: selectedLayers,
-          settings: settings
+    if (exportSelectedBtn) {
+      exportSelectedBtn.addEventListener('click', () => {
+        const selectedLayers = [];
+        document.querySelectorAll('.layer-checkbox:checked').forEach(cb => {
+          const layerId = cb.dataset.layerId;
+          const layer = allLayers.find(l => l.id === layerId);
+          if (layer) selectedLayers.push(layer);
+        });
+        
+        if (selectedLayers.length === 0) {
+          showMessage('⚠️ Keine Ebenen ausgewählt!', 'warning');
+          return;
         }
-      }, '*');
-    });
+        
+        const scale2Element = document.getElementById('exportScale2');
+        const format2Element = document.getElementById('exportFormat2');
+        const naming2Element = document.getElementById('exportNaming2');
+        
+        const settings = {
+          scale: scale2Element ? parseInt(scale2Element.value) : 2,
+          format: format2Element ? format2Element.value : 'PNG',
+          naming: naming2Element ? naming2Element.value : 'layer_name_date'
+        };
+        
+        exportSelectedBtn.textContent = '⏳ Exportiere...';
+        exportSelectedBtn.disabled = true;
+        
+        parent.postMessage({
+          pluginMessage: {
+            type: 'export-selected-layers',
+            layers: selectedLayers,
+            settings: settings
+          }
+        }, '*');
+      });
+    }
     
     function updateSelectedLayers() {
       const selected = document.querySelectorAll('.layer-checkbox:checked').length;
-      selectionInfo.textContent = `${selected} Elemente ausgewählt`;
-      exportSelectedBtn.disabled = selected === 0;
+      if (selectionInfo) {
+        selectionInfo.textContent = `${selected} Elemente ausgewählt`;
+      }
       
-      if (selected > 0) {
-        exportSelectedBtn.innerHTML = `<span>📦</span>${selected} Elemente exportieren`;
-      } else {
-        exportSelectedBtn.innerHTML = '<span>📦</span>Ausgewählte exportieren';
+      if (exportSelectedBtn) {
+        exportSelectedBtn.disabled = selected === 0;
+        
+        if (selected > 0) {
+          exportSelectedBtn.innerHTML = `<span>📦</span>${selected} Elemente exportieren`;
+        } else {
+          exportSelectedBtn.innerHTML = '<span>📦</span>Ausgewählte exportieren';
+        }
       }
     }
     
     function renderLayers(layers) {
       allLayers = layers;
+      if (!layerBrowser) return;
+      
       layerBrowser.innerHTML = '';
       
       if (layers.length === 0) {
@@ -1214,11 +1239,22 @@
         
       } else if (msg.type === 'layers-loaded') {
         const layers = msg.layers;
-        loadLayersBtn.textContent = '📋 Ebenen laden';
-        loadLayersBtn.disabled = false;
+        if (loadLayersBtn) {
+          loadLayersBtn.textContent = '📋 Ebenen laden';
+          loadLayersBtn.disabled = false;
+        }
         
         renderLayers(layers);
         showMessage(`✅ ${layers.length} Ebenen, Gruppen und Frames geladen!`, 'success');
+        
+      } else if (msg.type === 'export-completed') {
+        showMessage(`📤 ${msg.message}`, 'success');
+        
+        // Reset Export Button
+        if (exportSelectedBtn) {
+          exportSelectedBtn.textContent = 'Ausgewählte exportieren';
+          exportSelectedBtn.disabled = document.querySelectorAll('.layer-checkbox:checked').length === 0;
+        }
         
       } else if (msg.type === 'download-ready') {
         // Direkter Download-Manager
