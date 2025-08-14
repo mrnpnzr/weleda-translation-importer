@@ -268,48 +268,57 @@
     .frame-grid {
       display: grid;
       grid-template-columns: 1fr;
-      gap: 12px;
+      gap: 16px;
     }
     
     .frame-card {
-      background: rgba(255,255,255,0.08);
-      border: 1px solid rgba(255,255,255,0.12);
-      border-radius: 8px;
+      background: rgba(255,255,255,0.06);
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 12px;
       overflow: hidden;
       transition: all 0.2s ease;
     }
     
     .frame-card:hover {
-      background: rgba(255,255,255,0.12);
-      border-color: rgba(139,184,133,0.4);
+      background: rgba(255,255,255,0.08);
+      border-color: rgba(139,184,133,0.3);
+      transform: translateY(-1px);
+      box-shadow: 0 4px 12px rgba(0,0,0,0.15);
     }
     
     .frame-header {
       display: flex;
       align-items: center;
-      gap: 12px;
-      padding: 12px;
-      background: rgba(0,0,0,0.1);
+      gap: 16px;
+      padding: 16px 20px;
+      background: rgba(11,69,53,0.3);
       border-bottom: 1px solid rgba(255,255,255,0.1);
+      cursor: pointer;
+    }
+    
+    .frame-header:hover {
+      background: rgba(11,69,53,0.4);
     }
     
     .frame-thumbnail {
-      width: 40px;
-      height: 30px;
+      width: 48px;
+      height: 36px;
       background: rgba(255,255,255,0.1);
-      border-radius: 4px;
+      border-radius: 6px;
       display: flex;
       align-items: center;
       justify-content: center;
-      font-size: 12px;
+      font-size: 16px;
       overflow: hidden;
       flex-shrink: 0;
+      border: 1px solid rgba(255,255,255,0.15);
     }
     
     .frame-thumbnail img {
       width: 100%;
       height: 100%;
       object-fit: cover;
+      border-radius: 4px;
     }
     
     .frame-info {
@@ -318,66 +327,126 @@
     }
     
     .frame-name {
-      font-size: 13px;
+      font-size: 15px;
       font-weight: 600;
       color: #ffffff;
-      margin: 0;
+      margin: 0 0 4px 0;
       white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
     }
     
     .frame-size {
-      font-size: 11px;
+      font-size: 12px;
       color: #b8c7ab;
-      margin: 2px 0 0 0;
+      margin: 0;
+      opacity: 0.8;
     }
     
-    .frame-select-all {
+    .frame-toggle {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 12px;
+      color: #8ab885;
+      font-weight: 500;
+    }
+    
+    .frame-toggle-icon {
+      font-size: 10px;
+      transition: transform 0.2s ease;
+    }
+    
+    .frame-card.collapsed .frame-toggle-icon {
+      transform: rotate(-90deg);
+    }
+    
+    .frame-card.collapsed .frame-children {
+      display: none;
+    }
+    
+    .frame-children {
+      padding: 0;
+      background: rgba(0,0,0,0.1);
+    }
+    
+    .children-header {
+      background: rgba(139,184,133,0.1);
+      padding: 12px 20px;
+      border-bottom: 1px solid rgba(255,255,255,0.05);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    
+    .children-title {
+      font-size: 13px;
+      font-weight: 600;
+      color: #8ab885;
+      margin: 0;
+    }
+    
+    .select-all-children {
       display: flex;
       align-items: center;
       gap: 6px;
       font-size: 11px;
-      color: #8ab885;
+      color: #b8c7ab;
       cursor: pointer;
+      padding: 4px 8px;
+      border-radius: 4px;
+      transition: all 0.2s ease;
     }
     
-    .frame-children {
-      padding: 12px;
+    .select-all-children:hover {
+      background: rgba(139,184,133,0.2);
+      color: #8ab885;
+    }
+    
+    .children-grid {
       display: grid;
       grid-template-columns: 1fr 1fr;
-      gap: 8px;
+      gap: 1px;
+      background: rgba(255,255,255,0.05);
     }
     
     .child-item {
       display: flex;
       align-items: center;
-      gap: 8px;
-      padding: 8px;
-      background: rgba(255,255,255,0.05);
-      border-radius: 6px;
+      gap: 12px;
+      padding: 16px;
+      background: rgba(0,0,0,0.1);
       transition: all 0.2s ease;
       cursor: pointer;
+      border: 2px solid transparent;
     }
     
     .child-item:hover {
       background: rgba(139,184,133,0.1);
+      border-color: rgba(139,184,133,0.2);
     }
     
     .child-item.selected {
       background: rgba(139,184,133,0.2);
-      border: 1px solid rgba(139,184,133,0.4);
+      border-color: rgba(139,184,133,0.4);
     }
     
     .child-checkbox {
       accent-color: #8ab885;
+      transform: scale(1.1);
     }
     
     .child-icon {
-      width: 14px;
-      text-align: center;
-      font-size: 10px;
-      opacity: 0.7;
+      width: 20px;
+      height: 20px;
+      background: rgba(139,184,133,0.2);
+      border-radius: 4px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 12px;
+      color: #8ab885;
+      flex-shrink: 0;
     }
     
     .child-info {
@@ -386,19 +455,68 @@
     }
     
     .child-name {
-      font-size: 11px;
-      color: #e8f1e6;
-      margin: 0;
+      font-size: 13px;
+      color: #ffffff;
+      margin: 0 0 4px 0;
       white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
+      font-weight: 500;
     }
     
     .child-size {
-      font-size: 10px;
+      font-size: 11px;
       color: #b8c7ab;
-      opacity: 0.8;
-      margin: 1px 0 0 0;
+      opacity: 0.7;
+      margin: 0;
+    }
+    
+    .quick-actions {
+      background: rgba(11,69,53,0.2);
+      padding: 16px 20px;
+      border-top: 1px solid rgba(255,255,255,0.1);
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+    
+    .quick-btn {
+      background: rgba(139,184,133,0.15);
+      border: 1px solid rgba(139,184,133,0.3);
+      border-radius: 6px;
+      padding: 6px 12px;
+      font-size: 11px;
+      color: #8ab885;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      white-space: nowrap;
+    }
+    
+    .quick-btn:hover {
+      background: rgba(139,184,133,0.25);
+      border-color: rgba(139,184,133,0.5);
+    }
+    
+    .selection-summary {
+      background: rgba(139,184,133,0.1);
+      border: 1px solid rgba(139,184,133,0.3);
+      border-radius: 8px;
+      padding: 16px;
+      margin-bottom: 16px;
+      text-align: center;
+    }
+    
+    .selection-count {
+      font-size: 18px;
+      font-weight: 700;
+      color: #8ab885;
+      margin: 0 0 4px 0;
+    }
+    
+    .selection-details {
+      font-size: 12px;
+      color: #b8c7ab;
+      margin: 0;
     }
     
     .export-settings {
@@ -688,6 +806,18 @@
             </button>
             
             <div class="layer-browser hidden" id="layerBrowser">
+              <div class="selection-summary">
+                <div class="selection-count" id="selectionCount">0 Elemente</div>
+                <div class="selection-details" id="selectionDetails">ausgewählt zum Export</div>
+              </div>
+              
+              <div class="quick-actions">
+                <div class="quick-btn" id="selectAllBtn">📋 Alle auswählen</div>
+                <div class="quick-btn" id="selectNoneBtn">🗑️ Alle abwählen</div>
+                <div class="quick-btn" id="selectInstancesBtn">◊ Nur Instanzen</div>
+                <div class="quick-btn" id="selectFramesBtn">📄 Nur Frames</div>
+              </div>
+              
               <div class="frame-grid" id="frameGrid">
                 <!-- Frame cards with children will be inserted here -->
               </div>
@@ -724,11 +854,7 @@
                   <input type="text" class="custom-input hidden" id="customNaming" placeholder="Muster: {frame}_{element}_{date}">
                 </div>
                 
-                <div class="export-summary" id="exportSummary">
-                  <span class="export-counter">0 Elemente</span> ausgewählt zum Export
-                </div>
-                
-                <button class="btn" id="exportLayersBtn" disabled style="width: 100%; margin-top: 12px;">
+                <button class="btn" id="exportLayersBtn" disabled style="width: 100%; margin-top: 16px;">
                   📤 0 Elemente exportieren
                 </button>
                 
@@ -770,8 +896,13 @@
       frameGrid: document.getElementById('frameGrid'),
       exportLayersBtn: document.getElementById('exportLayersBtn'),
       downloadDirectBtn: document.getElementById('downloadDirectBtn'),
-      exportSummary: document.getElementById('exportSummary'),
-      customNaming: document.getElementById('customNaming')
+      selectionCount: document.getElementById('selectionCount'),
+      selectionDetails: document.getElementById('selectionDetails'),
+      customNaming: document.getElementById('customNaming'),
+      selectAllBtn: document.getElementById('selectAllBtn'),
+      selectNoneBtn: document.getElementById('selectNoneBtn'),
+      selectInstancesBtn: document.getElementById('selectInstancesBtn'),
+      selectFramesBtn: document.getElementById('selectFramesBtn')
     };
     
     // Accordion functionality
@@ -953,6 +1084,31 @@
       });
     }
     
+    // Export settings selection
+    document.addEventListener('click', (e) => {
+      if (e.target.classList.contains('setting-option')) {
+        const group = e.target.parentNode;
+        
+        // Remove active from siblings
+        group.querySelectorAll('.setting-option').forEach(opt => {
+          opt.classList.remove('active');
+        });
+        
+        // Add active to clicked option
+        e.target.classList.add('active');
+        
+        // Show/hide custom input for naming
+        if (e.target.dataset.naming === 'custom') {
+          elements.customNaming.classList.remove('hidden');
+          elements.customNaming.focus();
+        } else if (e.target.dataset.naming) {
+          elements.customNaming.classList.add('hidden');
+        }
+        
+        updateSelectionSummary();
+      }
+    });
+    
     // Close button
     if (elements.closeBtn) {
       elements.closeBtn.addEventListener('click', () => {
@@ -961,63 +1117,6 @@
         }, '*');
       });
     }
-    
-    // Message handling from plugin
-    window.addEventListener('message', (event) => {
-      const msg = event.data.pluginMessage;
-      if (!msg) return;
-      
-      console.log('Received message:', msg.type);
-      
-      switch (msg.type) {
-        case 'progress':
-          updateProgress(msg.message, msg.progress);
-          break;
-          
-        case 'success':
-          showMessage(`✅ ${msg.message}`, 'success', msg.details);
-          resetImportButton();
-          showProgress(false);
-          break;
-          
-        case 'error':
-          showMessage(`❌ ${msg.message}`, 'error');
-          resetImportButton();
-          showProgress(false);
-          break;
-          
-        case 'layers-loaded':
-          displayLayers(msg.layers);
-          break;
-          
-        case 'frames-loaded':
-          displayFrames(msg.frames);
-          break;
-          
-        case 'export-completed':
-          showMessage(`✅ ${msg.message}`, 'success');
-          break;
-          
-        case 'download-ready':
-          if (elements.downloadDirectBtn) {
-            elements.downloadDirectBtn.disabled = false;
-            elements.downloadDirectBtn.textContent = '💾 Direkt herunterladen';
-          }
-          showMessage(`✅ ${msg.count} Datei(en) zum Download bereit!`, 'success');
-          
-          // Start automatic downloads
-          if (msg.exports && msg.exports.length > 0) {
-            downloadFiles(msg.exports);
-          }
-          break;
-          
-        case 'download-progress':
-          if (elements.downloadDirectBtn) {
-            elements.downloadDirectBtn.textContent = `⏳ ${msg.current}/${msg.total} - ${msg.itemName}`;
-          }
-          break;
-      }
-    });
     
     // Helper functions
     function checkFormValidity() {
@@ -1081,6 +1180,63 @@
       }, 5000);
     }
     
+    // Message handling from plugin
+    window.addEventListener('message', (event) => {
+      const msg = event.data.pluginMessage;
+      if (!msg) return;
+      
+      console.log('Received message:', msg.type);
+      
+      switch (msg.type) {
+        case 'progress':
+          updateProgress(msg.message, msg.progress);
+          break;
+          
+        case 'success':
+          showMessage(`✅ ${msg.message}`, 'success', msg.details);
+          resetImportButton();
+          showProgress(false);
+          break;
+          
+        case 'error':
+          showMessage(`❌ ${msg.message}`, 'error');
+          resetImportButton();
+          showProgress(false);
+          break;
+          
+        case 'layers-loaded':
+          displayLayers(msg.layers);
+          break;
+          
+        case 'frames-loaded':
+          displayFrames(msg.frames);
+          break;
+          
+        case 'export-completed':
+          showMessage(`✅ ${msg.message}`, 'success');
+          break;
+          
+        case 'download-ready':
+          if (elements.downloadDirectBtn) {
+            elements.downloadDirectBtn.disabled = false;
+            elements.downloadDirectBtn.textContent = '💾 Direkt herunterladen';
+          }
+          showMessage(`✅ ${msg.count} Datei(en) zum Download bereit!`, 'success');
+          
+          // Start automatic downloads
+          if (msg.exports && msg.exports.length > 0) {
+            downloadFiles(msg.exports);
+          }
+          break;
+          
+        case 'download-progress':
+          if (elements.downloadDirectBtn) {
+            elements.downloadDirectBtn.textContent = `⏳ ${msg.current}/${msg.total} - ${msg.itemName}`;
+          }
+          break;
+      }
+    });
+    
     function displayFrames(frames) {
       availableFrames = frames;
       
@@ -1102,8 +1258,8 @@
             null;
           
           html += `
-            <div class="frame-card" data-frame-id="${frame.frameId}">
-              <div class="frame-header">
+            <div class="frame-card" data-frame-id="${frame.frameId}" data-frame-index="${frameIndex}">
+              <div class="frame-header" data-frame-index="${frameIndex}">
                 <div class="frame-thumbnail">
                   ${thumbnailSrc ? 
                     `<img src="${thumbnailSrc}" alt="${frame.frameName}">` : 
@@ -1114,11 +1270,20 @@
                   <h4 class="frame-name">${frame.frameName}</h4>
                   <p class="frame-size">${frame.frameWidth}×${frame.frameHeight}px • ${frame.children.length} Elemente</p>
                 </div>
-                <div class="frame-select-all" data-frame-index="${frameIndex}">
-                  <input type="checkbox" class="frame-checkbox"> Alle
+                <div class="frame-toggle">
+                  <span class="frame-toggle-icon">▼</span>
+                  Anzeigen
                 </div>
               </div>
               <div class="frame-children">
+                <div class="children-header">
+                  <h5 class="children-title">📦 Exportierbare Elemente</h5>
+                  <div class="select-all-children" data-frame-index="${frameIndex}">
+                    <input type="checkbox" class="frame-checkbox">
+                    Alle auswählen
+                  </div>
+                </div>
+                <div class="children-grid">
           `;
           
           frame.children.forEach((child, childIndex) => {
@@ -1131,8 +1296,9 @@
                        data-frame-index="${frameIndex}" 
                        data-child-index="${childIndex}"
                        data-frame-id="${frame.frameId}"
-                       data-element-id="${child.id}">
-                <span class="child-icon">${icon}</span>
+                       data-element-id="${child.id}"
+                       data-element-type="${child.type}">
+                <div class="child-icon">${icon}</div>
                 <div class="child-info">
                   <p class="child-name">${child.name}</p>
                   <p class="child-size">${child.width}×${child.height}px</p>
@@ -1142,6 +1308,7 @@
           });
           
           html += `
+                </div>
               </div>
             </div>
           `;
@@ -1151,6 +1318,7 @@
         
         // Add event listeners
         addFrameEventListeners();
+        updateSelectionSummary();
       } else if (elements.frameGrid) {
         elements.frameGrid.innerHTML = `
           <div style="text-align: center; padding: 40px; color: #b8c7ab;">
@@ -1162,11 +1330,21 @@
     }
     
     function addFrameEventListeners() {
+      // Frame toggle (collapse/expand)
+      document.querySelectorAll('.frame-header').forEach(header => {
+        header.addEventListener('click', (e) => {
+          if (e.target.type !== 'checkbox') {
+            const frameCard = header.closest('.frame-card');
+            frameCard.classList.toggle('collapsed');
+          }
+        });
+      });
+      
       // Frame select all checkboxes
       document.querySelectorAll('.frame-checkbox').forEach(checkbox => {
         checkbox.addEventListener('change', (e) => {
-          const frameIndex = parseInt(e.target.closest('.frame-select-all').dataset.frameIndex);
-          const frameCard = e.target.closest('.frame-card');
+          const frameIndex = parseInt(e.target.closest('[data-frame-index]').dataset.frameIndex);
+          const frameCard = document.querySelector(`[data-frame-index="${frameIndex}"]`).closest('.frame-card');
           const childCheckboxes = frameCard.querySelectorAll('.child-checkbox');
           
           childCheckboxes.forEach(childCheckbox => {
@@ -1221,19 +1399,22 @@
         item.classList.toggle('selected', checkbox.checked);
       });
       
-      updateExportSummary();
+      updateSelectionSummary();
       updateExportButtons();
     }
     
-    function updateExportSummary() {
-      if (elements.exportSummary) {
-        const settings = getExportSettings();
-        const count = selectedItems.length;
-        
-        elements.exportSummary.innerHTML = `
-          <span class="export-counter">${count} Element${count !== 1 ? 'e' : ''}</span> 
-          ausgewählt → ${settings.format} ${settings.scale}x
-        `;
+    function updateSelectionSummary() {
+      const count = selectedItems.length;
+      const settings = getExportSettings();
+      
+      if (elements.selectionCount) {
+        elements.selectionCount.textContent = `${count} Element${count !== 1 ? 'e' : ''}`;
+      }
+      
+      if (elements.selectionDetails) {
+        elements.selectionDetails.textContent = count > 0 ? 
+          `ausgewählt → ${settings.format} ${settings.scale}x` : 
+          'ausgewählt zum Export';
       }
     }
     
