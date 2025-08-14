@@ -27,7 +27,7 @@ figma.ui.onmessage = async (msg) => {
       });
       
       let totalImported = 0;
-      let importedFrames = [];
+      let importedFramesList = [];
       
       // Für jede Datei die Frames importieren
       for (const fileInfo of uniqueFiles) {
@@ -59,7 +59,7 @@ figma.ui.onmessage = async (msg) => {
             const updatedCount = await replaceTextsInFrame(duplicatedFrame, translations);
             
             totalImported++;
-            importedFrames.push({
+            importedFramesList.push({
               fileName: fileInfo.fileName || fileInfo.fileKey,
               frameName: duplicatedFrame.name,
               translatedTexts: updatedCount,
@@ -86,19 +86,19 @@ figma.ui.onmessage = async (msg) => {
       }
       
       // Alle importierten Frames auswählen und in den Viewport bringen
-      const importedFrames = figma.currentPage.children.filter(node => 
+      const allImportedFrames = figma.currentPage.children.filter(node => 
         detectedLanguages.some(lang => node.name.endsWith(` - ${lang}`))
       );
       
-      if (importedFrames.length > 0) {
-        figma.currentPage.selection = importedFrames;
-        figma.viewport.scrollAndZoomIntoView(importedFrames);
+      if (allImportedFrames.length > 0) {
+        figma.currentPage.selection = allImportedFrames;
+        figma.viewport.scrollAndZoomIntoView(allImportedFrames);
       }
       
       figma.ui.postMessage({
         type: 'success',
         message: `Import abgeschlossen! ${totalImported} Frame(s) erfolgreich importiert.`,
-        details: importedFiles
+        details: importedFramesList
       });
       
     } catch (error) {
@@ -111,7 +111,7 @@ figma.ui.onmessage = async (msg) => {
   
   if (msg.type === 'export-frames') {
     try {
-      const frames = msg.frames;
+      const framesToExport = msg.frames;
       let exportedCount = 0;
       
       figma.ui.postMessage({
@@ -119,14 +119,14 @@ figma.ui.onmessage = async (msg) => {
         message: 'Beginne PNG-Export...'
       });
       
-      for (const frameInfo of frames) {
+      for (const frameInfo of framesToExport) {
         try {
           // Frame anhand des Namens finden
-          const frame = figma.currentPage.findOne(node => 
+          const targetFrame = figma.currentPage.findOne(node => 
             node.name === frameInfo.frameName
           );
           
-          if (frame && (frame.type === 'FRAME' || frame.type === 'COMPONENT')) {
+          if (targetFrame && (targetFrame.type === 'FRAME' || targetFrame.type === 'COMPONENT')) {
             // PNG-Export konfigurieren
             const exportSettings = {
               format: 'PNG',
@@ -137,7 +137,7 @@ figma.ui.onmessage = async (msg) => {
             };
             
             // Frame exportieren
-            const imageData = await frame.exportAsync(exportSettings);
+            const imageData = await targetFrame.exportAsync(exportSettings);
             
             // Dateiname generieren: FrameName_Language_Timestamp.png
             const timestamp = new Date().toISOString().slice(0, 10); // YYYY-MM-DD
@@ -155,7 +155,7 @@ figma.ui.onmessage = async (msg) => {
             
             figma.ui.postMessage({
               type: 'progress',
-              message: `Exportiert: ${fileName} (${exportedCount}/${frames.length})`
+              message: `Exportiert: ${fileName} (${exportedCount}/${framesToExport.length})`
             });
             
           }
@@ -172,7 +172,7 @@ figma.ui.onmessage = async (msg) => {
       
       // Frames für manuellen Export auswählen
       const framesToSelect = figma.currentPage.children.filter(node => 
-        frames.some(f => f.frameName === node.name)
+        framesToExport.some(f => f.frameName === node.name)
       );
       
       if (framesToSelect.length > 0) {
