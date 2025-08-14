@@ -1093,12 +1093,12 @@
         elements.layerBrowser.classList.remove('hidden');
       }
       
-      if (elements.frameGrid) {
+      if (elements.frameGrid && frames.length > 0) {
         let html = '';
         
         frames.forEach((frame, frameIndex) => {
-          const thumbnailSrc = frame.thumbnail ? 
-            `data:image/png;base64,${btoa(String.fromCharCode(...frame.thumbnail))}` : 
+          const thumbnailSrc = frame.thumbnail && frame.thumbnail.length > 0 ? 
+            `data:image/png;base64,${btoa(String.fromCharCode.apply(null, frame.thumbnail))}` : 
             null;
           
           html += `
@@ -1151,6 +1151,13 @@
         
         // Add event listeners
         addFrameEventListeners();
+      } else if (elements.frameGrid) {
+        elements.frameGrid.innerHTML = `
+          <div style="text-align: center; padding: 40px; color: #b8c7ab;">
+            <p>📄 Keine Frames mit exportierbaren Elementen gefunden</p>
+            <p style="font-size: 12px; opacity: 0.8;">Stelle sicher, dass deine Frames Untergruppen enthalten</p>
+          </div>
+        `;
       }
     }
     
