@@ -136,76 +136,117 @@ figma.ui.onmessage = async (msg) => {
   if (msg.type === 'export-frames') {
     try {
       const framesToExport = msg.frames;
+      const settings = msg.settings || { scale: 2, format: 'PNG', naming: 'frame_lang_date' };
       let exportedCount = 0;
+      let actualFramesToExport = [];
       
       figma.ui.postMessage({
         type: 'progress',
-        message: 'Beginne PNG-Export...'
+        message: 'Bereite Export vor...'
       });
       
-      for (const frameInfo of framesToExport) {
-        try {
-          // Frame anhand des Namens finden
-          const targetFrame = figma.currentPage.findOne(node => 
+      // Frames basierend auf Auswahl bestimmen
+      if (framesToExport === 'selected') {
+        // Aktuell ausgewählte Frames in Figma
+        const selectedNodes = figma.currentPage.selection.filter(node => 
+          node.type === 'FRAME' || node.type === 'COMPONENT'
+        );
+        
+        actualFramesToExport = selectedNodes.map(node => ({
+          frameName: node.name,
+          language: 'exported', // Fallback für manuell ausgewählte
+          nodeId: node.id,
+          node: node
+        }));
+        
+        if (actualFramesToExport.length === 0) {
+          figma.ui.postMessage({
+            type: 'warning',
+            message: 'Keine Frames in Figma ausgewählt. Bitte wähle mindestens einen Frame aus.'
+          });
+          return;
+        }
+      } else {
+        // Frames aus der Liste verwenden
+        for (const frameInfo of framesToExport) {
+          const frameNode = figma.currentPage.findOne(node => 
             node.name === frameInfo.frameName
           );
           
-          if (targetFrame && (targetFrame.type === 'FRAME' || targetFrame.type === 'COMPONENT')) {
-            // PNG-Export konfigurieren
-            const exportSettings = {
-              format: 'PNG',
-              constraint: {
-                type: 'SCALE',
-                value: 2 // 2x für höhere Qualität
-              }
-            };
-            
-            // Frame exportieren
-            const imageData = await targetFrame.exportAsync(exportSettings);
-            
-            // Dateiname generieren: FrameName_Language_Timestamp.png
-            const timestamp = new Date().toISOString().slice(0, 10); // YYYY-MM-DD
-            const sanitizedFrameName = frameInfo.frameName.replace(/[^a-zA-Z0-9]/g, '_');
-            const fileName = `${sanitizedFrameName}_${frameInfo.language}_${timestamp}.png`;
-            
-            // Export über Figma's File API (wird als Download angeboten)
-            figma.showUI(__html__, { visible: false });
-            
-            // Simuliere Export (da direkter Datei-Download nicht über Plugin API möglich ist)
-            // Benutzer muss Frame manuell als PNG exportieren
-            console.log(`Würde exportieren: ${fileName}`);
-            
-            exportedCount++;
-            
-            figma.ui.postMessage({
-              type: 'progress',
-              message: `Exportiert: ${fileName} (${exportedCount}/${framesToExport.length})`
+          if (frameNode && (frameNode.type === 'FRAME' || frameNode.type === 'COMPONENT')) {
+            actualFramesToExport.push({
+              ...frameInfo,
+              node: frameNode
             });
-            
           }
+        }
+      }
+      
+      figma.ui.postMessage({
+        type: 'progress',
+        message: `Beginne PNG-Export von ${actualFramesToExport.length} Frame(s)...`
+      });
+      
+      for (const frameInfo of actualFramesToExport) {
+        try {
+          // PNG-Export konfigurieren
+          const exportSettings = {
+            format: settings.format,
+            constraint: {
+              type: 'SCALE',
+              value: settings.scale
+            }
+          };
+          
+          // Frame exportieren
+          const imageData = await frameInfo.node.exportAsync(exportSettings);
+          
+          // Dateiname basierend auf Naming-Schema generieren
+          const timestamp = new Date().toISOString().slice(0, 10); // YYYY-MM-DD
+          const sanitizedFrameName = frameInfo.frameName.replace(/[^a-zA-Z0-9]/g, '_');
+          const language = frameInfo.language || 'exported';
+          
+          let fileName;
+          switch (settings.naming) {
+            case 'lang_frame_date':
+              fileName = `${language}_${sanitizedFrameName}_${timestamp}.${settings.format.toLowerCase()}`;
+              break;
+            case 'frame_lang':
+              fileName = `${sanitizedFrameName}_${language}.${settings.format.toLowerCase()}`;
+              break;
+            case 'custom':
+              fileName = `${sanitizedFrameName}_${language}_${timestamp}.${settings.format.toLowerCase()}`;
+              break;
+            default: // frame_lang_date
+              fileName = `${sanitizedFrameName}_${language}_${timestamp}.${settings.format.toLowerCase()}`;
+          }
+          
+          // Da direkter Download über Plugin API nicht möglich ist,
+          // bereiten wir die Frames für manuellen Export vor
+          console.log(`Vorbereitet für Export: ${fileName}`);
+          
+          exportedCount++;
+          
+          figma.ui.postMessage({
+            type: 'progress',
+            message: `Vorbereitet: ${fileName} (${exportedCount}/${actualFramesToExport.length})`
+          });
+          
         } catch (exportError) {
           console.warn(`Fehler beim Exportieren von ${frameInfo.frameName}: ${exportError.message}`);
         }
       }
       
+      // Alle exportierten Frames auswählen für manuellen Export
+      const nodesToSelect = actualFramesToExport.map(f => f.node);
+      figma.currentPage.selection = nodesToSelect;
+      figma.viewport.scrollAndZoomIntoView(nodesToSelect);
+      
       figma.ui.postMessage({
         type: 'export-completed',
         count: exportedCount,
-        message: 'Frames wurden zur manuellen PNG-Auswahl vorbereitet. Bitte wähle die Frames aus und exportiere sie über "Export" → "PNG".'
+        message: `${exportedCount} Frame(s) ausgewählt und bereit für Export. Verwende Figma's "Export" Panel (rechts) oder Tastenkombination Ctrl/Cmd+Shift+E zum Exportieren als ${settings.format}.`
       });
-      
-      // Frames für manuellen Export auswählen
-      const framesToSelect = figma.currentPage.children.filter(node => 
-        framesToExport.some(f => f.frameName === node.name)
-      );
-      
-      if (framesToSelect.length > 0) {
-        figma.currentPage.selection = framesToSelect;
-        figma.viewport.scrollAndZoomIntoView(framesToSelect);
-        
-        // Plugin UI wieder anzeigen
-        figma.showUI(__html__, { width: 480, height: 720 });
-      }
       
     } catch (error) {
       figma.ui.postMessage({
