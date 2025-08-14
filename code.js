@@ -1,4 +1,4 @@
-figma.showUI(__html__, { width: 480, height: 720 });
+figma.showUI(__html__, { width: 520, height: 800, themeColors: true });
 
 figma.ui.onmessage = async (msg) => {
   if (msg.type === 'import-translations') {
@@ -154,12 +154,23 @@ figma.ui.onmessage = async (msg) => {
         
         // Eine Ebene tiefer: Kinder der Frames
         for (const frame of selectedNodes) {
-          const children = frame.children.filter(child => 
-            child.type === 'FRAME' || 
-            child.type === 'COMPONENT' || 
-            child.type === 'GROUP' ||
-            child.type === 'INSTANCE'
-          );
+          console.log(`Analysiere Frame: ${frame.name} mit ${frame.children.length} Kindern`);
+          
+          const children = frame.children.filter(child => {
+            console.log(`Kind gefunden: ${child.name} (Type: ${child.type})`);
+            return child.type === 'FRAME' || 
+                   child.type === 'COMPONENT' || 
+                   child.type === 'GROUP' ||
+                   child.type === 'INSTANCE' ||  // ◊ Rauten-Symbol
+                   child.type === 'RECTANGLE' ||
+                   child.type === 'ELLIPSE' ||
+                   child.type === 'POLYGON' ||
+                   child.type === 'STAR' ||
+                   child.type === 'VECTOR' ||
+                   child.type === 'TEXT';
+          });
+          
+          console.log(`Exportierbare Kinder: ${children.length}`);
           
           children.forEach((child, index) => {
             actualNodesToExport.push({
@@ -167,6 +178,7 @@ figma.ui.onmessage = async (msg) => {
               language: 'exported',
               parentFrame: frame.name,
               childIndex: index + 1,
+              childType: child.type,
               node: child
             });
           });
@@ -187,13 +199,24 @@ figma.ui.onmessage = async (msg) => {
           );
           
           if (frameNode && (frameNode.type === 'FRAME' || frameNode.type === 'COMPONENT')) {
+            console.log(`Analysiere Frame: ${frameNode.name} mit ${frameNode.children.length} Kindern`);
+            
             // Kinder des Frames exportieren
-            const children = frameNode.children.filter(child => 
-              child.type === 'FRAME' || 
-              child.type === 'COMPONENT' || 
-              child.type === 'GROUP' ||
-              child.type === 'INSTANCE'
-            );
+            const children = frameNode.children.filter(child => {
+              console.log(`Kind gefunden: ${child.name} (Type: ${child.type})`);
+              return child.type === 'FRAME' || 
+                     child.type === 'COMPONENT' || 
+                     child.type === 'GROUP' ||
+                     child.type === 'INSTANCE' ||  // ◊ Rauten-Symbol
+                     child.type === 'RECTANGLE' ||
+                     child.type === 'ELLIPSE' ||
+                     child.type === 'POLYGON' ||
+                     child.type === 'STAR' ||
+                     child.type === 'VECTOR' ||
+                     child.type === 'TEXT';
+            });
+            
+            console.log(`Exportierbare Kinder: ${children.length}`);
             
             children.forEach((child, index) => {
               actualNodesToExport.push({
@@ -202,6 +225,7 @@ figma.ui.onmessage = async (msg) => {
                 translatedTexts: frameInfo.translatedTexts,
                 parentFrame: frameInfo.frameName,
                 childIndex: index + 1,
+                childType: child.type,
                 nodeId: child.id,
                 node: child
               });
@@ -220,7 +244,13 @@ figma.ui.onmessage = async (msg) => {
       
       figma.ui.postMessage({
         type: 'progress',
-        message: `Gefunden: ${actualNodesToExport.length} Elemente zum Export (${actualNodesToExport.length} Bilder aus Frames)`
+        message: `Gefunden: ${actualNodesToExport.length} Elemente zum Export aus ${framesToExport === 'selected' ? 'ausgewählten' : framesToExport.length} Frame(s)`
+      });
+      
+      // Debug: Zeige was exportiert wird
+      console.log('Zu exportierende Elemente:');
+      actualNodesToExport.forEach((item, index) => {
+        console.log(`${index + 1}. ${item.frameName} (${item.childType || 'unknown'}) - ${item.node.name}`);
       });
       
       // Export-Daten für Download vorbereiten
