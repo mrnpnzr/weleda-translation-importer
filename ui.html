@@ -47,7 +47,7 @@
     .weleda-logo {
       width: 32px;
       height: 32px;
-      fill: white;
+      filter: brightness(0) invert(1); /* Macht das Logo weiß */
     }
     
     .logo-text {
@@ -458,10 +458,256 @@
       animation: exportPulse 0.6s ease-in-out;
     }
     
-    @keyframes exportPulse {
-      0% { transform: scale(1); }
-      50% { transform: scale(1.05); background-color: #7ca877; }
-      100% { transform: scale(1); }
+    /* Export Modal */
+    .export-modal {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0, 0, 0, 0.8);
+      backdrop-filter: blur(4px);
+      z-index: 1000;
+      align-items: center;
+      justify-content: center;
+      animation: fadeIn 0.3s ease-out;
+    }
+    
+    .export-modal.show {
+      display: flex;
+    }
+    
+    .export-modal-content {
+      background: #0b4535;
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      border-radius: 12px;
+      padding: 24px;
+      width: 90%;
+      max-width: 500px;
+      max-height: 80vh;
+      overflow-y: auto;
+      color: white;
+    }
+    
+    .export-modal-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+      padding-bottom: 16px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    }
+    
+    .export-modal-title {
+      font-size: 18px;
+      font-weight: 700;
+      color: white;
+      margin: 0;
+    }
+    
+    .export-close-btn {
+      background: none;
+      border: none;
+      color: rgba(255, 255, 255, 0.6);
+      font-size: 20px;
+      cursor: pointer;
+      padding: 8px;
+      border-radius: 4px;
+      transition: all 0.2s ease;
+    }
+    
+    .export-close-btn:hover {
+      color: white;
+      background-color: rgba(255, 255, 255, 0.1);
+    }
+    
+    .export-options {
+      margin-bottom: 20px;
+    }
+    
+    .export-option {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 12px;
+      margin-bottom: 8px;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 8px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+    
+    .export-option:hover {
+      background: rgba(255, 255, 255, 0.05);
+      border-color: #8ab885;
+    }
+    
+    .export-option.selected {
+      background: rgba(138, 184, 133, 0.15);
+      border-color: #8ab885;
+    }
+    
+    .export-option input[type="radio"] {
+      accent-color: #8ab885;
+    }
+    
+    .export-option-label {
+      flex: 1;
+    }
+    
+    .export-option-title {
+      font-weight: 600;
+      color: white;
+      margin-bottom: 2px;
+    }
+    
+    .export-option-desc {
+      font-size: 12px;
+      color: #b8c7ab;
+    }
+    
+    .export-frames-list {
+      margin: 16px 0;
+      max-height: 200px;
+      overflow-y: auto;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 8px;
+      padding: 12px;
+      background: rgba(0, 0, 0, 0.2);
+    }
+    
+    .export-frame-item {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px;
+      margin-bottom: 6px;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+    
+    .export-frame-item:hover {
+      background: rgba(255, 255, 255, 0.05);
+    }
+    
+    .export-frame-item input[type="checkbox"] {
+      accent-color: #8ab885;
+    }
+    
+    .export-frame-name {
+      font-weight: 500;
+      color: white;
+      flex: 1;
+    }
+    
+    .export-frame-lang {
+      font-size: 11px;
+      color: #8ab885;
+      background: rgba(138, 184, 133, 0.2);
+      padding: 2px 6px;
+      border-radius: 3px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+    
+    .export-settings {
+      background: rgba(255, 255, 255, 0.05);
+      border-radius: 8px;
+      padding: 16px;
+      margin-bottom: 20px;
+    }
+    
+    .export-settings-title {
+      font-weight: 600;
+      color: white;
+      margin-bottom: 12px;
+      font-size: 14px;
+    }
+    
+    .export-setting-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 12px;
+    }
+    
+    .export-setting-label {
+      font-size: 13px;
+      color: #b8c7ab;
+    }
+    
+    .export-select {
+      background: rgba(255, 255, 255, 0.1);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      border-radius: 6px;
+      color: white;
+      padding: 6px 12px;
+      font-size: 12px;
+      min-width: 80px;
+    }
+    
+    .export-select:focus {
+      outline: none;
+      border-color: #8ab885;
+      box-shadow: 0 0 0 2px rgba(138, 184, 133, 0.2);
+    }
+    
+    .export-actions {
+      display: flex;
+      gap: 12px;
+      padding-top: 16px;
+      border-top: 1px solid rgba(255, 255, 255, 0.1);
+    }
+    
+    .btn-export-confirm {
+      flex: 1;
+      background: #8ab885;
+      color: #083025;
+      border: 2px solid #8ab885;
+      padding: 12px 20px;
+      border-radius: 8px;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+    
+    .btn-export-confirm:hover:not(:disabled) {
+      background: #7ca877;
+      border-color: #7ca877;
+      transform: translateY(-1px);
+      box-shadow: 0 4px 8px rgba(138, 184, 133, 0.3);
+    }
+    
+    .btn-export-confirm:disabled {
+      background: rgba(255, 255, 255, 0.2);
+      color: rgba(255, 255, 255, 0.5);
+      border-color: rgba(255, 255, 255, 0.2);
+      cursor: not-allowed;
+    }
+    
+    .btn-export-cancel {
+      background: transparent;
+      color: #b8c7ab;
+      border: 2px solid rgba(184, 199, 171, 0.3);
+      padding: 12px 20px;
+      border-radius: 8px;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+    
+    .btn-export-cancel:hover {
+      background: rgba(184, 199, 171, 0.1);
+      border-color: #b8c7ab;
+      color: white;
     }
   </style>
 </head>
@@ -469,21 +715,8 @@
   <div class="container">
     <div class="header">
       <div class="logo-section">
-        <!-- Echtes Weleda Logo (vereinfacht) -->
-        <svg class="weleda-logo" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
-          <defs>
-            <style>
-              .weleda-leaf { fill: white; }
-              .weleda-circle { fill: none; stroke: white; stroke-width: 2; }
-            </style>
-          </defs>
-          <!-- Weleda-inspiriertes Design -->
-          <circle cx="50" cy="50" r="45" class="weleda-circle"/>
-          <path d="M30 35 Q35 25 50 30 Q65 25 70 35 Q65 45 50 40 Q35 45 30 35" class="weleda-leaf"/>
-          <path d="M30 65 Q35 55 50 60 Q65 55 70 65 Q65 75 50 70 Q35 75 30 65" class="weleda-leaf"/>
-          <circle cx="50" cy="50" r="3" fill="white"/>
-          <text x="50" y="88" text-anchor="middle" font-size="8" fill="white" font-family="serif">WELEDA</text>
-        </svg>
+        <!-- Echtes Weleda Logo aus logo.svg -->
+        <img src="logo.svg" alt="Weleda Logo" class="weleda-logo" />
         <div class="logo-text">
           <h1 class="main-title">Translation Importer</h1>
           <div class="subtitle">FIGMA PLUGIN</div>
@@ -540,6 +773,86 @@
       <div id="messageDiv"></div>
     </div>
     
+    <!-- Export Modal -->
+    <div id="exportModal" class="export-modal">
+      <div class="export-modal-content">
+        <div class="export-modal-header">
+          <h2 class="export-modal-title">📤 PNG Export</h2>
+          <button class="export-close-btn" id="exportCloseBtn">✕</button>
+        </div>
+        
+        <div class="export-options">
+          <div class="export-option selected" data-option="all">
+            <input type="radio" name="exportOption" value="all" checked>
+            <div class="export-option-label">
+              <div class="export-option-title">Alle importierten Frames</div>
+              <div class="export-option-desc">Exportiert alle erfolgreich importierten und übersetzten Frames</div>
+            </div>
+          </div>
+          
+          <div class="export-option" data-option="selected">
+            <input type="radio" name="exportOption" value="selected">
+            <div class="export-option-label">
+              <div class="export-option-title">Aktuell ausgewählte Frames</div>
+              <div class="export-option-desc">Exportiert nur die momentan in Figma ausgewählten Frames</div>
+            </div>
+          </div>
+          
+          <div class="export-option" data-option="custom">
+            <input type="radio" name="exportOption" value="custom">
+            <div class="export-option-label">
+              <div class="export-option-title">Manuell auswählen</div>
+              <div class="export-option-desc">Wähle einzelne Frames aus der Liste unten aus</div>
+            </div>
+          </div>
+        </div>
+        
+        <div id="exportFramesList" class="export-frames-list" style="display: none;">
+          <!-- Frames werden hier dynamisch eingefügt -->
+        </div>
+        
+        <div class="export-settings">
+          <div class="export-settings-title">Export-Einstellungen</div>
+          
+          <div class="export-setting-row">
+            <span class="export-setting-label">Qualität (Skalierung):</span>
+            <select id="exportScale" class="export-select">
+              <option value="1">1x (Standard)</option>
+              <option value="2" selected>2x (Hoch)</option>
+              <option value="3">3x (Sehr hoch)</option>
+              <option value="4">4x (Ultra)</option>
+            </select>
+          </div>
+          
+          <div class="export-setting-row">
+            <span class="export-setting-label">Dateiformat:</span>
+            <select id="exportFormat" class="export-select">
+              <option value="PNG" selected>PNG</option>
+              <option value="JPG">JPG</option>
+              <option value="SVG">SVG</option>
+            </select>
+          </div>
+          
+          <div class="export-setting-row">
+            <span class="export-setting-label">Dateinamen-Format:</span>
+            <select id="exportNaming" class="export-select">
+              <option value="frame_lang_date" selected>Frame_Sprache_Datum</option>
+              <option value="lang_frame_date">Sprache_Frame_Datum</option>
+              <option value="frame_lang">Frame_Sprache</option>
+              <option value="custom">Benutzerdefiniert</option>
+            </select>
+          </div>
+        </div>
+        
+        <div class="export-actions">
+          <button id="exportCancelBtn" class="btn-export-cancel">Abbrechen</button>
+          <button id="exportConfirmBtn" class="btn-export-confirm">
+            <span id="exportConfirmText">Export starten</span>
+          </button>
+        </div>
+      </div>
+    </div>
+    
     <div class="footer">
       Made with <span class="heart">♥</span> by Marian
     </div>
@@ -558,10 +871,21 @@
     const currentStep = document.getElementById('currentStep');
     const framesGrid = document.getElementById('framesGrid');
     
+    // Export Modal Elemente
+    const exportModal = document.getElementById('exportModal');
+    const exportCloseBtn = document.getElementById('exportCloseBtn');
+    const exportCancelBtn = document.getElementById('exportCancelBtn');
+    const exportConfirmBtn = document.getElementById('exportConfirmBtn');
+    const exportFramesList = document.getElementById('exportFramesList');
+    const exportScale = document.getElementById('exportScale');
+    const exportFormat = document.getElementById('exportFormat');
+    const exportNaming = document.getElementById('exportNaming');
+    
     let csvData = null;
     let importedFrames = [];
     let totalFrames = 0;
     let completedFrames = 0;
+    let selectedExportFrames = [];
     
     function checkFormValidity() {
       const hasFile = csvData !== null;
@@ -651,21 +975,114 @@
     
     exportBtn.addEventListener('click', () => {
       if (importedFrames.length > 0) {
-        exportBtn.classList.add('export-animation');
-        exportBtn.innerHTML = '<span>⏳</span>Exportiere...';
-        
-        parent.postMessage({
-          pluginMessage: {
-            type: 'export-frames',
-            frames: importedFrames
-          }
-        }, '*');
-        
-        setTimeout(() => {
-          exportBtn.classList.remove('export-animation');
-        }, 600);
+        exportModal.classList.add('show');
+        populateExportFramesList();
       }
     });
+    
+    // Export Modal Event Listeners
+    exportCloseBtn.addEventListener('click', () => {
+      exportModal.classList.remove('show');
+    });
+    
+    exportCancelBtn.addEventListener('click', () => {
+      exportModal.classList.remove('show');
+    });
+    
+    // Export Option Selection
+    document.querySelectorAll('.export-option').forEach(option => {
+      option.addEventListener('click', () => {
+        document.querySelectorAll('.export-option').forEach(o => o.classList.remove('selected'));
+        option.classList.add('selected');
+        option.querySelector('input[type="radio"]').checked = true;
+        
+        const optionValue = option.dataset.option;
+        if (optionValue === 'custom') {
+          exportFramesList.style.display = 'block';
+        } else {
+          exportFramesList.style.display = 'none';
+        }
+        
+        updateExportButton();
+      });
+    });
+    
+    exportConfirmBtn.addEventListener('click', () => {
+      const selectedOption = document.querySelector('input[name="exportOption"]:checked').value;
+      const scale = parseInt(exportScale.value);
+      const format = exportFormat.value;
+      const naming = exportNaming.value;
+      
+      let framesToExport = [];
+      
+      if (selectedOption === 'all') {
+        framesToExport = importedFrames;
+      } else if (selectedOption === 'selected') {
+        // Plugin wird aktuell ausgewählte Frames aus Figma holen
+        framesToExport = 'selected';
+      } else if (selectedOption === 'custom') {
+        framesToExport = selectedExportFrames;
+      }
+      
+      exportModal.classList.remove('show');
+      
+      parent.postMessage({
+        pluginMessage: {
+          type: 'export-frames',
+          frames: framesToExport,
+          settings: {
+            scale: scale,
+            format: format,
+            naming: naming
+          }
+        }
+      }, '*');
+    });
+    
+    function populateExportFramesList() {
+      exportFramesList.innerHTML = '';
+      selectedExportFrames = [...importedFrames]; // Standardmäßig alle auswählen
+      
+      importedFrames.forEach((frame, index) => {
+        const frameItem = document.createElement('div');
+        frameItem.className = 'export-frame-item';
+        frameItem.innerHTML = `
+          <input type="checkbox" id="frame-${index}" checked>
+          <label for="frame-${index}" class="export-frame-name">${frame.frameName}</label>
+          <span class="export-frame-lang">${frame.language}</span>
+        `;
+        
+        const checkbox = frameItem.querySelector('input[type="checkbox"]');
+        checkbox.addEventListener('change', () => {
+          if (checkbox.checked) {
+            if (!selectedExportFrames.find(f => f.frameName === frame.frameName)) {
+              selectedExportFrames.push(frame);
+            }
+          } else {
+            selectedExportFrames = selectedExportFrames.filter(f => f.frameName !== frame.frameName);
+          }
+          updateExportButton();
+        });
+        
+        exportFramesList.appendChild(frameItem);
+      });
+    }
+    
+    function updateExportButton() {
+      const selectedOption = document.querySelector('input[name="exportOption"]:checked').value;
+      const confirmText = document.getElementById('exportConfirmText');
+      
+      if (selectedOption === 'all') {
+        confirmText.textContent = `${importedFrames.length} Frames exportieren`;
+        exportConfirmBtn.disabled = importedFrames.length === 0;
+      } else if (selectedOption === 'selected') {
+        confirmText.textContent = 'Ausgewählte exportieren';
+        exportConfirmBtn.disabled = false;
+      } else if (selectedOption === 'custom') {
+        confirmText.textContent = `${selectedExportFrames.length} Frames exportieren`;
+        exportConfirmBtn.disabled = selectedExportFrames.length === 0;
+      }
+    }
     
     getIdsBtn.addEventListener('click', () => {
       parent.postMessage({
