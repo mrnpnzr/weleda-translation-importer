@@ -716,9 +716,190 @@
       color: #34c759;
     }
     
-    .auto-item-badge.pattern-768x1344 {
-      background: rgba(255,149,0,0.2);
-      color: #ff9500;
+    .export-progress {
+      background: rgba(139,184,133,0.1);
+      border: 1px solid rgba(139,184,133,0.3);
+      border-radius: 8px;
+      padding: 16px;
+      margin: 12px 0;
+      display: none;
+    }
+    
+    .export-progress.active {
+      display: block;
+    }
+    
+    .progress-header {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 12px;
+    }
+    
+    .progress-spinner {
+      width: 20px;
+      height: 20px;
+      border: 2px solid rgba(139,184,133,0.3);
+      border-top: 2px solid #8ab885;
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+    }
+    
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+    
+    .progress-title {
+      font-size: 14px;
+      font-weight: 600;
+      color: #8ab885;
+      margin: 0;
+    }
+    
+    .progress-bar-container {
+      background: rgba(0,0,0,0.2);
+      border-radius: 8px;
+      height: 8px;
+      overflow: hidden;
+      margin-bottom: 8px;
+    }
+    
+    .progress-bar-fill {
+      height: 100%;
+      background: linear-gradient(90deg, #8ab885, #a0c896);
+      border-radius: 8px;
+      transition: width 0.3s ease;
+      position: relative;
+    }
+    
+    .progress-bar-fill::after {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      bottom: 0;
+      right: 0;
+      background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+      animation: shimmer 1.5s infinite;
+    }
+    
+    @keyframes shimmer {
+      0% { transform: translateX(-100%); }
+      100% { transform: translateX(100%); }
+    }
+    
+    .progress-details {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 12px;
+      color: #b8c7ab;
+    }
+    
+    .progress-current {
+      font-weight: 500;
+    }
+    
+    .progress-percentage {
+      font-weight: 600;
+      color: #8ab885;
+    }
+    
+    .export-results {
+      background: rgba(52,199,89,0.15);
+      border: 1px solid rgba(52,199,89,0.3);
+      border-radius: 8px;
+      padding: 16px;
+      margin: 12px 0;
+      display: none;
+    }
+    
+    .export-results.active {
+      display: block;
+    }
+    
+    .results-header {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 12px;
+    }
+    
+    .results-icon {
+      width: 24px;
+      height: 24px;
+      background: rgba(52,199,89,0.2);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 14px;
+      color: #34c759;
+    }
+    
+    .results-title {
+      font-size: 14px;
+      font-weight: 600;
+      color: #34c759;
+      margin: 0;
+    }
+    
+    .results-summary {
+      font-size: 12px;
+      color: #b8c7ab;
+      margin-bottom: 12px;
+    }
+    
+    .results-files {
+      max-height: 120px;
+      overflow-y: auto;
+      background: rgba(0,0,0,0.1);
+      border-radius: 6px;
+      margin-bottom: 12px;
+    }
+    
+    .result-file {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 12px;
+      border-bottom: 1px solid rgba(255,255,255,0.05);
+      font-size: 11px;
+    }
+    
+    .result-file:last-child {
+      border-bottom: none;
+    }
+    
+    .result-file-icon {
+      color: #34c759;
+      font-size: 12px;
+    }
+    
+    .result-file-name {
+      flex: 1;
+      color: #ffffff;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    
+    .result-file-size {
+      color: #b8c7ab;
+      font-size: 10px;
+    }
+    
+    .download-all-btn {
+      background: rgba(52,199,89,0.2);
+      border: 1px solid rgba(52,199,89,0.4);
+      color: #34c759;
+      width: 100%;
+    }
+    
+    .download-all-btn:hover {
+      background: rgba(52,199,89,0.3);
+      border-color: rgba(52,199,89,0.6);
     }
     
     .export-settings {
@@ -1043,6 +1224,36 @@
               <button class="btn" id="autoExportBtn" disabled style="width: 100%; margin-bottom: 12px;">
                 🤖 0 Elemente automatisch exportieren
               </button>
+              
+              <div class="export-progress" id="exportProgress">
+                <div class="progress-header">
+                  <div class="progress-spinner"></div>
+                  <h4 class="progress-title" id="progressTitle">Exportiere Elemente...</h4>
+                </div>
+                <div class="progress-bar-container">
+                  <div class="progress-bar-fill" id="progressBarFill" style="width: 0%"></div>
+                </div>
+                <div class="progress-details">
+                  <span class="progress-current" id="progressCurrent">Bereite Export vor...</span>
+                  <span class="progress-percentage" id="progressPercentage">0%</span>
+                </div>
+              </div>
+              
+              <div class="export-results" id="exportResults">
+                <div class="results-header">
+                  <div class="results-icon">✓</div>
+                  <h4 class="results-title">Export erfolgreich!</h4>
+                </div>
+                <div class="results-summary" id="resultsSummary">
+                  5 Dateien wurden exportiert und stehen zum Download bereit.
+                </div>
+                <div class="results-files" id="resultsFiles">
+                  <!-- Export results will be inserted here -->
+                </div>
+                <button class="btn download-all-btn" id="downloadAllBtn">
+                  💾 Alle Dateien herunterladen
+                </button>
+              </div>
             </div>
             
             <button class="btn" id="loadLayersBtn">
@@ -1125,7 +1336,16 @@
       autoExportBtn: document.getElementById('autoExportBtn'),
       autoExportItems: document.getElementById('autoExportItems'),
       autoCount1zu1: document.getElementById('autoCount1zu1'),
-      autoCount768: document.getElementById('autoCount768')
+      autoCount768: document.getElementById('autoCount768'),
+      exportProgress: document.getElementById('exportProgress'),
+      progressTitle: document.getElementById('progressTitle'),
+      progressBarFill: document.getElementById('progressBarFill'),
+      progressCurrent: document.getElementById('progressCurrent'),
+      progressPercentage: document.getElementById('progressPercentage'),
+      exportResults: document.getElementById('exportResults'),
+      resultsSummary: document.getElementById('resultsSummary'),
+      resultsFiles: document.getElementById('resultsFiles'),
+      downloadAllBtn: document.getElementById('downloadAllBtn')
     };
     
     // Accordion functionality
@@ -1413,6 +1633,7 @@
       switch (msg.type) {
         case 'progress':
           updateProgress(msg.message, msg.progress);
+          updateExportProgress(msg.message, msg.progress);
           break;
           
         case 'success':
@@ -1443,32 +1664,12 @@
           break;
           
         case 'download-ready':
-          if (elements.downloadDirectBtn) {
-            elements.downloadDirectBtn.disabled = false;
-            elements.downloadDirectBtn.textContent = '💾 Direkt herunterladen';
-          }
-          
-          if (elements.autoExportBtn) {
-            elements.autoExportBtn.disabled = false;
-            elements.autoExportBtn.textContent = `🤖 ${autoExportItems.length} Elemente automatisch exportieren`;
-          }
-          
-          const message = msg.autoExport ? 
-            `✅ Auto-Export abgeschlossen: ${msg.count} Datei(en) bereit!` :
-            `✅ ${msg.count} Datei(en) zum Download bereit!`;
-          
-          showMessage(message, 'success');
-          
-          // Start automatic downloads
-          if (msg.exports && msg.exports.length > 0) {
-            downloadFiles(msg.exports);
-          }
+          showExportResults(msg.exports, msg.count);
+          window.lastExportData = msg.exports; // Store for download
           break;
           
         case 'download-progress':
-          if (elements.downloadDirectBtn) {
-            elements.downloadDirectBtn.textContent = `⏳ ${msg.current}/${msg.total} - ${msg.itemName}`;
-          }
+          updateExportProgress(msg.itemName, Math.round((msg.current / msg.total) * 100));
           break;
       }
     });
@@ -1930,8 +2131,86 @@
       }
     }
     
-    // Initialize quick actions
-    initQuickActions();
+    function startExportProgress() {
+      // Hide results, show progress
+      if (elements.exportResults) {
+        elements.exportResults.classList.remove('active');
+      }
+      
+      if (elements.exportProgress) {
+        elements.exportProgress.classList.add('active');
+      }
+      
+      // Disable button and update text
+      if (elements.autoExportBtn) {
+        elements.autoExportBtn.disabled = true;
+        elements.autoExportBtn.textContent = '⏳ Exportiere...';
+      }
+      
+      // Reset progress
+      updateExportProgress('Bereite Export vor...', 0);
+    }
+    
+    function updateExportProgress(message, progress) {
+      if (elements.progressCurrent) {
+        elements.progressCurrent.textContent = message;
+      }
+      
+      if (elements.progressPercentage) {
+        elements.progressPercentage.textContent = Math.round(progress) + '%';
+      }
+      
+      if (elements.progressBarFill) {
+        elements.progressBarFill.style.width = Math.round(progress) + '%';
+      }
+    }
+    
+    function showExportResults(exports, count) {
+      // Hide progress, show results
+      if (elements.exportProgress) {
+        elements.exportProgress.classList.remove('active');
+      }
+      
+      if (elements.exportResults) {
+        elements.exportResults.classList.add('active');
+      }
+      
+      // Reset button
+      if (elements.autoExportBtn) {
+        elements.autoExportBtn.disabled = false;
+        elements.autoExportBtn.textContent = `🤖 ${autoExportItems.length} Elemente automatisch exportieren`;
+      }
+      
+      // Update summary
+      if (elements.resultsSummary) {
+        elements.resultsSummary.textContent = `${count} Datei${count !== 1 ? 'en' : ''} wurden exportiert und stehen zum Download bereit.`;
+      }
+      
+      // Show file list
+      if (elements.resultsFiles && exports) {
+        let html = '';
+        exports.forEach(exp => {
+          const sizeKB = Math.round(exp.bytes.length / 1024);
+          html += `
+            <div class="result-file">
+              <span class="result-file-icon">📄</span>
+              <span class="result-file-name">${exp.name}</span>
+              <span class="result-file-size">${sizeKB}KB</span>
+            </div>
+          `;
+        });
+        elements.resultsFiles.innerHTML = html;
+      }
+      
+      // Enable download button
+      if (elements.downloadAllBtn) {
+        elements.downloadAllBtn.disabled = false;
+        elements.downloadAllBtn.textContent = '💾 Alle Dateien herunterladen';
+      }
+      
+      // Show success message
+      showMessage(`✅ Auto-Export abgeschlossen: ${count} Datei(en) bereit!`, 'success');
+    }
   </script>
 </body>
 </html>
