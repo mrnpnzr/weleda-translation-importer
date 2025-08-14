@@ -1,0 +1,12 @@
+{
+  "name": "Weleda Translation Importer",
+  "id": "weleda-translation-importer",
+  "api": "1.0.0",
+  "main": "code.js",
+  "ui": "ui.html",
+  "capabilities": [],
+  "enableProposedApi": false,
+  "enablePrivatePluginApi": false,
+  "build": "",
+  "permissions": ["currentuser"]
+}
