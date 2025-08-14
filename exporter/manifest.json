@@ -1,0 +1,15 @@
+{
+  "name": "WELEDA | Layer Export",
+  "id": "weleda-layer-export",
+  "api": "1.0.0",
+  "main": "code.js",
+  "ui": "ui.html",
+  "capabilities": [],
+  "enableProposedApi": false,
+  "enablePrivatePluginApi": false,
+  "editorType": ["figma"],
+  "networkAccess": {
+    "allowedDomains": ["none"]
+  },
+  "permissions": ["currentuser"]
+}
