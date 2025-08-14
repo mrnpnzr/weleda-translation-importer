@@ -149,71 +149,90 @@ function handleDirectDownload(selectedItems, settings) {
     
     var exportedItems = [];
     var exportIndex = 0;
+    var maxConcurrentExports = 3; // Limit concurrent exports
+    var activeExports = 0;
     
     function exportNextItem() {
-      if (exportIndex >= selectedItems.length) {
+      // Check if we've exported all items
+      if (exportIndex >= selectedItems.length && activeExports === 0) {
         // All items exported, send results
         figma.ui.postMessage({
           type: 'download-ready',
           count: exportedItems.length,
           exports: exportedItems
         });
-        return;
-      }
-      
-      var item = selectedItems[exportIndex];
-      
-      figma.ui.postMessage({
-        type: 'download-progress',
-        current: exportIndex + 1,
-        total: selectedItems.length,
-        itemName: item.frameName + ' > ' + item.elementName
-      });
-      
-      var node = figma.getNodeById(item.elementId);
-      if (!node) {
-        console.log('Element nicht gefunden: ' + item.elementName);
-        exportIndex++;
-        exportNextItem();
-        return;
-      }
-      
-      // Double-check if element is still exportable (visibility/lock could have changed)
-      if (!canBeExported(node)) {
-        console.log('Element übersprungen (nicht mehr exportierbar): ' + item.elementName);
-        exportIndex++;
-        exportNextItem();
-        return;
-      }
-      
-      var exportSettings = {
-        format: settings.format || 'PNG',
-        constraint: {
-          type: 'SCALE',
-          value: settings.scale || 2
-        }
-      };
-      
-      node.exportAsync(exportSettings).then(function(bytes) {
-        var filename = generateFilename(item, settings);
         
-        exportedItems.push({
-          name: filename,
-          bytes: Array.from(bytes),
-          frameName: item.frameName,
-          elementName: item.elementName,
-          width: item.width,
-          height: item.height
+        // Clear arrays to free memory
+        selectedItems.length = 0;
+        exportedItems.length = 0;
+        return;
+      }
+      
+      // Start new exports if we have capacity and items remaining
+      while (activeExports < maxConcurrentExports && exportIndex < selectedItems.length) {
+        var item = selectedItems[exportIndex];
+        
+        figma.ui.postMessage({
+          type: 'download-progress',
+          current: exportIndex + 1,
+          total: selectedItems.length,
+          itemName: item.frameName + ' > ' + item.elementName
         });
         
-        console.log('✅ Exportiert: ' + filename);
+        var node = figma.getNodeById(item.elementId);
+        if (!node) {
+          console.log('Element nicht gefunden: ' + item.elementName);
+          exportIndex++;
+          continue;
+        }
+        
+        // Double-check if element is still exportable
+        if (!canBeExported(node)) {
+          console.log('Element übersprungen (nicht mehr exportierbar): ' + item.elementName);
+          exportIndex++;
+          continue;
+        }
+        
+        var exportSettings = {
+          format: settings.format || 'PNG',
+          constraint: {
+            type: 'SCALE',
+            value: settings.scale || 2
+          }
+        };
+        
+        activeExports++;
         exportIndex++;
-        exportNextItem();
-      }).catch(function(error) {
-        console.error('Export fehlgeschlagen für ' + item.elementName + ':', error);
-        exportIndex++;
-        exportNextItem();
-      });
+        
+        // Use IIFE to capture current item
+        (function(currentItem) {
+          node.exportAsync(exportSettings).then(function(bytes) {
+            var filename = generateFilename(currentItem, settings);
+            
+            exportedItems.push({
+              name: filename,
+              bytes: Array.from(bytes),
+              frameName: currentItem.frameName,
+              elementName: currentItem.elementName,
+              width: currentItem.width,
+              height: currentItem.height
+            });
+            
+            console.log('✅ Exportiert: ' + filename);
+            activeExports--;
+            
+            // Clear bytes to free memory
+            bytes = null;
+            
+            // Continue with next items
+            setTimeout(exportNextItem, 10);
+          }).catch(function(error) {
+            console.error('Export fehlgeschlagen für ' + currentItem.elementName + ':', error);
+            activeExports--;
+            setTimeout(exportNextItem, 10);
+          });
+        })(item);
+      }
     }
     
     // Start exporting
@@ -289,87 +308,116 @@ function handleAutoExport() {
       progress: 5
     });
     
-    // Start exporting
+    // Start exporting with improved memory management
     var exportedItems = [];
     var exportIndex = 0;
+    var maxConcurrentExports = 3; // Limit concurrent exports to prevent memory issues
+    var activeExports = 0;
     
     function exportNextAutoItem() {
-      if (exportIndex >= autoExportItems.length) {
+      // Check if we've exported all items
+      if (exportIndex >= autoExportItems.length && activeExports === 0) {
         // All items exported, send results
         console.log('Auto-Export abgeschlossen: ' + exportedItems.length + ' Dateien');
+        
+        // Send results in smaller chunks to prevent memory issues
+        var chunkSize = 10;
+        var chunks = [];
+        for (var i = 0; i < exportedItems.length; i += chunkSize) {
+          chunks.push(exportedItems.slice(i, i + chunkSize));
+        }
+        
         figma.ui.postMessage({
           type: 'download-ready',
           count: exportedItems.length,
-          exports: exportedItems,
-          autoExport: true
+          exports: chunks[0] || [], // Send first chunk
+          autoExport: true,
+          totalChunks: chunks.length,
+          currentChunk: 0
         });
+        
+        // Clear large arrays to free memory
+        autoExportItems.length = 0;
+        exportedItems.length = 0;
         return;
       }
       
-      var item = autoExportItems[exportIndex];
-      var progress = Math.round(10 + (exportIndex / autoExportItems.length) * 80);
-      
-      console.log('Exportiere Item ' + (exportIndex + 1) + '/' + autoExportItems.length + ': ' + item.elementName);
-      
-      figma.ui.postMessage({
-        type: 'download-progress',
-        current: exportIndex + 1,
-        total: autoExportItems.length,
-        itemName: item.frameName + ' > ' + item.elementName,
-        progress: progress
-      });
-      
-      var node = figma.getNodeById(item.elementId);
-      if (!node) {
-        console.log('Element nicht gefunden: ' + item.elementName);
-        exportIndex++;
-        exportNextAutoItem();
-        return;
-      }
-      
-      // Double-check if element is still exportable
-      if (!canBeExported(node)) {
-        console.log('Element übersprungen (nicht mehr exportierbar): ' + item.elementName);
-        exportIndex++;
-        exportNextAutoItem();
-        return;
-      }
-      
-      var exportSettings = {
-        format: item.format,
-        constraint: {
-          type: 'SCALE',
-          value: item.scale
+      // Start new exports if we have capacity and items remaining
+      while (activeExports < maxConcurrentExports && exportIndex < autoExportItems.length) {
+        var item = autoExportItems[exportIndex];
+        var progress = Math.round(10 + (exportIndex / autoExportItems.length) * 80);
+        
+        console.log('Exportiere Item ' + (exportIndex + 1) + '/' + autoExportItems.length + ': ' + item.elementName);
+        
+        figma.ui.postMessage({
+          type: 'download-progress',
+          current: exportIndex + 1,
+          total: autoExportItems.length,
+          itemName: item.frameName + ' > ' + item.elementName,
+          progress: progress
+        });
+        
+        var node = figma.getNodeById(item.elementId);
+        if (!node) {
+          console.log('Element nicht gefunden: ' + item.elementName);
+          exportIndex++;
+          continue;
         }
-      };
-      
-      console.log('Exportiere mit Settings:', exportSettings);
-      
-      node.exportAsync(exportSettings).then(function(bytes) {
-        var timestamp = new Date().toISOString().split('T')[0];
-        var safeName = item.elementName.replace(/[^a-zA-Z0-9]/g, '_');
-        var filename = safeName + '_' + item.scale + 'x_' + timestamp + '.' + item.format.toLowerCase();
         
-        exportedItems.push({
-          name: filename,
-          bytes: Array.from(bytes),
-          frameName: item.frameName,
-          elementName: item.elementName,
-          width: item.width,
-          height: item.height,
-          pattern: item.pattern,
+        // Double-check if element is still exportable
+        if (!canBeExported(node)) {
+          console.log('Element übersprungen (nicht mehr exportierbar): ' + item.elementName);
+          exportIndex++;
+          continue;
+        }
+        
+        var exportSettings = {
           format: item.format,
-          scale: item.scale
-        });
+          constraint: {
+            type: 'SCALE',
+            value: item.scale
+          }
+        };
         
-        console.log('✅ Auto-Export: ' + filename + ' (' + item.pattern + ')');
+        console.log('Exportiere mit Settings:', exportSettings);
+        
+        activeExports++;
         exportIndex++;
-        exportNextAutoItem();
-      }).catch(function(error) {
-        console.error('Auto-Export fehlgeschlagen für ' + item.elementName + ':', error);
-        exportIndex++;
-        exportNextAutoItem();
-      });
+        
+        // Use IIFE to capture current item
+        (function(currentItem, currentIndex) {
+          node.exportAsync(exportSettings).then(function(bytes) {
+            var timestamp = new Date().toISOString().split('T')[0];
+            var safeName = currentItem.elementName.replace(/[^a-zA-Z0-9]/g, '_');
+            var filename = safeName + '_' + currentItem.scale + 'x_' + timestamp + '.' + currentItem.format.toLowerCase();
+            
+            exportedItems.push({
+              name: filename,
+              bytes: Array.from(bytes),
+              frameName: currentItem.frameName,
+              elementName: currentItem.elementName,
+              width: currentItem.width,
+              height: currentItem.height,
+              pattern: currentItem.pattern,
+              format: currentItem.format,
+              scale: currentItem.scale
+            });
+            
+            console.log('✅ Auto-Export: ' + filename + ' (' + currentItem.pattern + ')');
+            activeExports--;
+            
+            // Clear the bytes array to free memory
+            bytes = null;
+            
+            // Continue with next items
+            setTimeout(exportNextAutoItem, 10); // Small delay to prevent stack overflow
+          }).catch(function(error) {
+            console.error('Auto-Export fehlgeschlagen für ' + currentItem.elementName + ':', error);
+            activeExports--;
+            setTimeout(exportNextAutoItem, 10);
+          });
+        })(item, exportIndex - 1);
+      }
     }
     
     // Start auto-exporting
