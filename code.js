@@ -1,11 +1,18 @@
+// Plugin als großes, andockbares Panel
 figma.showUI(__html__, { 
-  width: 360, 
-  height: 600, 
+  width: 400, 
+  height: 700,
   themeColors: true,
-  title: "Weleda Transcreate Workspace"
+  title: "🌿 Weleda Transcreate Workspace"
 });
 
+// Plugin-Verhalten optimieren
 figma.ui.onmessage = async (msg) => {
+  // Plugin soll NICHT automatisch schließen
+  if (msg.type === 'keep-alive') {
+    // Plugin offen halten
+    return;
+  }
   if (msg.type === 'import-translations') {
     try {
       const csvData = msg.csvData;
