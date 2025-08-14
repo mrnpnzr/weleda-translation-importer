@@ -1,4 +1,9 @@
-figma.showUI(__html__, { width: 520, height: 800, themeColors: true });
+figma.showUI(__html__, { 
+  width: 360, 
+  height: 600, 
+  themeColors: true,
+  title: "Weleda Transcreate Workspace"
+});
 
 figma.ui.onmessage = async (msg) => {
   if (msg.type === 'import-translations') {
