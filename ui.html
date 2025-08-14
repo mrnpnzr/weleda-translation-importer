@@ -497,26 +497,220 @@
       border-color: rgba(139,184,133,0.5);
     }
     
-    .selection-summary {
-      background: rgba(139,184,133,0.1);
-      border: 1px solid rgba(139,184,133,0.3);
+    .child-item.hidden {
+      opacity: 0.5;
+      background: rgba(255,255,255,0.02);
+    }
+    
+    .child-item.locked {
+      opacity: 0.6;
+      background: rgba(255,193,7,0.1);
+      border-color: rgba(255,193,7,0.2);
+    }
+    
+    .child-status {
+      display: flex;
+      gap: 4px;
+      align-items: center;
+      font-size: 10px;
+    }
+    
+    .status-badge {
+      background: rgba(255,193,7,0.2);
+      color: #ffc107;
+      padding: 2px 6px;
+      border-radius: 3px;
+      font-size: 9px;
+      font-weight: 500;
+    }
+    
+    .status-badge.hidden {
+      background: rgba(255,69,58,0.2);
+      color: #ff453a;
+    }
+    
+    .status-badge.locked {
+      background: rgba(255,193,7,0.2);
+      color: #ffc107;
+    }
+    
+    .auto-export-section {
+      background: rgba(139,184,133,0.15);
+      border: 2px solid rgba(139,184,133,0.4);
+      border-radius: 12px;
+      padding: 20px;
+      margin-bottom: 20px;
+    }
+    
+    .auto-export-header {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+    
+    .auto-export-icon {
+      width: 40px;
+      height: 40px;
+      background: rgba(139,184,133,0.3);
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 20px;
+    }
+    
+    .auto-export-title {
+      font-size: 16px;
+      font-weight: 700;
+      color: #8ab885;
+      margin: 0;
+    }
+    
+    .auto-export-subtitle {
+      font-size: 12px;
+      color: #b8c7ab;
+      margin: 2px 0 0 0;
+    }
+    
+    .auto-export-rules {
+      background: rgba(0,0,0,0.1);
       border-radius: 8px;
       padding: 16px;
       margin-bottom: 16px;
+    }
+    
+    .rule-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 12px;
+      font-size: 13px;
+    }
+    
+    .rule-item:last-child {
+      margin-bottom: 0;
+    }
+    
+    .rule-pattern {
+      background: rgba(139,184,133,0.2);
+      color: #8ab885;
+      padding: 4px 8px;
+      border-radius: 4px;
+      font-family: monospace;
+      font-weight: 600;
+      min-width: 80px;
       text-align: center;
     }
     
-    .selection-count {
-      font-size: 18px;
-      font-weight: 700;
-      color: #8ab885;
-      margin: 0 0 4px 0;
+    .rule-arrow {
+      color: #b8c7ab;
+      font-size: 16px;
     }
     
-    .selection-details {
-      font-size: 12px;
-      color: #b8c7ab;
+    .rule-result {
+      color: #ffffff;
+      font-weight: 500;
+    }
+    
+    .auto-export-stats {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+    
+    .stat-card {
+      background: rgba(0,0,0,0.15);
+      border-radius: 8px;
+      padding: 12px;
+      text-align: center;
+    }
+    
+    .stat-number {
+      font-size: 20px;
+      font-weight: 700;
+      color: #8ab885;
       margin: 0;
+    }
+    
+    .stat-label {
+      font-size: 11px;
+      color: #b8c7ab;
+      margin: 4px 0 0 0;
+    }
+    
+    .auto-export-items {
+      max-height: 200px;
+      overflow-y: auto;
+      background: rgba(0,0,0,0.1);
+      border-radius: 8px;
+      margin-bottom: 16px;
+    }
+    
+    .auto-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 12px 16px;
+      border-bottom: 1px solid rgba(255,255,255,0.05);
+    }
+    
+    .auto-item:last-child {
+      border-bottom: none;
+    }
+    
+    .auto-item-icon {
+      width: 24px;
+      height: 24px;
+      background: rgba(139,184,133,0.2);
+      border-radius: 4px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 12px;
+      color: #8ab885;
+    }
+    
+    .auto-item-info {
+      flex: 1;
+      min-width: 0;
+    }
+    
+    .auto-item-name {
+      font-size: 12px;
+      color: #ffffff;
+      margin: 0 0 2px 0;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    
+    .auto-item-frame {
+      font-size: 10px;
+      color: #b8c7ab;
+      opacity: 0.8;
+      margin: 0;
+    }
+    
+    .auto-item-badge {
+      background: rgba(139,184,133,0.2);
+      color: #8ab885;
+      padding: 2px 6px;
+      border-radius: 3px;
+      font-size: 9px;
+      font-weight: 600;
+      white-space: nowrap;
+    }
+    
+    .auto-item-badge.pattern-1zu1 {
+      background: rgba(52,199,89,0.2);
+      color: #34c759;
+    }
+    
+    .auto-item-badge.pattern-768x1344 {
+      background: rgba(255,149,0,0.2);
+      color: #ff9500;
     }
     
     .export-settings {
@@ -795,10 +989,52 @@
         <div class="accordion-content" id="exportContent">
           <div class="export-section">
             <div class="info-box">
-              <strong>🎯 Layer-Export:</strong><br>
-              1. Ebenen laden → Alle verfügbaren Layers scannen<br>
-              2. Gewünschte Layers markieren<br>
-              3. Als PNG exportieren
+              <strong>🎯 Automatischer Export:</strong><br>
+              1. Frames scannen → Erkennt automatisch Export-Patterns<br>
+              2. Auto-Export → Exportiert basierend auf Namensregeln<br>
+              3. Oder manuell auswählen → Individuelle Kontrolle
+            </div>
+            
+            <div class="auto-export-section" id="autoExportSection" style="display: none;">
+              <div class="auto-export-header">
+                <div class="auto-export-icon">🤖</div>
+                <div>
+                  <h3 class="auto-export-title">Smart Auto-Export</h3>
+                  <p class="auto-export-subtitle">Automatische Erkennung basierend auf Gruppennamen</p>
+                </div>
+              </div>
+              
+              <div class="auto-export-rules">
+                <div class="rule-item">
+                  <span class="rule-pattern">1zu1</span>
+                  <span class="rule-arrow">→</span>
+                  <span class="rule-result">PNG • 2x Auflösung</span>
+                </div>
+                <div class="rule-item">
+                  <span class="rule-pattern">768x1344</span>
+                  <span class="rule-arrow">→</span>
+                  <span class="rule-result">JPG • 1x Auflösung</span>
+                </div>
+              </div>
+              
+              <div class="auto-export-stats">
+                <div class="stat-card">
+                  <div class="stat-number" id="autoCount1zu1">0</div>
+                  <div class="stat-label">1zu1 Elemente</div>
+                </div>
+                <div class="stat-card">
+                  <div class="stat-number" id="autoCount768">0</div>
+                  <div class="stat-label">768x1344 Elemente</div>
+                </div>
+              </div>
+              
+              <div class="auto-export-items hidden" id="autoExportItems">
+                <!-- Auto-export items will be inserted here -->
+              </div>
+              
+              <button class="btn" id="autoExportBtn" disabled style="width: 100%; margin-bottom: 12px;">
+                🤖 0 Elemente automatisch exportieren
+              </button>
             </div>
             
             <button class="btn" id="loadLayersBtn">
@@ -809,6 +1045,15 @@
               <div class="selection-summary">
                 <div class="selection-count" id="selectionCount">0 Elemente</div>
                 <div class="selection-details" id="selectionDetails">ausgewählt zum Export</div>
+              </div>
+              
+              <div class="export-summary-detailed" id="exportSummaryDetailed">
+                <div>📊 <strong>Scan-Ergebnis:</strong> <span id="scanResults">Lade Frames...</span></div>
+                <div class="summary-stats">
+                  <span id="visibleCount">📄 0 sichtbar</span>
+                  <span id="hiddenCount">👁️‍🗨️ 0 ausgeblendet</span>
+                  <span id="lockedCount">🔒 0 gesperrt</span>
+                </div>
               </div>
               
               <div class="quick-actions">
@@ -880,6 +1125,7 @@
     let csvData = null;
     let availableFrames = [];
     let selectedItems = [];
+    let autoExportItems = [];
     
     // DOM Elements
     const elements = {
@@ -902,7 +1148,16 @@
       selectAllBtn: document.getElementById('selectAllBtn'),
       selectNoneBtn: document.getElementById('selectNoneBtn'),
       selectInstancesBtn: document.getElementById('selectInstancesBtn'),
-      selectFramesBtn: document.getElementById('selectFramesBtn')
+      selectFramesBtn: document.getElementById('selectFramesBtn'),
+      scanResults: document.getElementById('scanResults'),
+      visibleCount: document.getElementById('visibleCount'),
+      hiddenCount: document.getElementById('hiddenCount'),
+      lockedCount: document.getElementById('lockedCount'),
+      autoExportSection: document.getElementById('autoExportSection'),
+      autoExportBtn: document.getElementById('autoExportBtn'),
+      autoExportItems: document.getElementById('autoExportItems'),
+      autoCount1zu1: document.getElementById('autoCount1zu1'),
+      autoCount768: document.getElementById('autoCount768')
     };
     
     // Accordion functionality
@@ -1210,6 +1465,9 @@
           
         case 'frames-loaded':
           displayFrames(msg.frames);
+          if (msg.autoExportItems) {
+            displayAutoExportItems(msg.autoExportItems);
+          }
           break;
           
         case 'export-completed':
@@ -1221,7 +1479,17 @@
             elements.downloadDirectBtn.disabled = false;
             elements.downloadDirectBtn.textContent = '💾 Direkt herunterladen';
           }
-          showMessage(`✅ ${msg.count} Datei(en) zum Download bereit!`, 'success');
+          
+          if (elements.autoExportBtn) {
+            elements.autoExportBtn.disabled = false;
+            elements.autoExportBtn.textContent = `🤖 ${autoExportItems.length} Elemente automatisch exportieren`;
+          }
+          
+          const message = msg.autoExport ? 
+            `✅ Auto-Export abgeschlossen: ${msg.count} Datei(en) bereit!` :
+            `✅ ${msg.count} Datei(en) zum Download bereit!`;
+          
+          showMessage(message, 'success');
           
           // Start automatic downloads
           if (msg.exports && msg.exports.length > 0) {
@@ -1248,6 +1516,9 @@
       if (elements.layerBrowser) {
         elements.layerBrowser.classList.remove('hidden');
       }
+      
+      // Update scan statistics
+      updateScanStatistics(frames);
       
       if (elements.frameGrid && frames.length > 0) {
         let html = '';
@@ -1289,9 +1560,12 @@
           frame.children.forEach((child, childIndex) => {
             const icon = getLayerIcon(child.type);
             const uniqueId = `${frameIndex}_${childIndex}`;
+            const isHidden = child.visible === false;
+            const isLocked = child.locked === true;
+            const statusClasses = `${isHidden ? 'hidden' : ''} ${isLocked ? 'locked' : ''}`.trim();
             
             html += `
-              <div class="child-item" data-item-id="${uniqueId}">
+              <div class="child-item ${statusClasses}" data-item-id="${uniqueId}">
                 <input type="checkbox" class="child-checkbox" 
                        data-frame-index="${frameIndex}" 
                        data-child-index="${childIndex}"
@@ -1302,6 +1576,12 @@
                 <div class="child-info">
                   <p class="child-name">${child.name}</p>
                   <p class="child-size">${child.width}×${child.height}px</p>
+                  ${(isHidden || isLocked) ? `
+                    <div class="child-status">
+                      ${isHidden ? '<span class="status-badge hidden">👁️‍🗨️ Ausgeblendet</span>' : ''}
+                      ${isLocked ? '<span class="status-badge locked">🔒 Gesperrt</span>' : ''}
+                    </div>
+                  ` : ''}
                 </div>
               </div>
             `;
@@ -1323,10 +1603,71 @@
         elements.frameGrid.innerHTML = `
           <div style="text-align: center; padding: 40px; color: #b8c7ab;">
             <p>📄 Keine Frames mit exportierbaren Elementen gefunden</p>
-            <p style="font-size: 12px; opacity: 0.8;">Stelle sicher, dass deine Frames Untergruppen enthalten</p>
+            <p style="font-size: 12px; opacity: 0.8;">Frames sind möglicherweise ausgeblendet oder gesperrt</p>
           </div>
         `;
       }
+    }
+    
+    function displayAutoExportItems(items) {
+      autoExportItems = items;
+      
+      if (elements.autoExportSection) {
+        elements.autoExportSection.style.display = items.length > 0 ? 'block' : 'none';
+      }
+      
+      // Update statistics
+      let count1zu1 = 0;
+      let count768 = 0;
+      
+      items.forEach(item => {
+        if (item.pattern === '1zu1') count1zu1++;
+        if (item.pattern === '768x1344') count768++;
+      });
+      
+      if (elements.autoCount1zu1) {
+        elements.autoCount1zu1.textContent = count1zu1;
+      }
+      
+      if (elements.autoCount768) {
+        elements.autoCount768.textContent = count768;
+      }
+      
+      // Update button
+      if (elements.autoExportBtn) {
+        elements.autoExportBtn.disabled = items.length === 0;
+        elements.autoExportBtn.textContent = `🤖 ${items.length} Elemente automatisch exportieren`;
+      }
+      
+      // Show items list if there are auto-export items
+      if (elements.autoExportItems && items.length > 0) {
+        elements.autoExportItems.classList.remove('hidden');
+        
+        let html = '';
+        items.forEach(item => {
+          const icon = getLayerIcon(item.elementType);
+          const badgeClass = `pattern-${item.pattern.replace('x', 'x')}`;
+          
+          html += `
+            <div class="auto-item">
+              <div class="auto-item-icon">${icon}</div>
+              <div class="auto-item-info">
+                <p class="auto-item-name">${item.elementName}</p>
+                <p class="auto-item-frame">${item.frameName}</p>
+              </div>
+              <div class="auto-item-badge ${badgeClass}">
+                ${item.format} ${item.scale}x
+              </div>
+            </div>
+          `;
+        });
+        
+        elements.autoExportItems.innerHTML = html;
+      } else if (elements.autoExportItems) {
+        elements.autoExportItems.classList.add('hidden');
+      }
+      
+      console.log(`Auto-Export: ${items.length} Elemente erkannt (${count1zu1}x 1zu1, ${count768}x 768x1344)`);
     }
     
     function addFrameEventListeners() {
@@ -1544,7 +1885,85 @@
       return icons[type] || '📦';
     }
     
-    console.log('Weleda Transcreate Workspace initialized');
+    function updateScanStatistics(frames) {
+      let totalElements = 0;
+      let visibleElements = 0;
+      let hiddenElements = 0;
+      let lockedElements = 0;
+      
+      frames.forEach(frame => {
+        frame.children.forEach(child => {
+          totalElements++;
+          if (child.visible === false) {
+            hiddenElements++;
+          } else if (child.locked === true) {
+            lockedElements++;
+          } else {
+            visibleElements++;
+          }
+        });
+      });
+      
+      if (elements.scanResults) {
+        elements.scanResults.textContent = `${frames.length} Frames mit ${totalElements} Elementen gefunden`;
+      }
+      
+      if (elements.visibleCount) {
+        elements.visibleCount.textContent = `📄 ${visibleElements} verfügbar`;
+      }
+      
+      if (elements.hiddenCount) {
+        elements.hiddenCount.textContent = `👁️‍🗨️ ${hiddenElements} ausgeblendet`;
+      }
+      
+      if (elements.lockedCount) {
+        elements.lockedCount.textContent = `🔒 ${lockedElements} gesperrt`;
+      }
+    }
+    
+    // Quick action buttons (moved to separate function)
+    function initQuickActions() {
+      if (elements.selectAllBtn) {
+        elements.selectAllBtn.addEventListener('click', () => {
+          const checkboxes = document.querySelectorAll('.child-checkbox');
+          checkboxes.forEach(cb => cb.checked = true);
+          updateSelectedItems();
+        });
+      }
+      
+      if (elements.selectNoneBtn) {
+        elements.selectNoneBtn.addEventListener('click', () => {
+          const checkboxes = document.querySelectorAll('.child-checkbox');
+          checkboxes.forEach(cb => cb.checked = false);
+          updateSelectedItems();
+        });
+      }
+      
+      if (elements.selectInstancesBtn) {
+        elements.selectInstancesBtn.addEventListener('click', () => {
+          const checkboxes = document.querySelectorAll('.child-checkbox');
+          checkboxes.forEach(cb => {
+            const type = cb.getAttribute('data-element-type');
+            cb.checked = type === 'INSTANCE';
+          });
+          updateSelectedItems();
+        });
+      }
+      
+      if (elements.selectFramesBtn) {
+        elements.selectFramesBtn.addEventListener('click', () => {
+          const checkboxes = document.querySelectorAll('.child-checkbox');
+          checkboxes.forEach(cb => {
+            const type = cb.getAttribute('data-element-type');
+            cb.checked = type === 'FRAME' || type === 'COMPONENT';
+          });
+          updateSelectedItems();
+        });
+      }
+    }
+    
+    // Initialize quick actions
+    initQuickActions();
   </script>
 </body>
 </html>
