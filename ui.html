@@ -45,9 +45,9 @@
     }
     
     .weleda-logo {
-      width: 28px;
-      height: 28px;
-      filter: brightness(0) invert(1);
+      width: 32px;
+      height: 32px;
+      fill: white;
     }
     
     .logo-text {
@@ -153,6 +153,131 @@
       line-height: 1.4;
     }
     
+    /* Progress Section */
+    .progress-section {
+      background: rgba(0, 0, 0, 0.2);
+      border-radius: 12px;
+      padding: 20px;
+      margin: 20px 0;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      display: none;
+    }
+    
+    .progress-section.show {
+      display: block;
+      animation: slideInFromBottom 0.3s ease-out;
+    }
+    
+    .progress-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 16px;
+    }
+    
+    .progress-title {
+      font-size: 16px;
+      font-weight: 600;
+      color: white;
+    }
+    
+    .progress-stats {
+      font-size: 12px;
+      color: #b8c7ab;
+    }
+    
+    .progress-bar-container {
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 10px;
+      height: 8px;
+      margin-bottom: 12px;
+      overflow: hidden;
+    }
+    
+    .progress-bar {
+      background: linear-gradient(90deg, #8ab885, #7ca877);
+      height: 100%;
+      width: 0%;
+      border-radius: 10px;
+      transition: width 0.3s ease;
+      position: relative;
+    }
+    
+    .progress-bar::after {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: -100%;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent);
+      animation: shimmer 2s infinite;
+    }
+    
+    @keyframes shimmer {
+      0% { left: -100%; }
+      100% { left: 100%; }
+    }
+    
+    .current-step {
+      font-size: 13px;
+      color: #8ab885;
+      margin-bottom: 16px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    
+    .current-step::before {
+      content: "⚡";
+      font-size: 14px;
+    }
+    
+    .frames-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+      gap: 12px;
+      margin-top: 16px;
+    }
+    
+    .frame-card {
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 8px;
+      padding: 12px;
+      transition: all 0.2s ease;
+    }
+    
+    .frame-card:hover {
+      background: rgba(255, 255, 255, 0.08);
+      transform: translateY(-2px);
+    }
+    
+    .frame-card.completed {
+      border-color: #8ab885;
+      background: rgba(138, 184, 133, 0.1);
+    }
+    
+    .frame-name {
+      font-size: 13px;
+      font-weight: 600;
+      color: white;
+      margin-bottom: 4px;
+    }
+    
+    .frame-language {
+      font-size: 11px;
+      color: #8ab885;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+    
+    .frame-stats {
+      font-size: 10px;
+      color: #b8c7ab;
+      margin-top: 4px;
+    }
+    
     .button-group {
       display: flex;
       gap: 12px;
@@ -172,6 +297,10 @@
       transition: all 0.2s ease;
       text-transform: uppercase;
       letter-spacing: 0.5px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
     }
     
     .btn-primary {
@@ -196,17 +325,22 @@
       box-shadow: none;
     }
     
-    .btn-secondary {
-      background: transparent;
-      color: #b8c7ab;
-      border: 2px solid rgba(184, 199, 171, 0.3);
+    .btn-export {
+      background: #083025;
+      color: #8ab885;
+      border: 2px solid #8ab885;
+      display: none;
     }
     
-    .btn-secondary:hover {
-      background: rgba(184, 199, 171, 0.1);
-      border-color: #b8c7ab;
-      color: white;
+    .btn-export:hover:not(:disabled) {
+      background: #8ab885;
+      color: #083025;
       transform: translateY(-1px);
+      box-shadow: 0 4px 8px rgba(138, 184, 133, 0.3);
+    }
+    
+    .btn-export.show {
+      display: flex;
     }
     
     .message {
@@ -236,91 +370,25 @@
       border-left-color: #ffc107;
     }
     
-    .progress-info {
-      background: rgba(138, 184, 133, 0.1);
-      border: 1px solid rgba(138, 184, 133, 0.3);
-      border-radius: 8px;
-      padding: 14px;
-      margin-top: 20px;
-      font-size: 13px;
-      color: #b8c7ab;
-      display: flex;
-      align-items: center;
-      gap: 10px;
+    .footer {
+      padding: 16px 20px;
+      border-top: 1px solid rgba(255, 255, 255, 0.1);
+      text-align: center;
+      font-size: 11px;
+      color: rgba(255, 255, 255, 0.5);
+      letter-spacing: 0.3px;
     }
     
-    .progress-info::before {
-      content: "⏳";
-      font-size: 16px;
-    }
-    
-    .import-details {
-      margin-top: 12px;
-      max-height: 150px;
-      overflow-y: auto;
-      background: rgba(0, 0, 0, 0.2);
-      border-radius: 6px;
-      padding: 12px;
-      border: 1px solid rgba(255, 255, 255, 0.1);
-    }
-    
-    .import-item {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      padding: 6px 0;
-      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    .footer .heart {
+      color: #ff6b7a;
       font-size: 12px;
+      margin: 0 2px;
+      animation: heartbeat 2s infinite;
     }
     
-    .import-item:last-child {
-      border-bottom: none;
-    }
-    
-    .import-item span:first-child {
-      color: white;
-      font-weight: 600;
-    }
-    
-    .import-item span:last-child {
-      color: #8ab885;
-      font-weight: 500;
-    }
-    
-    /* Custom scrollbar for Weleda theme */
-    .import-details::-webkit-scrollbar {
-      width: 6px;
-    }
-    
-    .import-details::-webkit-scrollbar-track {
-      background: rgba(255, 255, 255, 0.1);
-      border-radius: 3px;
-    }
-    
-    .import-details::-webkit-scrollbar-thumb {
-      background: rgba(138, 184, 133, 0.5);
-      border-radius: 3px;
-    }
-    
-    .import-details::-webkit-scrollbar-thumb:hover {
-      background: rgba(138, 184, 133, 0.7);
-    }
-    
-    /* Animations */
-    @keyframes slideInFromBottom {
-      from {
-        opacity: 0;
-        transform: translateY(10px);
-      }
-      to {
-        opacity: 1;
-        transform: translateY(0);
-      }
-    }
-    
-    @keyframes fadeIn {
-      from { opacity: 0; }
-      to { opacity: 1; }
+    @keyframes heartbeat {
+      0%, 100% { transform: scale(1); }
+      50% { transform: scale(1.1); }
     }
     
     /* File input styling for better Weleda integration */
@@ -363,9 +431,37 @@
       animation: pulse 1.5s infinite;
     }
     
+    /* Animations */
+    @keyframes slideInFromBottom {
+      from {
+        opacity: 0;
+        transform: translateY(10px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+    
     @keyframes pulse {
       0%, 100% { opacity: 1; }
       50% { opacity: 0.5; }
+    }
+    
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+    
+    /* Export animation */
+    .export-animation {
+      animation: exportPulse 0.6s ease-in-out;
+    }
+    
+    @keyframes exportPulse {
+      0% { transform: scale(1); }
+      50% { transform: scale(1.05); background-color: #7ca877; }
+      100% { transform: scale(1); }
     }
   </style>
 </head>
@@ -373,9 +469,20 @@
   <div class="container">
     <div class="header">
       <div class="logo-section">
+        <!-- Echtes Weleda Logo (vereinfacht) -->
         <svg class="weleda-logo" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
-          <path d="M50 10 L90 30 L90 70 L50 90 L10 70 L10 30 Z" fill="currentColor"/>
-          <circle cx="50" cy="50" r="15" fill="none" stroke="rgba(255,255,255,0.8)" stroke-width="2"/>
+          <defs>
+            <style>
+              .weleda-leaf { fill: white; }
+              .weleda-circle { fill: none; stroke: white; stroke-width: 2; }
+            </style>
+          </defs>
+          <!-- Weleda-inspiriertes Design -->
+          <circle cx="50" cy="50" r="45" class="weleda-circle"/>
+          <path d="M30 35 Q35 25 50 30 Q65 25 70 35 Q65 45 50 40 Q35 45 30 35" class="weleda-leaf"/>
+          <path d="M30 65 Q35 55 50 60 Q65 55 70 65 Q65 75 50 70 Q35 75 30 65" class="weleda-leaf"/>
+          <circle cx="50" cy="50" r="3" fill="white"/>
+          <text x="50" y="88" text-anchor="middle" font-size="8" fill="white" font-family="serif">WELEDA</text>
         </svg>
         <div class="logo-text">
           <h1 class="main-title">Translation Importer</h1>
@@ -391,7 +498,7 @@
         1. CSV-Datei mit Übersetzungen hochladen<br>
         2. Plugin erkennt automatisch alle Sprachen in der CSV<br>
         3. Importiert und übersetzt alle Frames automatisch<br>
-        4. Funktioniert dateiübergreifend mit mehreren Sprachen gleichzeitig!
+        4. Exportiert alle Frames einzeln als PNG mit optimalen Namen
       </div>
       
       <div class="form-group">
@@ -402,28 +509,89 @@
         </div>
       </div>
       
+      <!-- Detaillierte Progress Section -->
+      <div id="progressSection" class="progress-section">
+        <div class="progress-header">
+          <div class="progress-title">Import-Status</div>
+          <div class="progress-stats" id="progressStats">0 / 0 Frames</div>
+        </div>
+        <div class="progress-bar-container">
+          <div class="progress-bar" id="progressBar"></div>
+        </div>
+        <div class="current-step" id="currentStep">Bereit für Import...</div>
+        <div class="frames-grid" id="framesGrid"></div>
+      </div>
+      
       <div class="button-group">
         <button id="importBtn" class="btn-primary" disabled>
           <span class="status-indicator ready"></span>
           Übersetzungen importieren
         </button>
+        <button id="exportBtn" class="btn-export">
+          <span>📤</span>
+          Als PNG exportieren
+        </button>
       </div>
       
       <div id="messageDiv"></div>
+    </div>
+    
+    <div class="footer">
+      Made with <span class="heart">♥</span> by Marian
     </div>
   </div>
 
   <script>
     const csvFileInput = document.getElementById('csvFile');
     const importBtn = document.getElementById('importBtn');
+    const exportBtn = document.getElementById('exportBtn');
     const closeBtn = document.getElementById('closeBtn');
     const messageDiv = document.getElementById('messageDiv');
+    const progressSection = document.getElementById('progressSection');
+    const progressBar = document.getElementById('progressBar');
+    const progressStats = document.getElementById('progressStats');
+    const currentStep = document.getElementById('currentStep');
+    const framesGrid = document.getElementById('framesGrid');
     
     let csvData = null;
+    let importedFrames = [];
+    let totalFrames = 0;
+    let completedFrames = 0;
     
     function checkFormValidity() {
       const hasFile = csvData !== null;
       importBtn.disabled = !hasFile;
+    }
+    
+    function updateProgress(completed, total, stepText) {
+      const percentage = total > 0 ? (completed / total) * 100 : 0;
+      progressBar.style.width = percentage + '%';
+      progressStats.textContent = `${completed} / ${total} Frames`;
+      currentStep.textContent = stepText || 'Verarbeite...';
+    }
+    
+    function addFrameCard(frameName, language, status = 'pending') {
+      const frameCard = document.createElement('div');
+      frameCard.className = `frame-card ${status === 'completed' ? 'completed' : ''}`;
+      frameCard.innerHTML = `
+        <div class="frame-name">${frameName}</div>
+        <div class="frame-language">${language}</div>
+        <div class="frame-stats">${status === 'completed' ? '✅ Importiert' : '⏳ Warten...'}</div>
+      `;
+      framesGrid.appendChild(frameCard);
+      return frameCard;
+    }
+    
+    function updateFrameCard(frameName, language, textsCount) {
+      const cards = framesGrid.querySelectorAll('.frame-card');
+      cards.forEach(card => {
+        const nameEl = card.querySelector('.frame-name');
+        const langEl = card.querySelector('.frame-language');
+        if (nameEl.textContent === frameName && langEl.textContent === language) {
+          card.classList.add('completed');
+          card.querySelector('.frame-stats').textContent = `✅ ${textsCount} Texte übersetzt`;
+        }
+      });
     }
     
     csvFileInput.addEventListener('change', (e) => {
@@ -454,6 +622,13 @@
     importBtn.addEventListener('click', () => {
       if (csvData) {
         importBtn.disabled = true;
+        exportBtn.classList.remove('show');
+        
+        // Reset progress
+        progressSection.classList.add('show');
+        framesGrid.innerHTML = '';
+        completedFrames = 0;
+        importedFrames = [];
         
         // Update button to loading state
         const statusIndicator = importBtn.querySelector('.status-indicator');
@@ -469,54 +644,84 @@
       }
     });
     
+    exportBtn.addEventListener('click', () => {
+      if (importedFrames.length > 0) {
+        exportBtn.classList.add('export-animation');
+        exportBtn.innerHTML = '<span>⏳</span>Exportiere...';
+        
+        parent.postMessage({
+          pluginMessage: {
+            type: 'export-frames',
+            frames: importedFrames
+          }
+        }, '*');
+        
+        setTimeout(() => {
+          exportBtn.classList.remove('export-animation');
+        }, 600);
+      }
+    });
+    
     closeBtn.addEventListener('click', () => {
       parent.postMessage({
         pluginMessage: { type: 'close' }
       }, '*');
     });
     
-    function showMessage(text, type, details = null) {
-      let detailsHtml = '';
-      if (details && Array.isArray(details)) {
-        detailsHtml = '<div class="import-details">';
-        details.forEach(item => {
-          detailsHtml += `<div class="import-item">
-            <span><strong>${item.frameName}</strong> (${item.language})</span>
-            <span>${item.translatedTexts} Texte</span>
-          </div>`;
-        });
-        detailsHtml += '</div>';
-      }
-      
-      messageDiv.innerHTML = `<div class="message ${type}">${text}${detailsHtml}</div>`;
-    }
-    
-    function showProgress(text) {
-      messageDiv.innerHTML = `<div class="progress-info">⏳ ${text}</div>`;
+    function showMessage(text, type) {
+      messageDiv.innerHTML = `<div class="message ${type}">${text}</div>`;
     }
     
     // Nachrichten vom Plugin empfangen
     window.onmessage = (event) => {
       const msg = event.data.pluginMessage;
       
-      if (msg.type === 'success') {
-        showMessage(`✅ ${msg.message}`, 'success', msg.details);
+      if (msg.type === 'import-start') {
+        totalFrames = msg.totalFrames;
+        updateProgress(0, totalFrames, 'Import gestartet...');
+        
+        // Create frame cards
+        msg.frames.forEach(frame => {
+          addFrameCard(frame.frameName, frame.language);
+        });
+        
+      } else if (msg.type === 'frame-completed') {
+        completedFrames++;
+        updateProgress(completedFrames, totalFrames, `Frame "${msg.frameName}" importiert`);
+        updateFrameCard(msg.frameName, msg.language, msg.textsCount);
+        
+        // Add to imported frames list
+        importedFrames.push({
+          frameName: msg.frameName,
+          language: msg.language,
+          textsCount: msg.textsCount
+        });
+        
+      } else if (msg.type === 'success') {
+        updateProgress(totalFrames, totalFrames, 'Import abgeschlossen!');
+        showMessage(`✅ ${msg.message}`, 'success');
+        
         importBtn.disabled = false;
         importBtn.innerHTML = '<span class="status-indicator ready"></span>Übersetzungen importieren';
+        
+        // Show export button
+        exportBtn.classList.add('show');
+        exportBtn.innerHTML = '<span>📤</span>Als PNG exportieren';
+        
+      } else if (msg.type === 'export-completed') {
+        showMessage(`📤 Export abgeschlossen! ${msg.count} PNG-Dateien wurden exportiert.`, 'success');
+        exportBtn.innerHTML = '<span>📤</span>Als PNG exportieren';
+        
       } else if (msg.type === 'error') {
         showMessage(`❌ ${msg.message}`, 'error');
         importBtn.disabled = false;
         importBtn.innerHTML = '<span class="status-indicator ready"></span>Übersetzungen importieren';
+        
       } else if (msg.type === 'warning') {
         showMessage(`⚠️ ${msg.message}`, 'warning');
+        
       } else if (msg.type === 'progress') {
-        showProgress(msg.message);
-      } else if (msg.type === 'manual-import-needed') {
-        const fileInfo = msg.fileInfo;
-        showMessage(
-          `💡 Hinweis: Frame "${fileInfo.frameName}" aus externer Datei "${fileInfo.fileName || fileInfo.fileKey}" muss manuell kopiert werden.`, 
-          'warning'
-        );
+        currentStep.textContent = msg.message;
       }
     };
   </script>
