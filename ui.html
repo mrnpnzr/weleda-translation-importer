@@ -1137,7 +1137,7 @@
         exportBtn.innerHTML = '<span>📤</span>Als PNG exportieren';
         
       } else if (msg.type === 'export-completed') {
-        showMessage(`📤 Export abgeschlossen! ${msg.count} PNG-Dateien wurden exportiert.`, 'success');
+        showMessage(`📤 ${msg.message}`, 'success');
         exportBtn.innerHTML = '<span>📤</span>Als PNG exportieren';
         
       } else if (msg.type === 'error') {
@@ -1155,11 +1155,11 @@
         framesInfo += '<div style="font-family: monospace; font-size: 11px; line-height: 1.6; background: rgba(0,0,0,0.2); padding: 12px; border-radius: 6px; max-height: 200px; overflow-y: auto;">';
         
         framesList.forEach(frame => {
-          framesInfo += `<div style="margin-bottom: 8px;">`;
-          framesInfo += `<strong style="color: #8ab885;">"${frame.name}"</strong><br>`;
-          framesInfo += `ID: <span style="color: #ffc107; background: rgba(0,0,0,0.3); padding: 2px 6px; border-radius: 3px;">${frame.id}</span><br>`;
-          framesInfo += `Type: ${frame.type} | ${Math.round(frame.width)}×${Math.round(frame.height)}px`;
-          framesInfo += `</div>`;
+          framesInfo += '<div style="margin-bottom: 8px;">';
+          framesInfo += '<strong style="color: #8ab885;">"' + frame.name + '"</strong><br>';
+          framesInfo += 'ID: <span style="color: #ffc107; background: rgba(0,0,0,0.3); padding: 2px 6px; border-radius: 3px;">' + frame.id + '</span><br>';
+          framesInfo += 'Type: ' + frame.type + ' | ' + Math.round(frame.width) + '×' + Math.round(frame.height) + 'px';
+          framesInfo += '</div>';
         });
         
         framesInfo += '</div>';
