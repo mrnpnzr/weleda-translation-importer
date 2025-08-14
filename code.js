@@ -4,22 +4,21 @@ figma.ui.onmessage = async (msg) => {
   if (msg.type === 'import-translations') {
     try {
       const csvData = msg.csvData;
-      const targetLanguage = msg.targetLanguage;
       
       // Übersetzungen und Datei-Informationen verarbeiten
-      const { translationsByFile, uniqueFiles } = parseTranslations(csvData, targetLanguage);
-      
+      const { translationsByFile, uniqueFiles, detectedLanguages } = parseTranslations(csvData);
+
       if (Object.keys(translationsByFile).length === 0) {
         figma.ui.postMessage({
           type: 'error',
-          message: `Keine Übersetzungen für Sprache "${targetLanguage}" gefunden.`
+          message: `Keine gültigen Übersetzungen in der CSV gefunden.`
         });
         return;
       }
       
       figma.ui.postMessage({
         type: 'progress',
-        message: `Gefunden: ${uniqueFiles.length} Datei(en) mit Übersetzungen. Importiere...`
+        message: `Gefunden: ${uniqueFiles.length} Frame(s) mit Übersetzungen in ${detectedLanguages.join(', ')}. Importiere...`
       });
       
       let totalImported = 0;
@@ -31,7 +30,7 @@ figma.ui.onmessage = async (msg) => {
           const frameData = await importFrameFromFile(fileInfo);
           if (frameData) {
             const duplicatedFrame = frameData.clone();
-            duplicatedFrame.name = `${frameData.name} - ${targetLanguage}`;
+            duplicatedFrame.name = `${frameData.name} - ${fileInfo.targetLanguage}`;
             
             // Frame auf der aktuellen Seite platzieren
             figma.currentPage.appendChild(duplicatedFrame);
@@ -41,14 +40,15 @@ figma.ui.onmessage = async (msg) => {
             duplicatedFrame.y = 0;
             
             // Übersetzungen anwenden
-            const translations = translationsByFile[fileInfo.fileKey + '::' + fileInfo.frameName];
+            const translations = translationsByFile[fileInfo.fileKey + '::' + fileInfo.frameName + '::' + fileInfo.targetLanguage];
             const updatedCount = await replaceTextsInFrame(duplicatedFrame, translations);
             
             totalImported++;
             importedFiles.push({
               fileName: fileInfo.fileName || fileInfo.fileKey,
               frameName: duplicatedFrame.name,
-              translatedTexts: updatedCount
+              translatedTexts: updatedCount,
+              language: fileInfo.targetLanguage
             });
             
             figma.ui.postMessage({
@@ -68,7 +68,7 @@ figma.ui.onmessage = async (msg) => {
       
       // Alle importierten Frames auswählen und in den Viewport bringen
       const importedFrames = figma.currentPage.children.filter(node => 
-        node.name.endsWith(` - ${targetLanguage}`)
+        detectedLanguages.some(lang => node.name.endsWith(` - ${lang}`))
       );
       
       if (importedFrames.length > 0) {
@@ -95,13 +95,14 @@ figma.ui.onmessage = async (msg) => {
   }
 };
 
-function parseTranslations(csvData, targetLanguage) {
+function parseTranslations(csvData) {
   const lines = csvData.split('\n');
   const headers = lines[0].split(',').map(h => h.replace(/"/g, '').trim());
   
   const translationsByFile = {};
   const uniqueFiles = [];
   const seenFiles = new Set();
+  const detectedLanguages = new Set();
   
   for (let i = 1; i < lines.length; i++) {
     if (!lines[i].trim()) continue;
@@ -114,39 +115,45 @@ function parseTranslations(csvData, targetLanguage) {
         row[header] = values[index] ? values[index].replace(/"/g, '').trim() : '';
       });
       
-      // Nur Zeilen mit der gewünschten Zielsprache verarbeiten
-      if (row['Target Language'] === targetLanguage && 
+      const targetLanguage = row['Target Language'];
+      
+      // Nur Zeilen mit gültiger Übersetzung verarbeiten
+      if (targetLanguage && 
           row['Translated Text'] && 
           row['Translated Text'] !== '') {
+        
+        detectedLanguages.add(targetLanguage);
         
         const fileKey = row['Figma File Key'] || 'current';
         const frameName = row['Frame Name'];
         const fileName = row['Figma File Name'] || '';
         const frameId = row['Figma Frame ID'] || '';
         
+        const fileFrameLangKey = `${fileKey}::${frameName}::${targetLanguage}`;
         const fileFrameKey = `${fileKey}::${frameName}`;
         
-        // Datei-Info sammeln für einmaligen Import
-        if (!seenFiles.has(fileKey + frameName)) {
+        // Datei-Info sammeln für einmaligen Import pro Sprache
+        if (!seenFiles.has(fileFrameLangKey)) {
           uniqueFiles.push({
             fileKey: fileKey,
             frameName: frameName,
             fileName: fileName,
             frameId: frameId,
+            targetLanguage: targetLanguage,
             fileUrl: row['Figma File URL'] || ''
           });
-          seenFiles.add(fileKey + frameName);
+          seenFiles.add(fileFrameLangKey);
         }
         
-        // Übersetzungen gruppieren nach Datei/Frame
-        if (!translationsByFile[fileFrameKey]) {
-          translationsByFile[fileFrameKey] = new Map();
+        // Übersetzungen gruppieren nach Datei/Frame/Sprache
+        if (!translationsByFile[fileFrameLangKey]) {
+          translationsByFile[fileFrameLangKey] = new Map();
         }
         
         const sourceText = row['Source Text'].replace(/\\n/g, '\n');
         const translatedText = row['Translated Text'].replace(/\\n/g, '\n');
         
-        translationsByFile[fileFrameKey].set(sourceText, {
+        translationsByFile[fileFrameLangKey].set(sourceText, {
           translatedText: translatedText,
           layerPath: row['Layer Name'],
           frameName: frameName,
@@ -156,7 +163,33 @@ function parseTranslations(csvData, targetLanguage) {
     }
   }
   
-  return { translationsByFile, uniqueFiles };
+  return { 
+    translationsByFile, 
+    uniqueFiles, 
+    detectedLanguages: Array.from(detectedLanguages) 
+  };
+}
+
+function parseCSVLine(line) {
+  const result = [];
+  let current = '';
+  let inQuotes = false;
+  
+  for (let i = 0; i < line.length; i++) {
+    const char = line[i];
+    
+    if (char === '"') {
+      inQuotes = !inQuotes;
+    } else if (char === ',' && !inQuotes) {
+      result.push(current);
+      current = '';
+    } else {
+      current += char;
+    }
+  }
+  
+  result.push(current);
+  return result;
 }
 
 async function importFrameFromFile(fileInfo) {
@@ -252,26 +285,4 @@ async function replaceTextsInFrame(frame, translations) {
   }
   
   return updatedCount;
-}
-
-function parseCSVLine(line) {
-  const result = [];
-  let current = '';
-  let inQuotes = false;
-  
-  for (let i = 0; i < line.length; i++) {
-    const char = line[i];
-    
-    if (char === '"') {
-      inQuotes = !inQuotes;
-    } else if (char === ',' && !inQuotes) {
-      result.push(current);
-      current = '';
-    } else {
-      current += char;
-    }
-  }
-  
-  result.push(current);
-  return result;
 }
