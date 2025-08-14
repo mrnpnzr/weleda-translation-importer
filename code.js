@@ -1,4 +1,4 @@
-// Plugin als großes, andockbares Panel
+// Weleda Transcreate Workspace - Plugin Code
 figma.showUI(__html__, { 
   width: 400, 
   height: 700,
@@ -6,20 +6,21 @@ figma.showUI(__html__, {
   title: "🌿 Weleda Transcreate Workspace"
 });
 
-// Plugin-Verhalten optimieren
+// Keep-alive system to prevent plugin from closing
+let keepAliveInterval = setInterval(() => {
+  // Send keep-alive signal every 30 seconds
+}, 30000);
+
 figma.ui.onmessage = async (msg) => {
-  // Plugin soll NICHT automatisch schließen
-  if (msg.type === 'keep-alive') {
-    // Plugin offen halten
-    return;
-  }
+  console.log('Received message:', msg.type);
+  
   if (msg.type === 'import-translations') {
     try {
       const csvData = msg.csvData;
       
-      // Übersetzungen und Datei-Informationen verarbeiten
+      // Parse translations and file information
       const { translationsByFile, uniqueFiles, detectedLanguages } = parseTranslations(csvData);
-
+      
       if (Object.keys(translationsByFile).length === 0) {
         figma.ui.postMessage({
           type: 'error',
@@ -28,326 +29,126 @@ figma.ui.onmessage = async (msg) => {
         return;
       }
       
-      // Import-Start Message mit Frame-Informationen
       figma.ui.postMessage({
-        type: 'import-start',
-        totalFrames: uniqueFiles.length,
-        frames: uniqueFiles.map(f => ({
-          frameName: f.frameName,
-          language: f.targetLanguage
-        }))
+        type: 'progress',
+        message: `Gefunden: ${detectedLanguages.length} Sprache(n) - ${detectedLanguages.join(', ')}`,
+        progress: 10
       });
       
-      let totalImported = 0;
-      let importedFramesList = [];
+      let importedCount = 0;
+      let importDetails = [];
       
-      // Für jede Datei die Frames importieren
+      // Process each unique file
       for (const fileInfo of uniqueFiles) {
         try {
           figma.ui.postMessage({
             type: 'progress',
-            message: `Suche Frame "${fileInfo.frameName}"...`
+            message: `Suche Frame "${fileInfo.frameName}"...`,
+            progress: 20 + (importedCount / uniqueFiles.length) * 60
           });
           
-          console.log(`Verarbeite Frame: ${fileInfo.frameName}, Sprache: ${fileInfo.targetLanguage}`);
-          
-          const frameData = await importFrameFromFile(fileInfo);
-          if (frameData) {
-            console.log(`Frame gefunden, erstelle Kopie...`);
+          const frameNode = await findFrame(fileInfo);
+          if (frameNode) {
+            const duplicatedFrame = frameNode.clone();
+            duplicatedFrame.name = `${frameNode.name} - ${fileInfo.targetLanguage}`;
             
-            const duplicatedFrame = frameData.clone();
-            const newFrameName = `${frameData.name} - ${fileInfo.targetLanguage}`;
-            duplicatedFrame.name = newFrameName;
-            
-            console.log(`Neuer Frame-Name: ${newFrameName}`);
-            
-            // Frame auf der aktuellen Seite platzieren
-            figma.currentPage.appendChild(duplicatedFrame);
-            
-            // Position basierend auf bereits importierten Frames berechnen
-            const newX = totalImported * (duplicatedFrame.width + 100);
-            const newY = 0;
-            duplicatedFrame.x = newX;
-            duplicatedFrame.y = newY;
-            
-            console.log(`Frame positioniert bei x:${newX}, y:${newY}`);
+            // Position the duplicated frame next to the original
+            duplicatedFrame.x = frameNode.x + frameNode.width + 100;
+            duplicatedFrame.y = frameNode.y;
             
             figma.ui.postMessage({
               type: 'progress',
-              message: `Übersetze Texte in "${fileInfo.frameName}"...`
+              message: `Übersetze Texte in "${duplicatedFrame.name}"...`,
+              progress: 30 + (importedCount / uniqueFiles.length) * 60
             });
             
-            // Übersetzungen anwenden
-            const translationKey = fileInfo.fileKey + '::' + fileInfo.frameName + '::' + fileInfo.targetLanguage;
-            const translations = translationsByFile[translationKey];
+            // Apply translations to the duplicated frame
+            const translatedCount = await applyTranslations(duplicatedFrame, translationsByFile[fileInfo.fileKey][fileInfo.targetLanguage]);
             
-            console.log(`Suche Übersetzungen mit Key: ${translationKey}`);
-            console.log(`Gefundene Übersetzungen:`, translations ? translations.size : 0);
-            
-            const updatedCount = await replaceTextsInFrame(duplicatedFrame, translations);
-            
-            console.log(`${updatedCount} Texte übersetzt`);
-            
-            totalImported++;
-            importedFramesList.push({
-              fileName: fileInfo.fileName || fileInfo.fileKey,
+            importDetails.push({
               frameName: duplicatedFrame.name,
-              translatedTexts: updatedCount,
               language: fileInfo.targetLanguage,
-              nodeId: duplicatedFrame.id
+              translatedTexts: translatedCount
             });
             
-            // Frame completed message
-            figma.ui.postMessage({
-              type: 'frame-completed',
-              frameName: fileInfo.frameName,
-              language: fileInfo.targetLanguage,
-              textsCount: updatedCount
-            });
+            importedCount++;
             
+            console.log(`✅ Frame erstellt: "${duplicatedFrame.name}" mit ${translatedCount} übersetzten Texten`);
           } else {
-            console.warn(`Frame "${fileInfo.frameName}" konnte nicht gefunden werden`);
-            figma.ui.postMessage({
-              type: 'warning',
-              message: `Frame "${fileInfo.frameName}" nicht gefunden - überspringe`
-            });
+            console.log(`❌ Frame nicht gefunden: "${fileInfo.frameName}"`);
+            
+            // List all available frames for debugging
+            const allFrames = figma.currentPage.findAll(node => 
+              node.type === 'FRAME' || node.type === 'COMPONENT'
+            );
+            console.log('Verfügbare Frames:', allFrames.map(f => f.name));
           }
         } catch (error) {
-          console.error(`Fehler beim Importieren von ${fileInfo.frameName}:`, error);
+          console.error(`Fehler bei Frame "${fileInfo.frameName}":`, error);
           figma.ui.postMessage({
-            type: 'warning',
-            message: `Konnte ${fileInfo.frameName} nicht importieren: ${error.message}`
+            type: 'progress',
+            message: `Fehler bei "${fileInfo.frameName}": ${error.message}`,
+            progress: 30 + (importedCount / uniqueFiles.length) * 60
           });
         }
       }
       
-      // Alle importierten Frames auswählen und in den Viewport bringen
-      const allImportedFrames = figma.currentPage.children.filter(node => 
+      // Select all imported frames and zoom to them
+      const importedFramesList = figma.currentPage.children.filter(node => 
         detectedLanguages.some(lang => node.name.endsWith(` - ${lang}`))
       );
       
-      if (allImportedFrames.length > 0) {
-        figma.currentPage.selection = allImportedFrames;
-        figma.viewport.scrollAndZoomIntoView(allImportedFrames);
+      if (importedFramesList.length > 0) {
+        figma.currentPage.selection = importedFramesList;
+        figma.viewport.scrollAndZoomIntoView(importedFramesList);
       }
       
       figma.ui.postMessage({
         type: 'success',
-        message: `Import abgeschlossen! ${totalImported} Frame(s) erfolgreich importiert.`,
-        details: importedFramesList
+        message: `${importedCount} Frame(s) erfolgreich importiert und übersetzt!`,
+        details: importDetails,
+        progress: 100
       });
       
     } catch (error) {
+      console.error('Import error:', error);
       figma.ui.postMessage({
         type: 'error',
-        message: `Fehler beim Import: ${error.message}`
+        message: `Import-Fehler: ${error.message}`
       });
     }
   }
   
-  if (msg.type === 'export-frames') {
+  if (msg.type === 'get-frame-ids') {
     try {
-      const framesToExport = msg.frames;
-      const settings = msg.settings || { scale: 2, format: 'PNG', naming: 'frame_lang_date' };
-      let exportedCount = 0;
-      let actualNodesToExport = [];
+      // Get all frames from current page with their IDs
+      const allFrames = figma.currentPage.findAll(node => 
+        node.type === 'FRAME' || node.type === 'COMPONENT'
+      );
+      
+      console.log('\n🔍 FRAME-IDS DER AKTUELLEN SEITE:');
+      console.log('=====================================');
+      
+      allFrames.forEach(frame => {
+        console.log(`📄 "${frame.name}"`);
+        console.log(`   ID: ${frame.id}`);
+        console.log(`   Type: ${frame.type}`);
+        console.log(`   Size: ${Math.round(frame.width)}×${Math.round(frame.height)}px`);
+        console.log('   ---');
+      });
+      
+      console.log(`\nGefunden: ${allFrames.length} Frame(s) auf Seite "${figma.currentPage.name}"`);
       
       figma.ui.postMessage({
-        type: 'progress',
-        message: 'Analysiere Frame-Inhalte...'
+        type: 'success',
+        message: `${allFrames.length} Frame-IDs in der Console ausgegeben. Öffne die Console (F12) um sie zu sehen.`
       });
-      
-      // Frames basierend auf Auswahl bestimmen
-      if (framesToExport === 'selected') {
-        // Aktuell ausgewählte Frames in Figma
-        const selectedNodes = figma.currentPage.selection.filter(node => 
-          node.type === 'FRAME' || node.type === 'COMPONENT'
-        );
-        
-        // Eine Ebene tiefer: Kinder der Frames
-        for (const frame of selectedNodes) {
-          console.log(`Analysiere Frame: ${frame.name} mit ${frame.children.length} Kindern`);
-          
-          const children = frame.children.filter(child => {
-            console.log(`Kind gefunden: ${child.name} (Type: ${child.type})`);
-            return child.type === 'FRAME' || 
-                   child.type === 'COMPONENT' || 
-                   child.type === 'GROUP' ||
-                   child.type === 'INSTANCE' ||  // ◊ Rauten-Symbol
-                   child.type === 'RECTANGLE' ||
-                   child.type === 'ELLIPSE' ||
-                   child.type === 'POLYGON' ||
-                   child.type === 'STAR' ||
-                   child.type === 'VECTOR' ||
-                   child.type === 'TEXT';
-          });
-          
-          console.log(`Exportierbare Kinder: ${children.length}`);
-          
-          children.forEach((child, index) => {
-            actualNodesToExport.push({
-              frameName: `${frame.name}_${child.name || `Element_${index + 1}`}`,
-              language: 'exported',
-              parentFrame: frame.name,
-              childIndex: index + 1,
-              childType: child.type,
-              node: child
-            });
-          });
-        }
-        
-        if (actualNodesToExport.length === 0) {
-          figma.ui.postMessage({
-            type: 'warning',
-            message: 'Keine exportierbaren Elemente in den ausgewählten Frames gefunden.'
-          });
-          return;
-        }
-      } else {
-        // Frames aus der Liste verwenden - eine Ebene tiefer
-        for (const frameInfo of framesToExport) {
-          const frameNode = figma.currentPage.findOne(node => 
-            node.name === frameInfo.frameName
-          );
-          
-          if (frameNode && (frameNode.type === 'FRAME' || frameNode.type === 'COMPONENT')) {
-            console.log(`Analysiere Frame: ${frameNode.name} mit ${frameNode.children.length} Kindern`);
-            
-            // Kinder des Frames exportieren
-            const children = frameNode.children.filter(child => {
-              console.log(`Kind gefunden: ${child.name} (Type: ${child.type})`);
-              return child.type === 'FRAME' || 
-                     child.type === 'COMPONENT' || 
-                     child.type === 'GROUP' ||
-                     child.type === 'INSTANCE' ||  // ◊ Rauten-Symbol
-                     child.type === 'RECTANGLE' ||
-                     child.type === 'ELLIPSE' ||
-                     child.type === 'POLYGON' ||
-                     child.type === 'STAR' ||
-                     child.type === 'VECTOR' ||
-                     child.type === 'TEXT';
-            });
-            
-            console.log(`Exportierbare Kinder: ${children.length}`);
-            
-            children.forEach((child, index) => {
-              actualNodesToExport.push({
-                frameName: `${frameInfo.frameName}_${child.name || `Element_${index + 1}`}`,
-                language: frameInfo.language,
-                translatedTexts: frameInfo.translatedTexts,
-                parentFrame: frameInfo.frameName,
-                childIndex: index + 1,
-                childType: child.type,
-                nodeId: child.id,
-                node: child
-              });
-            });
-          }
-        }
-      }
-      
-      if (actualNodesToExport.length === 0) {
-        figma.ui.postMessage({
-          type: 'warning',
-          message: 'Keine exportierbaren Kinder-Elemente in den Frames gefunden.'
-        });
-        return;
-      }
-      
-      figma.ui.postMessage({
-        type: 'progress',
-        message: `Gefunden: ${actualNodesToExport.length} Elemente zum Export aus ${framesToExport === 'selected' ? 'ausgewählten' : framesToExport.length} Frame(s)`
-      });
-      
-      // Debug: Zeige was exportiert wird
-      console.log('Zu exportierende Elemente:');
-      actualNodesToExport.forEach((item, index) => {
-        console.log(`${index + 1}. ${item.frameName} (${item.childType || 'unknown'}) - ${item.node.name}`);
-      });
-      
-      // Export-Daten für Download vorbereiten
-      const exportData = [];
-      
-      for (const nodeInfo of actualNodesToExport) {
-        try {
-          // Export-Einstellungen konfigurieren
-          const exportSettings = {
-            format: settings.format,
-            constraint: {
-              type: 'SCALE',
-              value: settings.scale
-            }
-          };
-          
-          // Element als Bild exportieren
-          const imageData = await nodeInfo.node.exportAsync(exportSettings);
-          
-          // Dateiname basierend auf Naming-Schema generieren
-          const timestamp = new Date().toISOString().slice(0, 10);
-          const sanitizedParentName = nodeInfo.parentFrame.replace(/[^a-zA-Z0-9]/g, '_');
-          const sanitizedChildName = (nodeInfo.node.name || `Element_${nodeInfo.childIndex}`).replace(/[^a-zA-Z0-9]/g, '_');
-          const language = nodeInfo.language || 'exported';
-          
-          let fileName;
-          switch (settings.naming) {
-            case 'lang_frame_date':
-              fileName = `${language}_${sanitizedParentName}_${sanitizedChildName}_${timestamp}.${settings.format.toLowerCase()}`;
-              break;
-            case 'frame_lang':
-              fileName = `${sanitizedParentName}_${sanitizedChildName}_${language}.${settings.format.toLowerCase()}`;
-              break;
-            case 'custom':
-              fileName = `${sanitizedParentName}_${sanitizedChildName}_${language}_${timestamp}.${settings.format.toLowerCase()}`;
-              break;
-            default: // frame_lang_date
-              fileName = `${sanitizedParentName}_${sanitizedChildName}_${language}_${timestamp}.${settings.format.toLowerCase()}`;
-          }
-          
-          // Export-Daten sammeln (für möglichen späteren Batch-Download)
-          exportData.push({
-            fileName: fileName,
-            imageData: imageData,
-            width: nodeInfo.node.width,
-            height: nodeInfo.node.height,
-            parentFrame: nodeInfo.parentFrame,
-            childName: nodeInfo.node.name || `Element_${nodeInfo.childIndex}`
-          });
-          
-          console.log(`Vorbereitet für Export: ${fileName} (${Math.round(nodeInfo.node.width)}×${Math.round(nodeInfo.node.height)}px)`);
-          
-          exportedCount++;
-          
-          figma.ui.postMessage({
-            type: 'progress',
-            message: `Vorbereitet: ${fileName} (${exportedCount}/${actualNodesToExport.length})`
-          });
-          
-        } catch (exportError) {
-          console.warn(`Fehler beim Exportieren von ${nodeInfo.frameName}: ${exportError.message}`);
-        }
-      }
-      
-      // Export-Informationen an UI senden
-      figma.ui.postMessage({
-        type: 'export-completed',
-        count: exportedCount,
-        exportData: exportData,
-        message: `${exportedCount} Element(e) aus Frames exportiert. Direkter Download verfügbar!`
-      });
-      
-      // Direkter Download für alle Dateien
-      if (exportData.length > 0) {
-        figma.ui.postMessage({
-          type: 'download-ready',
-          files: exportData, // Alle Dateien, keine Begrenzung
-          message: `Download bereit für ${exportData.length} Datei(en)`
-        });
-      }
       
     } catch (error) {
+      console.error('Error getting frame IDs:', error);
       figma.ui.postMessage({
         type: 'error',
-        message: `Fehler beim Export: ${error.message}`
+        message: `Fehler beim Abrufen der Frame-IDs: ${error.message}`
       });
     }
   }
@@ -356,47 +157,38 @@ figma.ui.onmessage = async (msg) => {
     try {
       const allLayers = [];
       
-      // Funktion zum rekursiven Durchlaufen aller Nodes
+      // Function to recursively traverse all nodes
       function traverseNode(node, depth = 0, parentName = '') {
-        // Nur sichtbare und exportierbare Nodes
-        if (node.visible !== false && node.type !== 'PAGE') {
-          const layerInfo = {
-            id: node.id,
-            name: node.name || 'Unnamed',
-            type: node.type,
-            width: node.width || 0,
-            height: node.height || 0,
-            depth: depth,
-            parentName: parentName,
-            fullPath: parentName ? `${parentName} > ${node.name}` : node.name,
-            node: node
-          };
+        // Only include visible and exportable nodes
+        if (node.visible !== false && canBeExported(node)) {
+          const fullPath = parentName ? `${parentName} > ${node.name}` : node.name;
           
-          allLayers.push(layerInfo);
+          allLayers.push({
+            id: node.id,
+            name: node.name,
+            type: node.type,
+            depth: depth,
+            fullPath: fullPath,
+            width: Math.round(node.width || 0),
+            height: Math.round(node.height || 0),
+            node: node
+          });
         }
         
-        // Rekursiv durch Kinder
+        // Traverse children if they exist
         if ('children' in node && node.children) {
-          for (const child of node.children) {
+          node.children.forEach(child => {
             traverseNode(child, depth + 1, node.name);
-          }
+          });
         }
       }
       
-      // Alle Seiten durchsuchen
-      for (const page of figma.root.children) {
-        traverseNode(page, 0);
-      }
-      
-      // Sortieren: Frames zuerst, dann alphabetisch
-      allLayers.sort((a, b) => {
-        if (a.type === 'FRAME' && b.type !== 'FRAME') return -1;
-        if (a.type !== 'FRAME' && b.type === 'FRAME') return 1;
-        if (a.depth !== b.depth) return a.depth - b.depth;
-        return a.name.localeCompare(b.name);
+      // Start traversal from current page
+      figma.currentPage.children.forEach(node => {
+        traverseNode(node, 0);
       });
       
-      console.log(`Gefunden: ${allLayers.length} Ebenen/Gruppen/Frames`);
+      console.log(`Found ${allLayers.length} exportable layers`);
       
       figma.ui.postMessage({
         type: 'layers-loaded',
@@ -404,15 +196,15 @@ figma.ui.onmessage = async (msg) => {
           id: layer.id,
           name: layer.name,
           type: layer.type,
-          width: layer.width,
-          height: layer.height,
           depth: layer.depth,
-          parentName: layer.parentName,
-          fullPath: layer.fullPath
+          fullPath: layer.fullPath,
+          width: layer.width,
+          height: layer.height
         }))
       });
       
     } catch (error) {
+      console.error('Error loading layers:', error);
       figma.ui.postMessage({
         type: 'error',
         message: `Fehler beim Laden der Ebenen: ${error.message}`
@@ -422,132 +214,202 @@ figma.ui.onmessage = async (msg) => {
   
   if (msg.type === 'export-selected-layers') {
     try {
-      const layersToExport = msg.layers;
-      const settings = msg.settings || { scale: 2, format: 'PNG', naming: 'layer_name_date' };
-      let exportedCount = 0;
-      const exportData = [];
+      const selectedLayerIds = msg.layers.map(layer => layer.id);
+      const nodesToExport = [];
       
-      figma.ui.postMessage({
-        type: 'progress',
-        message: `Beginne Export von ${layersToExport.length} ausgewählten Ebenen...`
+      // Find the actual nodes by their IDs
+      selectedLayerIds.forEach(layerId => {
+        const node = figma.getNodeById(layerId);
+        if (node && canBeExported(node)) {
+          nodesToExport.push(node);
+        }
       });
       
-      for (const layerInfo of layersToExport) {
-        try {
-          // Node anhand der ID finden
-          const node = await figma.getNodeByIdAsync(layerInfo.id);
-          
-          if (!node) {
-            console.warn(`Node mit ID ${layerInfo.id} nicht gefunden`);
-            continue;
-          }
-          
-          // Export-Einstellungen
-          const exportSettings = {
-            format: settings.format,
-            constraint: {
-              type: 'SCALE',
-              value: settings.scale
-            }
-          };
-          
-          // Node exportieren
-          const imageData = await node.exportAsync(exportSettings);
-          
-          // Dateiname generieren
-          const timestamp = new Date().toISOString().slice(0, 10);
-          const sanitizedName = layerInfo.name.replace(/[^a-zA-Z0-9]/g, '_');
-          const sanitizedType = layerInfo.type.toLowerCase();
-          
-          let fileName;
-          switch (settings.naming) {
-            case 'type_layer_date':
-              fileName = `${sanitizedType}_${sanitizedName}_${timestamp}.${settings.format.toLowerCase()}`;
-              break;
-            case 'layer_type':
-              fileName = `${sanitizedName}_${sanitizedType}.${settings.format.toLowerCase()}`;
-              break;
-            default: // layer_name_date
-              fileName = `${sanitizedName}_${timestamp}.${settings.format.toLowerCase()}`;
-          }
-          
-          exportData.push({
-            fileName: fileName,
-            imageData: imageData,
-            width: layerInfo.width,
-            height: layerInfo.height,
-            layerName: layerInfo.name,
-            layerType: layerInfo.type
-          });
-          
-          exportedCount++;
-          
-          figma.ui.postMessage({
-            type: 'progress',
-            message: `Exportiert: ${fileName} (${exportedCount}/${layersToExport.length})`
-          });
-          
-        } catch (exportError) {
-          console.warn(`Fehler beim Exportieren von ${layerInfo.name}: ${exportError.message}`);
-        }
+      if (nodesToExport.length === 0) {
+        figma.ui.postMessage({
+          type: 'error',
+          message: 'Keine exportierbaren Elemente gefunden.'
+        });
+        return;
       }
+      
+      // Select all nodes for export
+      figma.currentPage.selection = nodesToExport;
+      
+      // Zoom to selected nodes
+      if (nodesToExport.length > 0) {
+        figma.viewport.scrollAndZoomIntoView(nodesToExport);
+      }
+      
+      console.log(`Selected ${nodesToExport.length} nodes for export:`, nodesToExport.map(n => n.name));
       
       figma.ui.postMessage({
         type: 'export-completed',
-        count: exportedCount,
-        message: `${exportedCount} Ebenen erfolgreich exportiert!`
-      });
-      
-      // Direkter Download
-      if (exportData.length > 0) {
-        figma.ui.postMessage({
-          type: 'download-ready',
-          files: exportData,
-          message: `Download bereit für ${exportData.length} Datei(en)`
-        });
-      }
-      
-    } catch (error) {
-      figma.ui.postMessage({
-        type: 'error',
-        message: `Fehler beim Export: ${error.message}`
-      });
-    }
-  }
-  
-  if (msg.type === 'get-frame-ids') {
-    try {
-      // Alle Frames der aktuellen Seite mit IDs ausgeben
-      const allFrames = figma.currentPage.findAll(node => 
-        node.type === 'FRAME' || node.type === 'COMPONENT'
-      );
-      
-      const frameData = allFrames.map(frame => ({
-        name: frame.name,
-        id: frame.id,
-        type: frame.type,
-        width: frame.width,
-        height: frame.height
-      }));
-      
-      figma.ui.postMessage({
-        type: 'frame-ids-list',
-        frames: frameData
+        message: `${nodesToExport.length} Element(e) ausgewählt. Verwende Cmd/Ctrl+Shift+E für den Export.`
       });
       
     } catch (error) {
+      console.error('Export error:', error);
       figma.ui.postMessage({
         type: 'error',
-        message: `Fehler beim Abrufen der Frame-IDs: ${error.message}`
+        message: `Export-Fehler: ${error.message}`
       });
     }
   }
   
   if (msg.type === 'close') {
+    clearInterval(keepAliveInterval);
     figma.closePlugin();
   }
 };
 
+// Helper function to check if a node can be exported
+function canBeExported(node) {
+  const exportableTypes = [
+    'FRAME', 'COMPONENT', 'INSTANCE', 'GROUP', 
+    'RECTANGLE', 'ELLIPSE', 'POLYGON', 'STAR', 
+    'VECTOR', 'TEXT', 'IMAGE'
+  ];
+  return exportableTypes.includes(node.type);
+}
+
+// Helper function to find a frame
+async function findFrame(fileInfo) {
+  try {
+    console.log(`Suche Frame: "${fileInfo.frameName}" mit ID: "${fileInfo.frameId}"`);
+    
+    // Primary: Search by Node-ID (if available)
+    if (fileInfo.frameId && fileInfo.frameId.trim() !== '') {
+      try {
+        const nodeById = figma.getNodeById(fileInfo.frameId);
+        if (nodeById && (nodeById.type === 'FRAME' || nodeById.type === 'COMPONENT')) {
+          console.log(`✅ Frame über ID gefunden: "${nodeById.name}"`);
+          return nodeById;
+        }
+      } catch (error) {
+        console.log(`ID-Suche fehlgeschlagen für "${fileInfo.frameId}":`, error.message);
+      }
+    }
+    
+    // Fallback: Search by name
+    const allFrames = figma.currentPage.findAll(node => 
+      node.type === 'FRAME' || node.type === 'COMPONENT'
+    );
+    
+    // Exact match first
+    let targetFrame = allFrames.find(frame => frame.name === fileInfo.frameName);
+    
+    if (!targetFrame) {
+      // Partial match as fallback
+      targetFrame = allFrames.find(frame => 
+        frame.name.includes(fileInfo.frameName) || fileInfo.frameName.includes(frame.name)
+      );
+    }
+    
+    if (targetFrame) {
+      console.log(`✅ Frame über Namen gefunden: "${targetFrame.name}"`);
+      return targetFrame;
+    } else {
+      console.log(`❌ Frame nicht gefunden: "${fileInfo.frameName}"`);
+      console.log('Verfügbare Frames:', allFrames.map(f => `"${f.name}"`).join(', '));
+      
+      // Suggest similar frames
+      const similarFrames = allFrames.filter(frame => {
+        const similarity = calculateSimilarity(frame.name.toLowerCase(), fileInfo.frameName.toLowerCase());
+        return similarity > 0.3;
+      });
+      
+      if (similarFrames.length > 0) {
+        console.log('Ähnliche Frames gefunden:', similarFrames.map(f => `"${f.name}"`).join(', '));
+      }
+    }
+    
+    return null;
+  } catch (error) {
+    console.error(`Fehler beim Suchen von Frame "${fileInfo.frameName}":`, error);
+    return null;
+  }
+}
+
+// Helper function to calculate string similarity
+function calculateSimilarity(str1, str2) {
+  const longer = str1.length > str2.length ? str1 : str2;
+  const shorter = str1.length > str2.length ? str2 : str1;
+  
+  if (longer.length === 0) return 1.0;
+  
+  const editDistance = levenshteinDistance(longer, shorter);
+  return (longer.length - editDistance) / longer.length;
+}
+
+function levenshteinDistance(str1, str2) {
+  const matrix = [];
+  
+  for (let i = 0; i <= str2.length; i++) {
+    matrix[i] = [i];
+  }
+  
+  for (let j = 0; j <= str1.length; j++) {
+    matrix[0][j] = j;
+  }
+  
+  for (let i = 1; i <= str2.length; i++) {
+    for (let j = 1; j <= str1.length; j++) {
+      if (str2.charAt(i - 1) === str1.charAt(j - 1)) {
+        matrix[i][j] = matrix[i - 1][j - 1];
+      } else {
+        matrix[i][j] = Math.min(
+          matrix[i - 1][j - 1] + 1,
+          matrix[i][j - 1] + 1,
+          matrix[i - 1][j] + 1
+        );
+      }
+    }
+  }
+  
+  return matrix[str2.length][str1.length];
+}
+
+// Helper function to apply translations to a frame
+async function applyTranslations(frame, translations) {
+  let translatedCount = 0;
+  
+  // Find all text nodes in the frame recursively
+  const textNodes = frame.findAll(node => node.type === 'TEXT');
+  
+  console.log(`Gefunden: ${textNodes.length} Text-Nodes in Frame "${frame.name}"`);
+  
+  for (const textNode of textNodes) {
+    try {
+      const currentText = textNode.characters;
+      const normalizedCurrentText = currentText.replace(/\r\n|\r|\n/g, '\n').trim();
+      
+      // Look for exact matches in translations
+      const translation = translations.find(t => {
+        const normalizedSourceText = t.sourceText.replace(/\r\n|\r|\n/g, '\n').trim();
+        return normalizedSourceText === normalizedCurrentText;
+      });
+      
+      if (translation && translation.translatedText && translation.translatedText.trim() !== '') {
+        // Load font before changing text
+        await figma.loadFontAsync(textNode.fontName);
+        
+        textNode.characters = translation.translatedText;
+        translatedCount++;
+        
+        console.log(`✅ Text übersetzt: "${currentText}" → "${translation.translatedText}"`);
+      } else {
+        console.log(`⚠️  Keine Übersetzung gefunden für: "${currentText}"`);
+      }
+    } catch (error) {
+      console.error(`Fehler beim Übersetzen von Text-Node:`, error);
+    }
+  }
+  
+  return translatedCount;
+}
+
+// Helper function to parse CSV translations
 function parseTranslations(csvData) {
   const lines = csvData.split('\n');
   const headers = lines[0].split(',').map(h => h.replace(/"/g, '').trim());
@@ -558,71 +420,67 @@ function parseTranslations(csvData) {
   const detectedLanguages = new Set();
   
   for (let i = 1; i < lines.length; i++) {
-    if (!lines[i].trim()) continue;
+    const line = lines[i].trim();
+    if (!line) continue;
     
-    const values = parseCSVLine(lines[i]);
+    const values = parseCSVLine(line);
+    if (values.length < headers.length) continue;
     
-    if (values.length >= headers.length) {
-      const row = {};
-      headers.forEach((header, index) => {
-        row[header] = values[index] ? values[index].replace(/"/g, '').trim() : '';
+    const entry = {};
+    headers.forEach((header, index) => {
+      entry[header] = values[index] ? values[index].replace(/"/g, '').trim() : '';
+    });
+    
+    // Extract required fields
+    const frameName = entry['Frame Name'] || '';
+    const sourceText = entry['Source Text'] || '';
+    const translatedText = entry['Translated Text'] || '';
+    const targetLanguage = entry['Target Language'] || '';
+    const figmaFileKey = entry['Figma File Key'] || 'current';
+    const figmaFrameId = entry['Figma Frame ID'] || '';
+    
+    if (!frameName || !sourceText || !targetLanguage) {
+      continue;
+    }
+    
+    detectedLanguages.add(targetLanguage);
+    
+    // Initialize nested structure
+    if (!translationsByFile[figmaFileKey]) {
+      translationsByFile[figmaFileKey] = {};
+    }
+    if (!translationsByFile[figmaFileKey][targetLanguage]) {
+      translationsByFile[figmaFileKey][targetLanguage] = [];
+    }
+    
+    // Add translation
+    translationsByFile[figmaFileKey][targetLanguage].push({
+      sourceText: sourceText,
+      translatedText: translatedText,
+      frameName: frameName
+    });
+    
+    // Track unique files
+    const fileKey = `${figmaFileKey}_${frameName}_${targetLanguage}`;
+    if (!seenFiles.has(fileKey)) {
+      seenFiles.add(fileKey);
+      uniqueFiles.push({
+        fileKey: figmaFileKey,
+        frameName: frameName,
+        frameId: figmaFrameId,
+        targetLanguage: targetLanguage
       });
-      
-      const targetLanguage = row['Target Language'];
-      
-      // Nur Zeilen mit gültiger Übersetzung verarbeiten
-      if (targetLanguage && 
-          row['Translated Text'] && 
-          row['Translated Text'] !== '') {
-        
-        detectedLanguages.add(targetLanguage);
-        
-        const fileKey = row['Figma File Key'] || 'current';
-        const frameName = row['Frame Name'];
-        const fileName = row['Figma File Name'] || '';
-        const frameId = row['Figma Frame ID'] || '';
-        
-        const fileFrameLangKey = `${fileKey}::${frameName}::${targetLanguage}`;
-        const fileFrameKey = `${fileKey}::${frameName}`;
-        
-        // Datei-Info sammeln für einmaligen Import pro Sprache
-        if (!seenFiles.has(fileFrameLangKey)) {
-          uniqueFiles.push({
-            fileKey: fileKey,
-            frameName: frameName,
-            fileName: fileName,
-            frameId: frameId,
-            targetLanguage: targetLanguage,
-            fileUrl: row['Figma File URL'] || ''
-          });
-          seenFiles.add(fileFrameLangKey);
-        }
-        
-        // Übersetzungen gruppieren nach Datei/Frame/Sprache
-        if (!translationsByFile[fileFrameLangKey]) {
-          translationsByFile[fileFrameLangKey] = new Map();
-        }
-        
-        const sourceText = row['Source Text'].replace(/\\n/g, '\n');
-        const translatedText = row['Translated Text'].replace(/\\n/g, '\n');
-        
-        translationsByFile[fileFrameLangKey].set(sourceText, {
-          translatedText: translatedText,
-          layerPath: row['Layer Name'],
-          frameName: frameName,
-          figmaNodeId: row['Figma Node ID'] || ''
-        });
-      }
     }
   }
   
-  return { 
-    translationsByFile, 
-    uniqueFiles, 
-    detectedLanguages: Array.from(detectedLanguages) 
+  return {
+    translationsByFile,
+    uniqueFiles,
+    detectedLanguages: Array.from(detectedLanguages)
   };
 }
 
+// Helper function to parse a CSV line with proper quote handling
 function parseCSVLine(line) {
   const result = [];
   let current = '';
@@ -630,9 +488,15 @@ function parseCSVLine(line) {
   
   for (let i = 0; i < line.length; i++) {
     const char = line[i];
+    const nextChar = line[i + 1];
     
     if (char === '"') {
-      inQuotes = !inQuotes;
+      if (inQuotes && nextChar === '"') {
+        current += '"';
+        i++; // Skip next quote
+      } else {
+        inQuotes = !inQuotes;
+      }
     } else if (char === ',' && !inQuotes) {
       result.push(current);
       current = '';
@@ -645,171 +509,4 @@ function parseCSVLine(line) {
   return result;
 }
 
-async function importFrameFromFile(fileInfo) {
-  try {
-    console.log(`Suche Frame: "${fileInfo.frameName}" mit ID: "${fileInfo.frameId}"`);
-    
-    // Primär: Über Node-ID suchen (wenn vorhanden)
-    if (fileInfo.frameId && fileInfo.frameId.trim() !== '') {
-      try {
-        const nodeById = await figma.getNodeByIdAsync(fileInfo.frameId);
-        if (nodeById && (nodeById.type === 'FRAME' || nodeById.type === 'COMPONENT')) {
-          console.log(`Frame über ID gefunden: ${nodeById.name} (ID: ${nodeById.id})`);
-          return nodeById;
-        } else if (nodeById) {
-          console.warn(`Node mit ID ${fileInfo.frameId} gefunden, aber falscher Typ: ${nodeById.type}`);
-        }
-      } catch (idError) {
-        console.warn(`Frame mit ID "${fileInfo.frameId}" nicht gefunden:`, idError.message);
-      }
-    }
-    
-    // Fallback: Über Namen suchen
-    console.log(`Fallback: Suche Frame über Namen "${fileInfo.frameName}"`);
-    const foundFrame = findFrameByName(fileInfo.frameName);
-    
-    if (foundFrame) {
-      console.log(`Frame über Namen gefunden: ${foundFrame.name} (ID: ${foundFrame.id})`);
-      
-      // Für zukünftige Referenz: Node-ID in Console ausgeben
-      figma.ui.postMessage({
-        type: 'progress',
-        message: `Frame gefunden! Für zukünftige CSV: Figma Frame ID = "${foundFrame.id}"`
-      });
-      
-      return foundFrame;
-    } else {
-      console.warn(`Frame "${fileInfo.frameName}" weder über ID noch Namen gefunden`);
-      
-      // Debug: Alle verfügbaren Frames mit IDs auflisten
-      const allFrames = figma.currentPage.findAll(node => 
-        node.type === 'FRAME' || node.type === 'COMPONENT'
-      );
-      
-      const frameInfo = allFrames.map(f => `"${f.name}" (ID: ${f.id})`).join(', ');
-      console.log('Verfügbare Frames mit IDs:', frameInfo);
-      
-      figma.ui.postMessage({
-        type: 'warning',
-        message: `Frame "${fileInfo.frameName}" nicht gefunden. Verfügbare Frames: ${allFrames.map(f => `${f.name} (ID: ${f.id})`).slice(0, 3).join(', ')}${allFrames.length > 3 ? '...' : ''}`
-      });
-      
-      return null;
-    }
-    
-  } catch (error) {
-    console.error(`Fehler beim Importieren von ${fileInfo.frameName}:`, error);
-    return null;
-  }
-}
-
-function findFrameByName(frameName) {
-  console.log(`Suche nach Frame mit Namen: "${frameName}"`);
-  
-  // Exakte Übereinstimmung in aktueller Seite
-  let matches = figma.currentPage.findAll(node => 
-    (node.type === 'FRAME' || node.type === 'COMPONENT') && node.name === frameName
-  );
-  
-  if (matches.length > 0) {
-    console.log(`Exakte Übereinstimmung gefunden: ${matches[0].name} (ID: ${matches[0].id})`);
-    return matches[0];
-  }
-  
-  // Teilübereinstimmung (falls Frame-Namen leicht abweichen)
-  matches = figma.currentPage.findAll(node => 
-    (node.type === 'FRAME' || node.type === 'COMPONENT') && 
-    node.name.toLowerCase().includes(frameName.toLowerCase())
-  );
-  
-  if (matches.length > 0) {
-    console.log(`Teilübereinstimmung gefunden: ${matches[0].name} (ID: ${matches[0].id})`);
-    figma.ui.postMessage({
-      type: 'warning', 
-      message: `Exakter Frame-Name nicht gefunden. Verwende ähnlichen Frame: "${matches[0].name}" (ID: ${matches[0].id})`
-    });
-    return matches[0];
-  }
-  
-  // In allen Seiten suchen
-  for (const page of figma.root.children) {
-    const pageMatches = page.findAll(node => 
-      (node.type === 'FRAME' || node.type === 'COMPONENT') && node.name === frameName
-    );
-    if (pageMatches.length > 0) {
-      console.log(`Frame in anderer Seite gefunden: ${pageMatches[0].name} (ID: ${pageMatches[0].id}, Seite: ${page.name})`);
-      figma.ui.postMessage({
-        type: 'warning',
-        message: `Frame "${frameName}" in Seite "${page.name}" gefunden (ID: ${pageMatches[0].id}), aber nicht in aktueller Seite.`
-      });
-      return pageMatches[0];
-    }
-  }
-  
-  console.warn(`Kein Frame mit Namen "${frameName}" gefunden`);
-  return null;
-}
-
-// Hilfsfunktion: Node-IDs für aktuell ausgewählte Frames ausgeben
-function getSelectedFrameIds() {
-  const selectedFrames = figma.currentPage.selection.filter(node => 
-    node.type === 'FRAME' || node.type === 'COMPONENT'
-  );
-  
-  if (selectedFrames.length > 0) {
-    console.log('Ausgewählte Frame-IDs:');
-    selectedFrames.forEach(frame => {
-      console.log(`"${frame.name}" → ID: "${frame.id}"`);
-    });
-  }
-  
-  return selectedFrames.map(f => ({ name: f.name, id: f.id }));
-}
-
-async function replaceTextsInFrame(frame, translations) {
-  let updatedCount = 0;
-  
-  // Alle Text-Nodes im Frame finden
-  const textNodes = frame.findAll(node => node.type === 'TEXT');
-  
-  for (const textNode of textNodes) {
-    try {
-      // Font laden falls nötig
-      if (textNode.fontName !== figma.mixed) {
-        await figma.loadFontAsync(textNode.fontName);
-      } else {
-        // Bei gemischten Fonts alle Fonts laden
-        const len = textNode.characters.length;
-        for (let i = 0; i < len; i++) {
-          await figma.loadFontAsync(textNode.getRangeFontName(i, i + 1));
-        }
-      }
-      
-      const currentText = textNode.characters;
-      
-      // Direkte Übereinstimmung prüfen
-      if (translations.has(currentText)) {
-        const translation = translations.get(currentText);
-        textNode.characters = translation.translatedText;
-        updatedCount++;
-        console.log(`Ersetzt: "${currentText}" → "${translation.translatedText}"`);
-        continue;
-      }
-      
-      // Auch nach Teilübereinstimmungen suchen (für den Fall, dass Layer-Namen als zusätzliche Info genutzt werden)
-      for (const [sourceText, translation] of translations) {
-        if (currentText.includes(sourceText) || sourceText.includes(currentText)) {
-          textNode.characters = translation.translatedText;
-          updatedCount++;
-          console.log(`Teilersetzung: "${currentText}" → "${translation.translatedText}"`);
-          break;
-        }
-      }
-      
-    } catch (error) {
-      console.warn(`Fehler beim Verarbeiten des Text-Nodes "${textNode.name}": ${error.message}`);
-    }
-  }
-  
-  return updatedCount;
-}
+console.log('Weleda Transcreate Workspace loaded successfully! 🌿');
