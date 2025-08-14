@@ -171,14 +171,15 @@ figma.ui.onmessage = async (msg) => {
             fullPath: fullPath,
             width: Math.round(node.width || 0),
             height: Math.round(node.height || 0),
-            node: node
+            parentName: parentName,
+            hasChildren: ('children' in node && node.children && node.children.length > 0)
           });
         }
         
         // Traverse children if they exist
         if ('children' in node && node.children) {
           node.children.forEach(child => {
-            traverseNode(child, depth + 1, node.name);
+            traverseNode(child, depth + 1, fullPath || node.name);
           });
         }
       }
@@ -188,7 +189,7 @@ figma.ui.onmessage = async (msg) => {
         traverseNode(node, 0);
       });
       
-      console.log(`Found ${allLayers.length} exportable layers`);
+      console.log(`Found ${allLayers.length} exportable layers with hierarchy`);
       
       figma.ui.postMessage({
         type: 'layers-loaded',
@@ -199,7 +200,9 @@ figma.ui.onmessage = async (msg) => {
           depth: layer.depth,
           fullPath: layer.fullPath,
           width: layer.width,
-          height: layer.height
+          height: layer.height,
+          parentName: layer.parentName,
+          hasChildren: layer.hasChildren
         }))
       });
       
@@ -208,6 +211,107 @@ figma.ui.onmessage = async (msg) => {
       figma.ui.postMessage({
         type: 'error',
         message: `Fehler beim Laden der Ebenen: ${error.message}`
+      });
+    }
+  }
+  
+  if (msg.type === 'download-layers-direct') {
+    try {
+      const selectedLayerIds = msg.layers.map(layer => layer.id);
+      const settings = msg.settings || { format: 'PNG', scale: 2 };
+      const nodesToExport = [];
+      
+      // Find the actual nodes by their IDs
+      selectedLayerIds.forEach(layerId => {
+        const node = figma.getNodeById(layerId);
+        if (node && canBeExported(node)) {
+          nodesToExport.push(node);
+        }
+      });
+      
+      if (nodesToExport.length === 0) {
+        figma.ui.postMessage({
+          type: 'error',
+          message: 'Keine exportierbaren Elemente gefunden.'
+        });
+        return;
+      }
+      
+      console.log(`Starting direct download of ${nodesToExport.length} nodes`);
+      
+      // Export each node individually
+      const exportPromises = nodesToExport.map(async (node, index) => {
+        try {
+          figma.ui.postMessage({
+            type: 'download-progress',
+            current: index + 1,
+            total: nodesToExport.length,
+            nodeName: node.name
+          });
+          
+          // Generate export settings
+          const exportSettings = {
+            format: settings.format,
+            constraint: {
+              type: 'SCALE',
+              value: settings.scale
+            }
+          };
+          
+          // Export the node
+          const bytes = await node.exportAsync(exportSettings);
+          
+          // Generate filename
+          const timestamp = new Date().toISOString().split('T')[0];
+          const safeName = node.name.replace(/[^a-zA-Z0-9]/g, '_');
+          const filename = `${safeName}_${settings.scale}x_${timestamp}.${settings.format.toLowerCase()}`;
+          
+          return {
+            name: filename,
+            bytes: bytes,
+            nodeName: node.name,
+            width: Math.round(node.width || 0),
+            height: Math.round(node.height || 0)
+          };
+          
+        } catch (error) {
+          console.error(`Export failed for node ${node.name}:`, error);
+          return null;
+        }
+      });
+      
+      // Wait for all exports to complete
+      const exportResults = await Promise.all(exportPromises);
+      const successfulExports = exportResults.filter(result => result !== null);
+      
+      if (successfulExports.length === 0) {
+        figma.ui.postMessage({
+          type: 'error',
+          message: 'Alle Exports fehlgeschlagen.'
+        });
+        return;
+      }
+      
+      // Send export data to UI for download
+      figma.ui.postMessage({
+        type: 'download-ready',
+        count: successfulExports.length,
+        exports: successfulExports.map(exp => ({
+          name: exp.name,
+          bytes: Array.from(exp.bytes), // Convert Uint8Array to Array for message passing
+          nodeName: exp.nodeName,
+          width: exp.width,
+          height: exp.height
+        }))
+      });
+      
+      console.log(`✅ Direct download ready: ${successfulExports.length} files`);
+      
+    } catch (error) {
+      console.error('Direct download error:', error);
+      figma.ui.postMessage({
+        type: 'error',
+        message: `Download-Fehler: ${error.message}`
       });
     }
   }
