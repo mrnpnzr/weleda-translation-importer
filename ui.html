@@ -1439,11 +1439,11 @@
     // Export layers button
     if (elements.exportLayersBtn) {
       elements.exportLayersBtn.addEventListener('click', () => {
-        if (selectedLayers.length > 0) {
+        if (selectedItems.length > 0) {
           parent.postMessage({
             pluginMessage: {
               type: 'export-selected-layers',
-              layers: selectedLayers
+              layers: selectedItems
             }
           }, '*');
         }
@@ -1453,7 +1453,7 @@
     // Direct download button
     if (elements.downloadDirectBtn) {
       elements.downloadDirectBtn.addEventListener('click', () => {
-        if (selectedLayers.length > 0) {
+        if (selectedItems.length > 0) {
           const exportSettings = getExportSettings();
           
           elements.downloadDirectBtn.disabled = true;
@@ -1462,10 +1462,40 @@
           parent.postMessage({
             pluginMessage: {
               type: 'download-layers-direct',
-              layers: selectedLayers,
+              selectedItems: selectedItems,
               settings: exportSettings
             }
           }, '*');
+        }
+      });
+    }
+    
+    // Auto-Export button
+    if (elements.autoExportBtn) {
+      elements.autoExportBtn.addEventListener('click', () => {
+        console.log('Auto-Export Button geklickt');
+        console.log('AutoExportItems:', autoExportItems.length);
+        
+        if (autoExportItems.length > 0) {
+          console.log('Starte Auto-Export...');
+          startExportProgress();
+          
+          parent.postMessage({
+            pluginMessage: {
+              type: 'auto-export'
+            }
+          }, '*');
+          
+          console.log('Auto-Export Message gesendet');
+        }
+      });
+    }
+    
+    // Download All Button
+    if (elements.downloadAllBtn) {
+      elements.downloadAllBtn.addEventListener('click', () => {
+        if (window.lastExportData) {
+          downloadFiles(window.lastExportData);
         }
       });
     }
@@ -1492,38 +1522,42 @@
     // Select all button
     if (elements.selectAllBtn) {
       elements.selectAllBtn.addEventListener('click', () => {
-        const checkboxes = document.querySelectorAll('.layer-checkbox');
-        const allSelected = Array.from(checkboxes).every(cb => cb.checked);
-        
-        checkboxes.forEach(cb => {
-          cb.checked = !allSelected;
-        });
-        
-        updateSelectedLayers();
+        const checkboxes = document.querySelectorAll('.child-checkbox');
+        checkboxes.forEach(cb => cb.checked = true);
+        updateSelectedItems();
+      });
+    }
+    
+    // Select none button
+    if (elements.selectNoneBtn) {
+      elements.selectNoneBtn.addEventListener('click', () => {
+        const checkboxes = document.querySelectorAll('.child-checkbox');
+        checkboxes.forEach(cb => cb.checked = false);
+        updateSelectedItems();
       });
     }
     
     // Select frames button
     if (elements.selectFramesBtn) {
       elements.selectFramesBtn.addEventListener('click', () => {
-        const checkboxes = document.querySelectorAll('.layer-checkbox');
+        const checkboxes = document.querySelectorAll('.child-checkbox');
         checkboxes.forEach(cb => {
-          const layerType = cb.dataset.type;
+          const layerType = cb.getAttribute('data-element-type');
           cb.checked = layerType === 'FRAME' || layerType === 'COMPONENT';
         });
-        updateSelectedLayers();
+        updateSelectedItems();
       });
     }
     
     // Select instances button
     if (elements.selectInstancesBtn) {
       elements.selectInstancesBtn.addEventListener('click', () => {
-        const checkboxes = document.querySelectorAll('.layer-checkbox');
+        const checkboxes = document.querySelectorAll('.child-checkbox');
         checkboxes.forEach(cb => {
-          const layerType = cb.dataset.type;
+          const layerType = cb.getAttribute('data-element-type');
           cb.checked = layerType === 'INSTANCE';
         });
-        updateSelectedLayers();
+        updateSelectedItems();
       });
     }
     
@@ -1820,397 +1854,3 @@
           html += `
             <div class="auto-item">
               <div class="auto-item-icon">${icon}</div>
-              <div class="auto-item-info">
-                <p class="auto-item-name">${item.elementName}</p>
-                <p class="auto-item-frame">${item.frameName}</p>
-              </div>
-              <div class="auto-item-badge ${badgeClass}">
-                ${item.format} ${item.scale}x
-              </div>
-            </div>
-          `;
-        });
-        
-        elements.autoExportItems.innerHTML = html;
-      } else if (elements.autoExportItems) {
-        elements.autoExportItems.classList.add('hidden');
-      }
-      
-      console.log(`Auto-Export: ${items.length} Elemente erkannt (${count1zu1}x 1zu1, ${count768}x 768x1344)`);
-    }
-    
-    function addFrameEventListeners() {
-      // Frame toggle (collapse/expand)
-      document.querySelectorAll('.frame-header').forEach(header => {
-        header.addEventListener('click', (e) => {
-          if (e.target.type !== 'checkbox') {
-            const frameCard = header.closest('.frame-card');
-            frameCard.classList.toggle('collapsed');
-          }
-        });
-      });
-      
-      // Frame select all checkboxes
-      document.querySelectorAll('.frame-checkbox').forEach(checkbox => {
-        checkbox.addEventListener('change', (e) => {
-          const frameIndex = parseInt(e.target.closest('[data-frame-index]').dataset.frameIndex);
-          const frameCard = document.querySelector(`[data-frame-index="${frameIndex}"]`).closest('.frame-card');
-          const childCheckboxes = frameCard.querySelectorAll('.child-checkbox');
-          
-          childCheckboxes.forEach(childCheckbox => {
-            childCheckbox.checked = e.target.checked;
-          });
-          
-          updateSelectedItems();
-        });
-      });
-      
-      // Child checkboxes
-      document.querySelectorAll('.child-checkbox').forEach(checkbox => {
-        checkbox.addEventListener('change', updateSelectedItems);
-      });
-      
-      // Child item click (toggle checkbox)
-      document.querySelectorAll('.child-item').forEach(item => {
-        item.addEventListener('click', (e) => {
-          if (e.target.type !== 'checkbox') {
-            const checkbox = item.querySelector('.child-checkbox');
-            checkbox.checked = !checkbox.checked;
-            updateSelectedItems();
-          }
-        });
-      });
-    }
-    
-    function updateSelectedItems() {
-      const checkedBoxes = document.querySelectorAll('.child-checkbox:checked');
-      selectedItems = [];
-      
-      checkedBoxes.forEach(checkbox => {
-        const frameIndex = parseInt(checkbox.dataset.frameIndex);
-        const childIndex = parseInt(checkbox.dataset.childIndex);
-        const frame = availableFrames[frameIndex];
-        const child = frame.children[childIndex];
-        
-        selectedItems.push({
-          frameId: checkbox.dataset.frameId,
-          frameName: frame.frameName,
-          elementId: checkbox.dataset.elementId,
-          elementName: child.name,
-          elementType: child.type,
-          width: child.width,
-          height: child.height
-        });
-      });
-      
-      // Update UI
-      document.querySelectorAll('.child-item').forEach(item => {
-        const checkbox = item.querySelector('.child-checkbox');
-        item.classList.toggle('selected', checkbox.checked);
-      });
-      
-      updateSelectionSummary();
-      updateExportButtons();
-    }
-    
-    function updateSelectionSummary() {
-      const count = selectedItems.length;
-      const settings = getExportSettings();
-      
-      if (elements.selectionCount) {
-        elements.selectionCount.textContent = `${count} Element${count !== 1 ? 'e' : ''}`;
-      }
-      
-      if (elements.selectionDetails) {
-        elements.selectionDetails.textContent = count > 0 ? 
-          `ausgewählt → ${settings.format} ${settings.scale}x` : 
-          'ausgewählt zum Export';
-      }
-    }
-    
-    function updateExportButtons() {
-      const count = selectedItems.length;
-      
-      if (elements.exportLayersBtn) {
-        elements.exportLayersBtn.disabled = count === 0;
-        elements.exportLayersBtn.textContent = `📤 ${count} Element${count !== 1 ? 'e' : ''} exportieren`;
-      }
-      
-      if (elements.downloadDirectBtn) {
-        elements.downloadDirectBtn.disabled = count === 0;
-        elements.downloadDirectBtn.textContent = count > 0 ? 
-          `💾 ${count} Datei${count !== 1 ? 'en' : ''} herunterladen` : 
-          '💾 Direkt herunterladen';
-      }
-    }
-    
-    function getExportSettings() {
-      const activeFormat = document.querySelector('.setting-option[data-format].active');
-      const activeScale = document.querySelector('.setting-option[data-scale].active');
-      const activeNaming = document.querySelector('.setting-option[data-naming].active');
-      
-      const settings = {
-        format: activeFormat ? activeFormat.dataset.format : 'PNG',
-        scale: activeScale ? parseInt(activeScale.dataset.scale) : 2,
-        naming: activeNaming ? activeNaming.dataset.naming : 'frame_element_scale_date'
-      };
-      
-      if (settings.naming === 'custom' && elements.customNaming) {
-        settings.customPattern = elements.customNaming.value || 'export';
-      }
-      
-      return settings;
-    }
-    
-    function downloadFiles(exports) {
-      console.log(`Starting download of ${exports.length} files`);
-      
-      exports.forEach((exportData, index) => {
-        setTimeout(() => {
-          try {
-            // Convert array back to Uint8Array
-            const bytes = new Uint8Array(exportData.bytes);
-            
-            // Create blob and download
-            const blob = new Blob([bytes], { 
-              type: exportData.name.endsWith('.png') ? 'image/png' : 
-                   exportData.name.endsWith('.jpg') ? 'image/jpeg' : 
-                   exportData.name.endsWith('.svg') ? 'image/svg+xml' : 'application/octet-stream'
-            });
-            
-            const url = URL.createObjectURL(blob);
-            const link = document.createElement('a');
-            link.href = url;
-            link.download = exportData.name;
-            link.style.display = 'none';
-            
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
-            
-            // Clean up blob URL
-            setTimeout(() => URL.revokeObjectURL(url), 1000);
-            
-            console.log(`✅ Downloaded: ${exportData.name}`);
-            
-            // Update button text
-            if (elements.downloadDirectBtn) {
-              elements.downloadDirectBtn.textContent = `✅ ${index + 1}/${exports.length} heruntergeladen`;
-            }
-            
-            // Reset button after last download
-            if (index === exports.length - 1) {
-              setTimeout(() => {
-                if (elements.downloadDirectBtn) {
-                  elements.downloadDirectBtn.textContent = '💾 Direkt herunterladen';
-                }
-              }, 2000);
-            }
-            
-          } catch (error) {
-            console.error(`Download failed for ${exportData.name}:`, error);
-          }
-        }, index * 300); // 300ms delay between downloads
-      });
-    }
-    
-    function updateSelectedLayers() {
-      const checkboxes = document.querySelectorAll('.layer-checkbox:checked');
-      selectedLayers = Array.from(checkboxes).map(cb => {
-        const index = parseInt(cb.dataset.index);
-        return availableLayers[index];
-      });
-      
-      if (elements.exportLayersBtn) {
-        elements.exportLayersBtn.disabled = selectedLayers.length === 0;
-        elements.exportLayersBtn.textContent = `📤 ${selectedLayers.length} Elemente exportieren`;
-      }
-      
-      if (elements.downloadDirectBtn) {
-        elements.downloadDirectBtn.disabled = selectedLayers.length === 0;
-        elements.downloadDirectBtn.textContent = selectedLayers.length > 0 ? 
-          `💾 ${selectedLayers.length} Dateien herunterladen` : 
-          '💾 Direkt herunterladen';
-      }
-    }
-    
-    function displayLayers(layers) {
-      // Fallback for old layer system
-      console.log('Using fallback layer display');
-    }
-    
-    function getLayerIcon(type) {
-      const icons = {
-        'FRAME': '📄',
-        'COMPONENT': '🧩',
-        'INSTANCE': '◊',
-        'GROUP': '📁',
-        'RECTANGLE': '▮',
-        'ELLIPSE': '○',
-        'TEXT': '📝',
-        'VECTOR': '✏️',
-        'IMAGE': '🖼️'
-      };
-      return icons[type] || '📦';
-    }
-    
-    function updateScanStatistics(frames) {
-      let totalElements = 0;
-      let visibleElements = 0;
-      let hiddenElements = 0;
-      let lockedElements = 0;
-      
-      frames.forEach(frame => {
-        frame.children.forEach(child => {
-          totalElements++;
-          if (child.visible === false) {
-            hiddenElements++;
-          } else if (child.locked === true) {
-            lockedElements++;
-          } else {
-            visibleElements++;
-          }
-        });
-      });
-      
-      if (elements.scanResults) {
-        elements.scanResults.textContent = `${frames.length} Frames mit ${totalElements} Elementen gefunden`;
-      }
-      
-      if (elements.visibleCount) {
-        elements.visibleCount.textContent = `📄 ${visibleElements} verfügbar`;
-      }
-      
-      if (elements.hiddenCount) {
-        elements.hiddenCount.textContent = `👁️‍🗨️ ${hiddenElements} ausgeblendet`;
-      }
-      
-      if (elements.lockedCount) {
-        elements.lockedCount.textContent = `🔒 ${lockedElements} gesperrt`;
-      }
-    }
-    
-    // Quick action buttons (moved to separate function)
-    function initQuickActions() {
-      if (elements.selectAllBtn) {
-        elements.selectAllBtn.addEventListener('click', () => {
-          const checkboxes = document.querySelectorAll('.child-checkbox');
-          checkboxes.forEach(cb => cb.checked = true);
-          updateSelectedItems();
-        });
-      }
-      
-      if (elements.selectNoneBtn) {
-        elements.selectNoneBtn.addEventListener('click', () => {
-          const checkboxes = document.querySelectorAll('.child-checkbox');
-          checkboxes.forEach(cb => cb.checked = false);
-          updateSelectedItems();
-        });
-      }
-      
-      if (elements.selectInstancesBtn) {
-        elements.selectInstancesBtn.addEventListener('click', () => {
-          const checkboxes = document.querySelectorAll('.child-checkbox');
-          checkboxes.forEach(cb => {
-            const type = cb.getAttribute('data-element-type');
-            cb.checked = type === 'INSTANCE';
-          });
-          updateSelectedItems();
-        });
-      }
-      
-      if (elements.selectFramesBtn) {
-        elements.selectFramesBtn.addEventListener('click', () => {
-          const checkboxes = document.querySelectorAll('.child-checkbox');
-          checkboxes.forEach(cb => {
-            const type = cb.getAttribute('data-element-type');
-            cb.checked = type === 'FRAME' || type === 'COMPONENT';
-          });
-          updateSelectedItems();
-        });
-      }
-    }
-    
-    function startExportProgress() {
-      // Hide results, show progress
-      if (elements.exportResults) {
-        elements.exportResults.classList.remove('active');
-      }
-      
-      if (elements.exportProgress) {
-        elements.exportProgress.classList.add('active');
-      }
-      
-      // Disable button and update text
-      if (elements.autoExportBtn) {
-        elements.autoExportBtn.disabled = true;
-        elements.autoExportBtn.textContent = '⏳ Exportiere...';
-      }
-      
-      // Reset progress
-      updateExportProgress('Bereite Export vor...', 0);
-    }
-    
-    function updateExportProgress(message, progress) {
-      if (elements.progressCurrent) {
-        elements.progressCurrent.textContent = message;
-      }
-      
-      if (elements.progressPercentage) {
-        elements.progressPercentage.textContent = Math.round(progress) + '%';
-      }
-      
-      if (elements.progressBarFill) {
-        elements.progressBarFill.style.width = Math.round(progress) + '%';
-      }
-    }
-    
-    function showExportResults(exports, count) {
-      // Hide progress, show results
-      if (elements.exportProgress) {
-        elements.exportProgress.classList.remove('active');
-      }
-      
-      if (elements.exportResults) {
-        elements.exportResults.classList.add('active');
-      }
-      
-      // Reset button
-      if (elements.autoExportBtn) {
-        elements.autoExportBtn.disabled = false;
-        elements.autoExportBtn.textContent = `🤖 ${autoExportItems.length} Elemente automatisch exportieren`;
-      }
-      
-      // Update summary
-      if (elements.resultsSummary) {
-        elements.resultsSummary.textContent = `${count} Datei${count !== 1 ? 'en' : ''} wurden exportiert und stehen zum Download bereit.`;
-      }
-      
-      // Show file list
-      if (elements.resultsFiles && exports) {
-        let html = '';
-        exports.forEach(exp => {
-          const sizeKB = Math.round(exp.bytes.length / 1024);
-          html += `
-            <div class="result-file">
-              <span class="result-file-icon">📄</span>
-              <span class="result-file-name">${exp.name}</span>
-              <span class="result-file-size">${sizeKB}KB</span>
-            </div>
-          `;
-        });
-        elements.resultsFiles.innerHTML = html;
-      }
-      
-      // Enable download button
-      if (elements.downloadAllBtn) {
-        elements.downloadAllBtn.disabled = false;
-        elements.downloadAllBtn.textContent = '💾 Alle Dateien herunterladen';
-      }
-      
-      // Show success message
-      showMessage(`✅ Auto-Export abgeschlossen: ${count} Datei(en) bereit!`, 'success');
-    }
-  </script>
-</body>
-</html>
