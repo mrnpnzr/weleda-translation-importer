@@ -7,6 +7,9 @@
   "capabilities": [],
   "enableProposedApi": false,
   "enablePrivatePluginApi": false,
-  "build": "",
+  "editorType": ["figma"],
+  "networkAccess": {
+    "allowedDomains": ["none"]
+  },
   "permissions": ["currentuser"]
 }
