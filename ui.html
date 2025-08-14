@@ -1168,6 +1168,44 @@
         
         messageDiv.innerHTML = framesInfo;
         
+      } else if (msg.type === 'download-ready') {
+        // Experimenteller direkter Download für kleine Batches
+        const files = msg.files;
+        let downloadInfo = '<div class="message success">';
+        downloadInfo += '<strong>📥 Download bereit:</strong><br><br>';
+        downloadInfo += `<button id="downloadAllBtn" style="background: #8ab885; color: #083025; border: none; padding: 8px 16px; border-radius: 6px; cursor: pointer; margin-bottom: 12px;">Alle ${files.length} Dateien herunterladen</button><br>`;
+        
+        files.forEach((file, index) => {
+          downloadInfo += `<div style="margin: 4px 0; font-size: 12px;">`;
+          downloadInfo += `📄 ${file.fileName} (${Math.round(file.width)}×${Math.round(file.height)}px)`;
+          downloadInfo += `</div>`;
+        });
+        
+        downloadInfo += '</div>';
+        messageDiv.innerHTML = downloadInfo;
+        
+        // Download-Button Event Listener
+        setTimeout(() => {
+          const downloadBtn = document.getElementById('downloadAllBtn');
+          if (downloadBtn) {
+            downloadBtn.addEventListener('click', () => {
+              files.forEach((file, index) => {
+                setTimeout(() => {
+                  const blob = new Blob([file.imageData], { type: 'image/png' });
+                  const url = URL.createObjectURL(blob);
+                  const a = document.createElement('a');
+                  a.href = url;
+                  a.download = file.fileName;
+                  document.body.appendChild(a);
+                  a.click();
+                  document.body.removeChild(a);
+                  URL.revokeObjectURL(url);
+                }, index * 500); // Verzögerung zwischen Downloads
+              });
+            });
+          }
+        }, 100);
+        
       } else if (msg.type === 'progress') {
         currentStep.textContent = msg.message;
       }
