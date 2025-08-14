@@ -1,6 +1,6 @@
 {
-  "name": "WELEDA | Transcreate Workspace",
-  "id": "weleda-transcreate-workspace",
+  "name": "WELEDA | Translation Import",
+  "id": "weleda-translation-import",
   "api": "1.0.0",
   "main": "code.js",
   "ui": "ui.html",
