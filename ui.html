@@ -1628,7 +1628,7 @@
       const msg = event.data.pluginMessage;
       if (!msg) return;
       
-      console.log('Received message:', msg.type);
+      console.log('Received message:', msg.type, msg);
       
       switch (msg.type) {
         case 'progress':
