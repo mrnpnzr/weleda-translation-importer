@@ -533,6 +533,8 @@ function checkAutoExportPattern(name) {
 
 // New function to handle auto-export
 function handleAutoExport() {
+  console.log('HandleAutoExport aufgerufen');
+  
   try {
     // Re-scan for auto-export items
     var autoExportItems = [];
@@ -540,6 +542,8 @@ function handleAutoExport() {
     var allFrames = figma.currentPage.findAll(function(node) {
       return node.type === 'FRAME' || node.type === 'COMPONENT';
     });
+    
+    console.log('Scanning ' + allFrames.length + ' frames for auto-export patterns');
     
     for (var i = 0; i < allFrames.length; i++) {
       var frame = allFrames[i];
@@ -565,9 +569,13 @@ function handleAutoExport() {
             scale: autoExportInfo.scale,
             pattern: autoExportInfo.pattern
           });
+          
+          console.log('Auto-Export Item gefunden: ' + child.name + ' → ' + autoExportInfo.format + ' ' + autoExportInfo.scale + 'x');
         }
       }
     }
+    
+    console.log('Auto-Export Items gefunden: ' + autoExportItems.length);
     
     if (autoExportItems.length === 0) {
       figma.ui.postMessage({
@@ -592,6 +600,7 @@ function handleAutoExport() {
     function exportNextAutoItem() {
       if (exportIndex >= autoExportItems.length) {
         // All items exported, send results
+        console.log('Auto-Export abgeschlossen: ' + exportedItems.length + ' Dateien');
         figma.ui.postMessage({
           type: 'download-ready',
           count: exportedItems.length,
@@ -603,6 +612,8 @@ function handleAutoExport() {
       
       var item = autoExportItems[exportIndex];
       var progress = Math.round(10 + (exportIndex / autoExportItems.length) * 80);
+      
+      console.log('Exportiere Item ' + (exportIndex + 1) + '/' + autoExportItems.length + ': ' + item.elementName);
       
       figma.ui.postMessage({
         type: 'download-progress',
@@ -635,6 +646,8 @@ function handleAutoExport() {
           value: item.scale
         }
       };
+      
+      console.log('Exportiere mit Settings:', exportSettings);
       
       node.exportAsync(exportSettings).then(function(bytes) {
         var timestamp = new Date().toISOString().split('T')[0];
