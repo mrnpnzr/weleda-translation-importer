@@ -37,17 +37,28 @@ figma.ui.onmessage = async (msg) => {
             message: `Suche Frame "${fileInfo.frameName}"...`
           });
           
+          console.log(`Verarbeite Frame: ${fileInfo.frameName}, Sprache: ${fileInfo.targetLanguage}`);
+          
           const frameData = await importFrameFromFile(fileInfo);
           if (frameData) {
+            console.log(`Frame gefunden, erstelle Kopie...`);
+            
             const duplicatedFrame = frameData.clone();
-            duplicatedFrame.name = `${frameData.name} - ${fileInfo.targetLanguage}`;
+            const newFrameName = `${frameData.name} - ${fileInfo.targetLanguage}`;
+            duplicatedFrame.name = newFrameName;
+            
+            console.log(`Neuer Frame-Name: ${newFrameName}`);
             
             // Frame auf der aktuellen Seite platzieren
             figma.currentPage.appendChild(duplicatedFrame);
             
             // Position basierend auf bereits importierten Frames berechnen
-            duplicatedFrame.x = totalImported * (duplicatedFrame.width + 100);
-            duplicatedFrame.y = 0;
+            const newX = totalImported * (duplicatedFrame.width + 100);
+            const newY = 0;
+            duplicatedFrame.x = newX;
+            duplicatedFrame.y = newY;
+            
+            console.log(`Frame positioniert bei x:${newX}, y:${newY}`);
             
             figma.ui.postMessage({
               type: 'progress',
@@ -55,8 +66,15 @@ figma.ui.onmessage = async (msg) => {
             });
             
             // Übersetzungen anwenden
-            const translations = translationsByFile[fileInfo.fileKey + '::' + fileInfo.frameName + '::' + fileInfo.targetLanguage];
+            const translationKey = fileInfo.fileKey + '::' + fileInfo.frameName + '::' + fileInfo.targetLanguage;
+            const translations = translationsByFile[translationKey];
+            
+            console.log(`Suche Übersetzungen mit Key: ${translationKey}`);
+            console.log(`Gefundene Übersetzungen:`, translations ? translations.size : 0);
+            
             const updatedCount = await replaceTextsInFrame(duplicatedFrame, translations);
+            
+            console.log(`${updatedCount} Texte übersetzt`);
             
             totalImported++;
             importedFramesList.push({
@@ -75,9 +93,15 @@ figma.ui.onmessage = async (msg) => {
               textsCount: updatedCount
             });
             
+          } else {
+            console.warn(`Frame "${fileInfo.frameName}" konnte nicht gefunden werden`);
+            figma.ui.postMessage({
+              type: 'warning',
+              message: `Frame "${fileInfo.frameName}" nicht gefunden - überspringe`
+            });
           }
         } catch (error) {
-          console.warn(`Fehler beim Importieren von ${fileInfo.frameName}: ${error.message}`);
+          console.error(`Fehler beim Importieren von ${fileInfo.frameName}:`, error);
           figma.ui.postMessage({
             type: 'warning',
             message: `Konnte ${fileInfo.frameName} nicht importieren: ${error.message}`
@@ -191,6 +215,34 @@ figma.ui.onmessage = async (msg) => {
     }
   }
   
+  if (msg.type === 'get-frame-ids') {
+    try {
+      // Alle Frames der aktuellen Seite mit IDs ausgeben
+      const allFrames = figma.currentPage.findAll(node => 
+        node.type === 'FRAME' || node.type === 'COMPONENT'
+      );
+      
+      const frameData = allFrames.map(frame => ({
+        name: frame.name,
+        id: frame.id,
+        type: frame.type,
+        width: frame.width,
+        height: frame.height
+      }));
+      
+      figma.ui.postMessage({
+        type: 'frame-ids-list',
+        frames: frameData
+      });
+      
+    } catch (error) {
+      figma.ui.postMessage({
+        type: 'error',
+        message: `Fehler beim Abrufen der Frame-IDs: ${error.message}`
+      });
+    }
+  }
+  
   if (msg.type === 'close') {
     figma.closePlugin();
   }
@@ -295,21 +347,55 @@ function parseCSVLine(line) {
 
 async function importFrameFromFile(fileInfo) {
   try {
-    // Wenn es die aktuelle Datei ist
-    if (fileInfo.fileKey === 'current' || fileInfo.fileKey === figma.fileKey) {
-      return findFrameByName(fileInfo.frameName);
+    console.log(`Suche Frame: "${fileInfo.frameName}" mit ID: "${fileInfo.frameId}"`);
+    
+    // Primär: Über Node-ID suchen (wenn vorhanden)
+    if (fileInfo.frameId && fileInfo.frameId.trim() !== '') {
+      try {
+        const nodeById = await figma.getNodeByIdAsync(fileInfo.frameId);
+        if (nodeById && (nodeById.type === 'FRAME' || nodeById.type === 'COMPONENT')) {
+          console.log(`Frame über ID gefunden: ${nodeById.name} (ID: ${nodeById.id})`);
+          return nodeById;
+        } else if (nodeById) {
+          console.warn(`Node mit ID ${fileInfo.frameId} gefunden, aber falscher Typ: ${nodeById.type}`);
+        }
+      } catch (idError) {
+        console.warn(`Frame mit ID "${fileInfo.frameId}" nicht gefunden:`, idError.message);
+      }
     }
     
-    // Für externe Dateien - hier würde normalerweise eine REST API Anfrage gemacht
-    // Da das Figma Plugin API keine direkten File-Imports unterstützt, 
-    // müssen wir den Benutzer auffordern, die Frames manuell zu kopieren
+    // Fallback: Über Namen suchen
+    console.log(`Fallback: Suche Frame über Namen "${fileInfo.frameName}"`);
+    const foundFrame = findFrameByName(fileInfo.frameName);
     
-    figma.ui.postMessage({
-      type: 'manual-import-needed',
-      fileInfo: fileInfo
-    });
-    
-    return null;
+    if (foundFrame) {
+      console.log(`Frame über Namen gefunden: ${foundFrame.name} (ID: ${foundFrame.id})`);
+      
+      // Für zukünftige Referenz: Node-ID in Console ausgeben
+      figma.ui.postMessage({
+        type: 'progress',
+        message: `Frame gefunden! Für zukünftige CSV: Figma Frame ID = "${foundFrame.id}"`
+      });
+      
+      return foundFrame;
+    } else {
+      console.warn(`Frame "${fileInfo.frameName}" weder über ID noch Namen gefunden`);
+      
+      // Debug: Alle verfügbaren Frames mit IDs auflisten
+      const allFrames = figma.currentPage.findAll(node => 
+        node.type === 'FRAME' || node.type === 'COMPONENT'
+      );
+      
+      const frameInfo = allFrames.map(f => `"${f.name}" (ID: ${f.id})`).join(', ');
+      console.log('Verfügbare Frames mit IDs:', frameInfo);
+      
+      figma.ui.postMessage({
+        type: 'warning',
+        message: `Frame "${fileInfo.frameName}" nicht gefunden. Verfügbare Frames: ${allFrames.map(f => `${f.name} (ID: ${f.id})`).slice(0, 3).join(', ')}${allFrames.length > 3 ? '...' : ''}`
+      });
+      
+      return null;
+    }
     
   } catch (error) {
     console.error(`Fehler beim Importieren von ${fileInfo.frameName}:`, error);
@@ -318,26 +404,66 @@ async function importFrameFromFile(fileInfo) {
 }
 
 function findFrameByName(frameName) {
-  // Zuerst in der aktuellen Seite suchen
-  const currentPageFrames = figma.currentPage.findAll(node => 
+  console.log(`Suche nach Frame mit Namen: "${frameName}"`);
+  
+  // Exakte Übereinstimmung in aktueller Seite
+  let matches = figma.currentPage.findAll(node => 
     (node.type === 'FRAME' || node.type === 'COMPONENT') && node.name === frameName
   );
   
-  if (currentPageFrames.length > 0) {
-    return currentPageFrames[0];
+  if (matches.length > 0) {
+    console.log(`Exakte Übereinstimmung gefunden: ${matches[0].name} (ID: ${matches[0].id})`);
+    return matches[0];
   }
   
-  // Dann in allen Seiten suchen
+  // Teilübereinstimmung (falls Frame-Namen leicht abweichen)
+  matches = figma.currentPage.findAll(node => 
+    (node.type === 'FRAME' || node.type === 'COMPONENT') && 
+    node.name.toLowerCase().includes(frameName.toLowerCase())
+  );
+  
+  if (matches.length > 0) {
+    console.log(`Teilübereinstimmung gefunden: ${matches[0].name} (ID: ${matches[0].id})`);
+    figma.ui.postMessage({
+      type: 'warning', 
+      message: `Exakter Frame-Name nicht gefunden. Verwende ähnlichen Frame: "${matches[0].name}" (ID: ${matches[0].id})`
+    });
+    return matches[0];
+  }
+  
+  // In allen Seiten suchen
   for (const page of figma.root.children) {
-    const frames = page.findAll(node => 
+    const pageMatches = page.findAll(node => 
       (node.type === 'FRAME' || node.type === 'COMPONENT') && node.name === frameName
     );
-    if (frames.length > 0) {
-      return frames[0];
+    if (pageMatches.length > 0) {
+      console.log(`Frame in anderer Seite gefunden: ${pageMatches[0].name} (ID: ${pageMatches[0].id}, Seite: ${page.name})`);
+      figma.ui.postMessage({
+        type: 'warning',
+        message: `Frame "${frameName}" in Seite "${page.name}" gefunden (ID: ${pageMatches[0].id}), aber nicht in aktueller Seite.`
+      });
+      return pageMatches[0];
     }
   }
   
+  console.warn(`Kein Frame mit Namen "${frameName}" gefunden`);
   return null;
+}
+
+// Hilfsfunktion: Node-IDs für aktuell ausgewählte Frames ausgeben
+function getSelectedFrameIds() {
+  const selectedFrames = figma.currentPage.selection.filter(node => 
+    node.type === 'FRAME' || node.type === 'COMPONENT'
+  );
+  
+  if (selectedFrames.length > 0) {
+    console.log('Ausgewählte Frame-IDs:');
+    selectedFrames.forEach(frame => {
+      console.log(`"${frame.name}" → ID: "${frame.id}"`);
+    });
+  }
+  
+  return selectedFrames.map(f => ({ name: f.name, id: f.id }));
 }
 
 async function replaceTextsInFrame(frame, translations) {
