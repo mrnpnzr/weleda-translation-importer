@@ -1,7 +1,7 @@
 // Weleda Transcreate Workspace - Simplified Version (ES5 Compatible)
 figma.showUI(__html__, { 
-  width: 400, 
-  height: 650,
+  width: 420, 
+  height: 800,
   themeColors: true,
   title: "🌿 Weleda Transcreate Workspace"
 });
