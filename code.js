@@ -175,7 +175,10 @@ figma.ui.onmessage = async (msg) => {
           
           if (frameNode && (frameNode.type === 'FRAME' || frameNode.type === 'COMPONENT')) {
             actualFramesToExport.push({
-              ...frameInfo,
+              frameName: frameInfo.frameName,
+              language: frameInfo.language,
+              translatedTexts: frameInfo.translatedTexts,
+              nodeId: frameInfo.nodeId,
               node: frameNode
             });
           }
