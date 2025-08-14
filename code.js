@@ -190,43 +190,61 @@ figma.ui.onmessage = async (msg) => {
       
       console.log(`Found ${frameGroups.length} frames with exportable children`);
       
-      // Generate thumbnails for preview
+      // Generate thumbnails for preview - WITHOUT async/await in array functions
       const frameGroupsWithThumbnails = [];
-      const limitedFrameGroups = frameGroups.slice(0, 20); // Limit to 20 for performance
+      const limitedFrameGroups = frameGroups.slice(0, 10); // Reduced to 10 for better performance
       
-      for (const frameGroup of limitedFrameGroups) {
-        try {
-          const frame = figma.getNodeById(frameGroup.frameId);
-          const thumbnailBytes = await frame.exportAsync({
+      let processedCount = 0;
+      
+      function processNextFrame() {
+        if (processedCount >= limitedFrameGroups.length) {
+          // All frames processed, send result
+          figma.ui.postMessage({
+            type: 'frames-loaded',
+            frames: frameGroupsWithThumbnails
+          });
+          return;
+        }
+        
+        const frameGroup = limitedFrameGroups[processedCount];
+        const frame = figma.getNodeById(frameGroup.frameId);
+        
+        if (frame) {
+          frame.exportAsync({
             format: 'PNG',
-            constraint: { type: 'SCALE', value: 0.1 } // Very small thumbnail
+            constraint: { type: 'SCALE', value: 0.15 } // Slightly larger thumbnail
+          }).then(thumbnailBytes => {
+            frameGroupsWithThumbnails.push({
+              frameId: frameGroup.frameId,
+              frameName: frameGroup.frameName,
+              frameWidth: frameGroup.frameWidth,
+              frameHeight: frameGroup.frameHeight,
+              children: frameGroup.children,
+              thumbnail: Array.from(thumbnailBytes)
+            });
+            processedCount++;
+            processNextFrame();
+          }).catch(error => {
+            console.log(`Thumbnail generation failed for ${frameGroup.frameName}:`, error.message);
+            frameGroupsWithThumbnails.push({
+              frameId: frameGroup.frameId,
+              frameName: frameGroup.frameName,
+              frameWidth: frameGroup.frameWidth,
+              frameHeight: frameGroup.frameHeight,
+              children: frameGroup.children,
+              thumbnail: null
+            });
+            processedCount++;
+            processNextFrame();
           });
-          
-          frameGroupsWithThumbnails.push({
-            frameId: frameGroup.frameId,
-            frameName: frameGroup.frameName,
-            frameWidth: frameGroup.frameWidth,
-            frameHeight: frameGroup.frameHeight,
-            children: frameGroup.children,
-            thumbnail: Array.from(thumbnailBytes)
-          });
-        } catch (error) {
-          console.log(`Thumbnail generation failed for ${frameGroup.frameName}:`, error.message);
-          frameGroupsWithThumbnails.push({
-            frameId: frameGroup.frameId,
-            frameName: frameGroup.frameName,
-            frameWidth: frameGroup.frameWidth,
-            frameHeight: frameGroup.frameHeight,
-            children: frameGroup.children,
-            thumbnail: null
-          });
+        } else {
+          processedCount++;
+          processNextFrame();
         }
       }
       
-      figma.ui.postMessage({
-        type: 'frames-loaded',
-        frames: frameGroupsWithThumbnails
-      });
+      // Start processing
+      processNextFrame();
       
     } catch (error) {
       console.error('Error loading frames:', error);
