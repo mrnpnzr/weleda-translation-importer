@@ -531,6 +531,10 @@
           <span>📤</span>
           Als PNG exportieren
         </button>
+        <button id="getIdsBtn" class="btn-secondary">
+          <span>🔍</span>
+          Frame-IDs anzeigen
+        </button>
       </div>
       
       <div id="messageDiv"></div>
@@ -545,6 +549,7 @@
     const csvFileInput = document.getElementById('csvFile');
     const importBtn = document.getElementById('importBtn');
     const exportBtn = document.getElementById('exportBtn');
+    const getIdsBtn = document.getElementById('getIdsBtn');
     const closeBtn = document.getElementById('closeBtn');
     const messageDiv = document.getElementById('messageDiv');
     const progressSection = document.getElementById('progressSection');
@@ -662,6 +667,12 @@
       }
     });
     
+    getIdsBtn.addEventListener('click', () => {
+      parent.postMessage({
+        pluginMessage: { type: 'get-frame-ids' }
+      }, '*');
+    });
+    
     closeBtn.addEventListener('click', () => {
       parent.postMessage({
         pluginMessage: { type: 'close' }
@@ -719,6 +730,26 @@
         
       } else if (msg.type === 'warning') {
         showMessage(`⚠️ ${msg.message}`, 'warning');
+        
+      } else if (msg.type === 'frame-ids-list') {
+        const framesList = msg.frames;
+        let framesInfo = '<div class="message success">';
+        framesInfo += '<strong>📋 Verfügbare Frames mit Node-IDs:</strong><br><br>';
+        framesInfo += '<div style="font-family: monospace; font-size: 11px; line-height: 1.6; background: rgba(0,0,0,0.2); padding: 12px; border-radius: 6px; max-height: 200px; overflow-y: auto;">';
+        
+        framesList.forEach(frame => {
+          framesInfo += `<div style="margin-bottom: 8px;">`;
+          framesInfo += `<strong style="color: #8ab885;">"${frame.name}"</strong><br>`;
+          framesInfo += `ID: <span style="color: #ffc107; background: rgba(0,0,0,0.3); padding: 2px 6px; border-radius: 3px;">${frame.id}</span><br>`;
+          framesInfo += `Type: ${frame.type} | ${Math.round(frame.width)}×${Math.round(frame.height)}px`;
+          framesInfo += `</div>`;
+        });
+        
+        framesInfo += '</div>';
+        framesInfo += '<br><strong>💡 Tipp:</strong> Kopiere die ID in deine CSV-Spalte "Figma Frame ID" für zuverlässige Frame-Erkennung!';
+        framesInfo += '</div>';
+        
+        messageDiv.innerHTML = framesInfo;
         
       } else if (msg.type === 'progress') {
         currentStep.textContent = msg.message;
