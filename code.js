@@ -285,25 +285,20 @@ figma.ui.onmessage = async (msg) => {
         }
       }
       
-      // Alle exportierten Elemente auswählen für manuellen Export
-      const nodesToSelect = actualNodesToExport.map(n => n.node);
-      figma.currentPage.selection = nodesToSelect;
-      figma.viewport.scrollAndZoomIntoView(nodesToSelect);
-      
       // Export-Informationen an UI senden
       figma.ui.postMessage({
         type: 'export-completed',
         count: exportedCount,
         exportData: exportData,
-        message: `${exportedCount} Element(e) aus Frames exportiert und ausgewählt. Verwende Figma's Export-Panel (Ctrl/Cmd+Shift+E) für ${settings.format}-Download.`
+        message: `${exportedCount} Element(e) aus Frames exportiert. Direkter Download verfügbar!`
       });
       
-      // Alternative: Download-Links generieren (experimentell)
-      if (settings.format === 'PNG' && exportData.length > 0) {
+      // Direkter Download für alle Dateien
+      if (exportData.length > 0) {
         figma.ui.postMessage({
           type: 'download-ready',
-          files: exportData.slice(0, 10), // Begrenzt auf 10 Dateien wegen Browser-Limits
-          message: `Download vorbereitet für ${Math.min(exportData.length, 10)} Datei(en)`
+          files: exportData, // Alle Dateien, keine Begrenzung
+          message: `Download bereit für ${exportData.length} Datei(en)`
         });
       }
       
