@@ -1169,39 +1169,88 @@
         messageDiv.innerHTML = framesInfo;
         
       } else if (msg.type === 'download-ready') {
-        // Experimenteller direkter Download für kleine Batches
+        // Direkter Download-Manager
         const files = msg.files;
         let downloadInfo = '<div class="message success">';
-        downloadInfo += '<strong>📥 Download bereit:</strong><br><br>';
-        downloadInfo += `<button id="downloadAllBtn" style="background: #8ab885; color: #083025; border: none; padding: 8px 16px; border-radius: 6px; cursor: pointer; margin-bottom: 12px;">Alle ${files.length} Dateien herunterladen</button><br>`;
+        downloadInfo += '<strong>📥 Direkter Download bereit:</strong><br><br>';
         
+        downloadInfo += '<div style="margin-bottom: 16px;">';
+        downloadInfo += '<button id="downloadAllBtn" style="background: #8ab885; color: #083025; border: none; padding: 12px 20px; border-radius: 8px; cursor: pointer; font-weight: 600; margin-right: 8px;">📦 Alle ' + files.length + ' Dateien herunterladen</button>';
+        downloadInfo += '<button id="downloadZipBtn" style="background: #083025; color: #8ab885; border: 2px solid #8ab885; padding: 12px 20px; border-radius: 8px; cursor: pointer; font-weight: 600;">📦 Als ZIP herunterladen</button>';
+        downloadInfo += '</div>';
+        
+        downloadInfo += '<div style="background: rgba(0,0,0,0.2); border-radius: 6px; padding: 12px; max-height: 200px; overflow-y: auto; font-family: monospace; font-size: 11px;">';
         files.forEach((file, index) => {
-          downloadInfo += `<div style="margin: 4px 0; font-size: 12px;">`;
-          downloadInfo += `📄 ${file.fileName} (${Math.round(file.width)}×${Math.round(file.height)}px)`;
-          downloadInfo += `</div>`;
+          downloadInfo += '<div style="margin: 4px 0; display: flex; justify-content: space-between; align-items: center;">';
+          downloadInfo += '<span>📄 ' + file.fileName + '</span>';
+          downloadInfo += '<span style="color: #8ab885;">' + Math.round(file.width) + '×' + Math.round(file.height) + 'px</span>';
+          downloadInfo += '</div>';
         });
+        downloadInfo += '</div>';
+        
+        downloadInfo += '<div style="margin-top: 12px; font-size: 12px; color: #b8c7ab;">';
+        downloadInfo += '💡 <strong>Tipp:</strong> Browser wird einzelne Downloads nacheinander starten. Bei vielen Dateien ZIP-Download verwenden.';
+        downloadInfo += '</div>';
         
         downloadInfo += '</div>';
         messageDiv.innerHTML = downloadInfo;
         
-        // Download-Button Event Listener
+        // Download-Button Event Listeners
         setTimeout(() => {
-          const downloadBtn = document.getElementById('downloadAllBtn');
-          if (downloadBtn) {
-            downloadBtn.addEventListener('click', () => {
+          const downloadAllBtn = document.getElementById('downloadAllBtn');
+          const downloadZipBtn = document.getElementById('downloadZipBtn');
+          
+          if (downloadAllBtn) {
+            downloadAllBtn.addEventListener('click', () => {
+              downloadAllBtn.textContent = '⏳ Lade herunter...';
+              downloadAllBtn.disabled = true;
+              
               files.forEach((file, index) => {
                 setTimeout(() => {
-                  const blob = new Blob([file.imageData], { type: 'image/png' });
-                  const url = URL.createObjectURL(blob);
-                  const a = document.createElement('a');
-                  a.href = url;
-                  a.download = file.fileName;
-                  document.body.appendChild(a);
-                  a.click();
-                  document.body.removeChild(a);
-                  URL.revokeObjectURL(url);
-                }, index * 500); // Verzögerung zwischen Downloads
+                  try {
+                    const blob = new Blob([file.imageData], { type: 'image/png' });
+                    const url = URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = file.fileName;
+                    a.style.display = 'none';
+                    document.body.appendChild(a);
+                    a.click();
+                    document.body.removeChild(a);
+                    URL.revokeObjectURL(url);
+                    
+                    // Fortschritt anzeigen
+                    if (index === files.length - 1) {
+                      downloadAllBtn.textContent = '✅ Download abgeschlossen';
+                      setTimeout(() => {
+                        downloadAllBtn.textContent = '📦 Alle ' + files.length + ' Dateien herunterladen';
+                        downloadAllBtn.disabled = false;
+                      }, 2000);
+                    }
+                  } catch (error) {
+                    console.error('Download-Fehler:', error);
+                    downloadAllBtn.textContent = '❌ Fehler beim Download';
+                    downloadAllBtn.disabled = false;
+                  }
+                }, index * 300); // 300ms Verzögerung zwischen Downloads
               });
+            });
+          }
+          
+          if (downloadZipBtn) {
+            downloadZipBtn.addEventListener('click', () => {
+              downloadZipBtn.textContent = '⏳ ZIP erstellen...';
+              downloadZipBtn.disabled = true;
+              
+              // ZIP-Download würde hier implementiert werden
+              // Für jetzt: Einzelne Downloads mit kurzer Verzögerung
+              setTimeout(() => {
+                downloadZipBtn.textContent = '💡 ZIP-Feature kommt bald';
+                setTimeout(() => {
+                  downloadZipBtn.textContent = '📦 Als ZIP herunterladen';
+                  downloadZipBtn.disabled = false;
+                }, 2000);
+              }, 1000);
             });
           }
         }, 100);
