@@ -6,36 +6,36 @@
     * {
       font-family: 'Neo Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
       transition: all 0.2s ease-in-out;
+      box-sizing: border-box;
     }
     
     body {
       margin: 0;
       padding: 0;
-      background: #f5f5f5;
-      color: #333;
+      background: linear-gradient(135deg, #0b4535 0%, #1a5c47 100%);
+      color: #ffffff;
       font-size: 14px;
+      height: 100vh;
+      overflow-x: hidden;
     }
     
     .container {
-      width: 100%;
-      height: 100vh;
-      background: #0b4535;
-      color: white;
       display: flex;
       flex-direction: column;
-      padding: 0;
-      box-shadow: none;
-      border-radius: 0;
-      position: relative;
+      height: 100vh;
+      max-width: 100%;
     }
     
+    /* Header */
     .header {
-      background-color: rgba(0, 0, 0, 0.2);
-      padding: 16px;
-      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+      background: rgba(0,0,0,0.15);
+      padding: 16px 20px 12px 20px;
       display: flex;
       align-items: center;
       justify-content: space-between;
+      backdrop-filter: blur(10px);
+      border-bottom: 1px solid rgba(255,255,255,0.1);
+      flex-shrink: 0;
     }
     
     .logo-section {
@@ -47,158 +47,286 @@
     .weleda-logo {
       width: 32px;
       height: 32px;
-      filter: brightness(0) invert(1); /* Macht das Logo weiß */
+      filter: brightness(0) invert(1);
     }
     
-    .logo-text {
+    .brand-text {
       display: flex;
       flex-direction: column;
+      gap: 2px;
     }
     
-    .main-title {
-      font-size: 18px;
+    .brand-title {
+      font-size: 16px;
       font-weight: 700;
+      color: #ffffff;
       margin: 0;
-      letter-spacing: 0.5px;
-      color: white;
     }
     
-    .subtitle {
-      font-size: 8px;
-      letter-spacing: 1px;
-      color: rgba(255, 255, 255, 0.7);
-      margin-top: 2px;
-      text-transform: uppercase;
+    .brand-subtitle {
+      font-size: 10px;
+      font-weight: 400;
+      color: #b8c7ab;
+      letter-spacing: 1.2px;
+      margin: 0;
     }
     
     .close-btn {
       background: none;
       border: none;
-      color: rgba(255, 255, 255, 0.6);
-      font-size: 20px;
+      color: #b8c7ab;
+      font-size: 18px;
       cursor: pointer;
-      padding: 8px;
+      padding: 4px;
       border-radius: 4px;
       transition: all 0.2s ease;
     }
     
     .close-btn:hover {
-      color: white;
-      background-color: rgba(255, 255, 255, 0.1);
-      transform: scale(1.1);
+      color: #ffffff;
+      background: rgba(255,255,255,0.1);
     }
     
-    .content {
+    /* Main Content */
+    .main-content {
       flex: 1;
-      padding: 30px;
-      overflow-y: auto;
-    }
-    
-    .info-box {
-      background: rgba(138, 184, 133, 0.15);
-      border: 1px solid rgba(138, 184, 133, 0.3);
-      border-radius: 8px;
       padding: 16px;
-      margin-bottom: 24px;
-      font-size: 13px;
-      color: #b8c7ab;
-      line-height: 1.5;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
     }
     
-    .info-box strong {
-      color: white;
-      font-weight: 700;
+    /* Accordion Cards */
+    .accordion-card {
+      background: rgba(255,255,255,0.08);
+      border-radius: 12px;
+      border: 1px solid rgba(255,255,255,0.12);
+      overflow: hidden;
+      backdrop-filter: blur(8px);
     }
     
-    .form-group {
-      margin-bottom: 24px;
-    }
-    
-    label {
-      display: block;
-      margin-bottom: 8px;
-      font-weight: 600;
-      color: white;
-      font-size: 14px;
-      letter-spacing: 0.3px;
-    }
-    
-    input[type="file"] {
-      width: 100%;
-      padding: 12px 16px;
-      border: 2px solid rgba(255, 255, 255, 0.2);
-      border-radius: 8px;
-      font-size: 14px;
-      background: rgba(255, 255, 255, 0.1);
-      color: white;
+    .accordion-header {
+      padding: 16px 20px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background: rgba(255,255,255,0.05);
+      border-bottom: 1px solid rgba(255,255,255,0.1);
       transition: all 0.2s ease;
     }
     
-    input[type="file"]:focus {
-      outline: none;
-      border-color: #8ab885;
-      background: rgba(255, 255, 255, 0.15);
-      box-shadow: 0 0 0 3px rgba(138, 184, 133, 0.2);
+    .accordion-header:hover {
+      background: rgba(255,255,255,0.1);
     }
     
-    input[type="file"]:hover {
-      border-color: rgba(255, 255, 255, 0.4);
-      background: rgba(255, 255, 255, 0.15);
+    .accordion-header.active {
+      background: rgba(139,184,133,0.2);
+      border-bottom-color: rgba(139,184,133,0.3);
     }
     
-    .file-info {
-      font-size: 12px;
+    .accordion-title {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 15px;
+      font-weight: 600;
+      color: #ffffff;
+    }
+    
+    .accordion-icon {
+      font-size: 18px;
+    }
+    
+    .accordion-arrow {
+      font-size: 14px;
       color: #b8c7ab;
-      margin-top: 6px;
+      transition: transform 0.2s ease;
+    }
+    
+    .accordion-header.active .accordion-arrow {
+      transform: rotate(180deg);
+    }
+    
+    .accordion-content {
+      padding: 0 20px;
+      max-height: 0;
+      overflow: hidden;
+      transition: all 0.3s ease;
+    }
+    
+    .accordion-content.active {
+      padding: 20px;
+      max-height: 1000px;
+    }
+    
+    /* Import Section */
+    .import-section {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+    
+    .info-box {
+      background: rgba(139,184,133,0.15);
+      border: 1px solid rgba(139,184,133,0.3);
+      border-radius: 8px;
+      padding: 12px;
+      font-size: 12px;
+      line-height: 1.4;
+      color: #e8f1e6;
+    }
+    
+    .file-input-wrapper {
+      position: relative;
+      background: rgba(255,255,255,0.08);
+      border: 2px dashed rgba(139,184,133,0.4);
+      border-radius: 8px;
+      padding: 20px;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+    
+    .file-input-wrapper:hover {
+      background: rgba(255,255,255,0.12);
+      border-color: rgba(139,184,133,0.6);
+    }
+    
+    .file-input {
+      position: absolute;
+      opacity: 0;
+      width: 100%;
+      height: 100%;
+      cursor: pointer;
+    }
+    
+    .file-input-label {
+      color: #b8c7ab;
+      font-size: 13px;
+      pointer-events: none;
+    }
+    
+    /* Buttons */
+    .btn {
+      background: #8ab885;
+      color: #0b4535;
+      border: none;
+      border-radius: 8px;
+      padding: 12px 20px;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+    }
+    
+    .btn:hover {
+      background: #a0c896;
+      transform: translateY(-1px);
+      box-shadow: 0 4px 12px rgba(139,184,133,0.3);
+    }
+    
+    .btn:disabled {
+      background: rgba(139,184,133,0.3);
+      color: rgba(11,69,53,0.6);
+      cursor: not-allowed;
+      transform: none;
+      box-shadow: none;
+    }
+    
+    .btn-secondary {
+      background: rgba(255,255,255,0.1);
+      color: #ffffff;
+      border: 1px solid rgba(255,255,255,0.2);
+    }
+    
+    .btn-secondary:hover {
+      background: rgba(255,255,255,0.15);
+      color: #ffffff;
+    }
+    
+    /* Export Section */
+    .export-section {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+    
+    .layer-browser {
+      background: rgba(0,0,0,0.15);
+      border-radius: 8px;
+      padding: 16px;
+      max-height: 300px;
+      overflow-y: auto;
+    }
+    
+    .layer-item {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 6px 0;
+      font-size: 12px;
+      color: #e8f1e6;
+    }
+    
+    .layer-checkbox {
+      margin-right: 4px;
+    }
+    
+    .layer-icon {
+      width: 16px;
+      text-align: center;
+      opacity: 0.7;
+    }
+    
+    .layer-name {
+      flex: 1;
+    }
+    
+    /* Status Messages */
+    .message {
+      padding: 12px;
+      border-radius: 8px;
+      margin: 8px 0;
+      font-size: 13px;
       line-height: 1.4;
     }
     
-    /* Progress Section */
-    .progress-section {
-      background: rgba(0, 0, 0, 0.2);
-      border-radius: 12px;
-      padding: 20px;
-      margin: 20px 0;
-      border: 1px solid rgba(255, 255, 255, 0.1);
-      display: none;
+    .message.success {
+      background: rgba(139,184,133,0.2);
+      color: #8ab885;
+      border: 1px solid rgba(139,184,133,0.4);
     }
     
-    .progress-section.show {
-      display: block;
-      animation: slideInFromBottom 0.3s ease-out;
+    .message.error {
+      background: rgba(220,53,69,0.2);
+      color: #ff6b7a;
+      border: 1px solid rgba(220,53,69,0.4);
     }
     
-    .progress-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 16px;
+    .message.warning {
+      background: rgba(255,193,7,0.2);
+      color: #ffc107;
+      border: 1px solid rgba(255,193,7,0.4);
     }
     
-    .progress-title {
-      font-size: 16px;
-      font-weight: 600;
-      color: white;
-    }
-    
-    .progress-stats {
-      font-size: 12px;
-      color: #b8c7ab;
-    }
-    
-    .progress-bar-container {
-      background: rgba(255, 255, 255, 0.1);
-      border-radius: 10px;
-      height: 8px;
-      margin-bottom: 12px;
+    /* Progress Bar */
+    .progress-container {
+      background: rgba(0,0,0,0.2);
+      border-radius: 8px;
       overflow: hidden;
+      margin: 12px 0;
     }
     
     .progress-bar {
-      background: linear-gradient(90deg, #8ab885, #7ca877);
-      height: 100%;
-      width: 0%;
-      border-radius: 10px;
+      height: 6px;
+      background: linear-gradient(90deg, #8ab885, #a0c896);
+      border-radius: 8px;
       transition: width 0.3s ease;
       position: relative;
     }
@@ -207,836 +335,334 @@
       content: '';
       position: absolute;
       top: 0;
-      left: -100%;
-      width: 100%;
-      height: 100%;
-      background: linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent);
-      animation: shimmer 2s infinite;
+      left: 0;
+      bottom: 0;
+      right: 0;
+      background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+      animation: shimmer 1.5s infinite;
     }
     
     @keyframes shimmer {
-      0% { left: -100%; }
-      100% { left: 100%; }
+      0% { transform: translateX(-100%); }
+      100% { transform: translateX(100%); }
     }
     
-    .current-step {
-      font-size: 13px;
-      color: #8ab885;
-      margin-bottom: 16px;
-      display: flex;
-      align-items: center;
-      gap: 8px;
-    }
-    
-    .current-step::before {
-      content: "⚡";
-      font-size: 14px;
-    }
-    
-    .frames-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-      gap: 12px;
-      margin-top: 16px;
-    }
-    
-    .frame-card {
-      background: rgba(255, 255, 255, 0.05);
-      border: 1px solid rgba(255, 255, 255, 0.1);
-      border-radius: 8px;
-      padding: 12px;
-      transition: all 0.2s ease;
-    }
-    
-    .frame-card:hover {
-      background: rgba(255, 255, 255, 0.08);
-      transform: translateY(-2px);
-    }
-    
-    .frame-card.completed {
-      border-color: #8ab885;
-      background: rgba(138, 184, 133, 0.1);
-    }
-    
-    .frame-name {
-      font-size: 13px;
-      font-weight: 600;
-      color: white;
-      margin-bottom: 4px;
-    }
-    
-    .frame-language {
-      font-size: 11px;
-      color: #8ab885;
-      text-transform: uppercase;
-      letter-spacing: 0.5px;
-    }
-    
-    .frame-stats {
-      font-size: 10px;
-      color: #b8c7ab;
-      margin-top: 4px;
-    }
-    
-    .button-group {
-      display: flex;
-      gap: 12px;
-      margin-top: 30px;
-      padding-top: 20px;
-      border-top: 1px solid rgba(255, 255, 255, 0.1);
-    }
-    
-    button {
-      flex: 1;
-      padding: 14px 20px;
-      border: none;
-      border-radius: 8px;
-      font-size: 14px;
-      font-weight: 600;
-      cursor: pointer;
-      transition: all 0.2s ease;
-      text-transform: uppercase;
-      letter-spacing: 0.5px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 8px;
-    }
-    
-    .btn-primary {
-      background: #8ab885;
-      color: #083025;
-      border: 2px solid #8ab885;
-    }
-    
-    .btn-primary:hover:not(:disabled) {
-      background: #7ca877;
-      border-color: #7ca877;
-      transform: translateY(-1px);
-      box-shadow: 0 4px 8px rgba(138, 184, 133, 0.3);
-    }
-    
-    .btn-primary:disabled {
-      background: rgba(255, 255, 255, 0.2);
-      color: rgba(255, 255, 255, 0.5);
-      border-color: rgba(255, 255, 255, 0.2);
-      cursor: not-allowed;
-      transform: none;
-      box-shadow: none;
-    }
-    
-    .btn-export {
-      background: #083025;
-      color: #8ab885;
-      border: 2px solid #8ab885;
-      display: none;
-    }
-    
-    .btn-export:hover:not(:disabled) {
-      background: #8ab885;
-      color: #083025;
-      transform: translateY(-1px);
-      box-shadow: 0 4px 8px rgba(138, 184, 133, 0.3);
-    }
-    
-    .btn-export.show {
-      display: flex;
-    }
-    
-    .message {
-      margin-top: 20px;
-      padding: 16px;
-      border-radius: 8px;
-      font-size: 14px;
-      border-left: 4px solid;
-      animation: slideInFromBottom 0.3s ease-out;
-    }
-    
-    .message.success {
-      background: rgba(138, 184, 133, 0.15);
-      color: #8ab885;
-      border-left-color: #8ab885;
-    }
-    
-    .message.error {
-      background: rgba(220, 53, 69, 0.15);
-      color: #ff6b7a;
-      border-left-color: #dc3545;
-    }
-    
-    .message.warning {
-      background: rgba(255, 193, 7, 0.15);
-      color: #ffc107;
-      border-left-color: #ffc107;
-    }
-    
-    .footer {
-      padding: 12px 16px;
-      border-top: 1px solid rgba(255, 255, 255, 0.1);
-      text-align: center;
-      font-size: 10px;
-      color: rgba(255, 255, 255, 0.5);
-      letter-spacing: 0.3px;
-    }
-    
-    .footer .heart {
-      color: #ff6b7a;
+    .progress-text {
       font-size: 12px;
-      margin: 0 2px;
-      animation: heartbeat 2s infinite;
+      color: #b8c7ab;
+      margin-top: 6px;
     }
     
-    @keyframes heartbeat {
+    /* Footer */
+    .footer {
+      padding: 12px 20px;
+      text-align: center;
+      background: rgba(0,0,0,0.1);
+      border-top: 1px solid rgba(255,255,255,0.1);
+      flex-shrink: 0;
+    }
+    
+    .footer-text {
+      font-size: 11px;
+      color: #b8c7ab;
+      margin: 0;
+    }
+    
+    .heart {
+      color: #ff6b7a;
+      animation: pulse 2s infinite;
+    }
+    
+    @keyframes pulse {
       0%, 100% { transform: scale(1); }
       50% { transform: scale(1.1); }
     }
     
-    /* File input styling for better Weleda integration */
-    input[type="file"]::file-selector-button {
-      background: #8ab885;
-      color: #083025;
-      border: none;
-      padding: 8px 16px;
-      border-radius: 6px;
-      font-weight: 600;
-      font-size: 12px;
-      margin-right: 12px;
-      cursor: pointer;
-      transition: all 0.2s ease;
-      text-transform: uppercase;
-      letter-spacing: 0.3px;
+    /* Utility Classes */
+    .hidden {
+      display: none !important;
     }
     
-    input[type="file"]::file-selector-button:hover {
-      background: #7ca877;
-      transform: translateY(-1px);
+    .loading {
+      opacity: 0.6;
+      pointer-events: none;
     }
     
-    /* Status indicator */
-    .status-indicator {
-      display: inline-block;
-      width: 8px;
-      height: 8px;
-      border-radius: 50%;
-      margin-right: 8px;
+    /* Scrollbar */
+    ::-webkit-scrollbar {
+      width: 6px;
     }
     
-    .status-indicator.ready {
-      background-color: #8ab885;
-      box-shadow: 0 0 4px rgba(138, 184, 133, 0.5);
-    }
-    
-    .status-indicator.loading {
-      background-color: #ffc107;
-      animation: pulse 1.5s infinite;
-    }
-    
-    /* Animations */
-    @keyframes slideInFromBottom {
-      from {
-        opacity: 0;
-        transform: translateY(10px);
-      }
-      to {
-        opacity: 1;
-        transform: translateY(0);
-      }
-    }
-    
-    @keyframes pulse {
-      0%, 100% { opacity: 1; }
-      50% { opacity: 0.5; }
-    }
-    
-    @keyframes fadeIn {
-      from { opacity: 0; }
-      to { opacity: 1; }
-    }
-    
-    /* Export animation */
-    .export-animation {
-      animation: exportPulse 0.6s ease-in-out;
-    }
-    
-    /* Export Modal */
-    .export-modal {
-      display: none;
-      position: fixed;
-      top: 0;
-      left: 0;
-      right: 0;
-      bottom: 0;
-      background: rgba(0, 0, 0, 0.8);
-      backdrop-filter: blur(4px);
-      z-index: 1000;
-      align-items: center;
-      justify-content: center;
-      animation: fadeIn 0.3s ease-out;
-    }
-    
-    .export-modal.show {
-      display: flex;
-    }
-    
-    .export-modal-content {
-      background: #0b4535;
-      border: 1px solid rgba(255, 255, 255, 0.2);
-      border-radius: 12px;
-      padding: 24px;
-      width: 95%;
-      max-width: 600px;
-      max-height: 90vh;
-      overflow-y: auto;
-      color: white;
-    }
-    
-    .export-modal-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 20px;
-      padding-bottom: 16px;
-      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-    }
-    
-    .export-modal-title {
-      font-size: 18px;
-      font-weight: 700;
-      color: white;
-      margin: 0;
-    }
-    
-    .export-close-btn {
-      background: none;
-      border: none;
-      color: rgba(255, 255, 255, 0.6);
-      font-size: 20px;
-      cursor: pointer;
-      padding: 8px;
-      border-radius: 4px;
-      transition: all 0.2s ease;
-    }
-    
-    .export-close-btn:hover {
-      color: white;
-      background-color: rgba(255, 255, 255, 0.1);
-    }
-    
-    .export-options {
-      margin-bottom: 20px;
-    }
-    
-    .export-option {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      padding: 12px;
-      margin-bottom: 8px;
-      border: 1px solid rgba(255, 255, 255, 0.1);
-      border-radius: 8px;
-      cursor: pointer;
-      transition: all 0.2s ease;
-    }
-    
-    .export-option:hover {
-      background: rgba(255, 255, 255, 0.05);
-      border-color: #8ab885;
-    }
-    
-    .export-option.selected {
-      background: rgba(138, 184, 133, 0.15);
-      border-color: #8ab885;
-    }
-    
-    .export-option input[type="radio"] {
-      accent-color: #8ab885;
-    }
-    
-    .export-option-label {
-      flex: 1;
-    }
-    
-    .export-option-title {
-      font-weight: 600;
-      color: white;
-      margin-bottom: 2px;
-    }
-    
-    .export-option-desc {
-      font-size: 12px;
-      color: #b8c7ab;
-    }
-    
-    .export-frames-list {
-      margin: 16px 0;
-      max-height: 200px;
-      overflow-y: auto;
-      border: 1px solid rgba(255, 255, 255, 0.1);
-      border-radius: 8px;
-      padding: 12px;
-      background: rgba(0, 0, 0, 0.2);
-    }
-    
-    .export-frame-item {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      padding: 8px;
-      margin-bottom: 6px;
-      border-radius: 6px;
-      cursor: pointer;
-      transition: all 0.2s ease;
-    }
-    
-    .export-frame-item:hover {
-      background: rgba(255, 255, 255, 0.05);
-    }
-    
-    .export-frame-item input[type="checkbox"] {
-      accent-color: #8ab885;
-    }
-    
-    .export-frame-name {
-      font-weight: 500;
-      color: white;
-      flex: 1;
-    }
-    
-    .export-frame-lang {
-      font-size: 11px;
-      color: #8ab885;
-      background: rgba(138, 184, 133, 0.2);
-      padding: 2px 6px;
+    ::-webkit-scrollbar-track {
+      background: rgba(255,255,255,0.1);
       border-radius: 3px;
-      text-transform: uppercase;
-      letter-spacing: 0.5px;
     }
     
-    .export-settings {
-      background: rgba(255, 255, 255, 0.05);
-      border-radius: 8px;
-      padding: 16px;
-      margin-bottom: 20px;
+    ::-webkit-scrollbar-thumb {
+      background: rgba(139,184,133,0.4);
+      border-radius: 3px;
     }
     
-    .export-settings-title {
-      font-weight: 600;
-      color: white;
-      margin-bottom: 12px;
-      font-size: 14px;
-    }
-    
-    .export-setting-row {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 12px;
-    }
-    
-    .export-setting-label {
-      font-size: 13px;
-      color: #b8c7ab;
-    }
-    
-    .export-select {
-      background: rgba(255, 255, 255, 0.1);
-      border: 1px solid rgba(255, 255, 255, 0.2);
-      border-radius: 6px;
-      color: white;
-      padding: 6px 12px;
-      font-size: 12px;
-      min-width: 80px;
-    }
-    
-    .export-select:focus {
-      outline: none;
-      border-color: #8ab885;
-      box-shadow: 0 0 0 2px rgba(138, 184, 133, 0.2);
-    }
-    
-    .export-actions {
-      display: flex;
-      gap: 12px;
-      padding-top: 16px;
-      border-top: 1px solid rgba(255, 255, 255, 0.1);
-    }
-    
-    .btn-export-confirm {
-      flex: 1;
-      background: #8ab885;
-      color: #083025;
-      border: 2px solid #8ab885;
-      padding: 12px 20px;
-      border-radius: 8px;
-      font-size: 14px;
-      font-weight: 600;
-      cursor: pointer;
-      transition: all 0.2s ease;
-      text-transform: uppercase;
-      letter-spacing: 0.5px;
-    }
-    
-    .btn-export-confirm:hover:not(:disabled) {
-      background: #7ca877;
-      border-color: #7ca877;
-      transform: translateY(-1px);
-      box-shadow: 0 4px 8px rgba(138, 184, 133, 0.3);
-    }
-    
-    .btn-export-confirm:disabled {
-      background: rgba(255, 255, 255, 0.2);
-      color: rgba(255, 255, 255, 0.5);
-      border-color: rgba(255, 255, 255, 0.2);
-      cursor: not-allowed;
-    }
-    
-    .btn-export-cancel {
-      background: transparent;
-      color: #b8c7ab;
-      border: 2px solid rgba(184, 199, 171, 0.3);
-      padding: 12px 20px;
-      border-radius: 8px;
-      font-size: 14px;
-      font-weight: 600;
-      cursor: pointer;
-      transition: all 0.2s ease;
-      text-transform: uppercase;
-      letter-spacing: 0.5px;
-    }
-    
-    .btn-export-cancel:hover {
-      background: rgba(184, 199, 171, 0.1);
-      border-color: #b8c7ab;
-      color: white;
+    ::-webkit-scrollbar-thumb:hover {
+      background: rgba(139,184,133,0.6);
     }
   </style>
 </head>
 <body>
   <div class="container">
+    <!-- Header -->
     <div class="header">
       <div class="logo-section">
-        <!-- Echtes Weleda Logo aus logo.svg -->
-        <img src="logo.svg" alt="Weleda Logo" class="weleda-logo" />
-        <div class="logo-text">
-          <h1 class="main-title">Transcreate Workspace</h1>
-          <div class="subtitle">WELEDA DIGITAL LAB</div>
+        <img src="logo.svg" alt="Weleda" class="weleda-logo">
+        <div class="brand-text">
+          <h1 class="brand-title">Transcreate Workspace</h1>
+          <p class="brand-subtitle">WELEDA DIGITAL LAB</p>
         </div>
       </div>
-      <button id="closeBtn" class="close-btn">✕</button>
+      <button class="close-btn" id="closeBtn">×</button>
     </div>
-    
-    <div class="content">
-      <div class="info-box">
-        <strong>🚀 Intelligenter Translation Importer:</strong><br>
-        1. CSV-Datei mit Übersetzungen hochladen<br>
-        2. Plugin erkennt automatisch alle Sprachen in der CSV<br>
-        3. Importiert und übersetzt alle Frames automatisch<br>
-        4. Exportiert alle Frames einzeln als PNG mit optimalen Namen
-      </div>
-      
-      <div class="form-group">
-        <label for="csvFile">CSV-Datei auswählen:</label>
-        <input type="file" id="csvFile" accept=".csv" />
-        <div class="file-info">
-          <strong>Das Plugin erkennt automatisch:</strong> Alle Zielsprachen, Frame-Namen und Datei-Referenzen aus der CSV
+
+    <!-- Main Content -->
+    <div class="main-content">
+      <!-- Import Section -->
+      <div class="accordion-card">
+        <div class="accordion-header active" data-target="importContent">
+          <div class="accordion-title">
+            <span class="accordion-icon">📥</span>
+            CSV Translation Import
+          </div>
+          <span class="accordion-arrow">▼</span>
+        </div>
+        <div class="accordion-content active" id="importContent">
+          <div class="import-section">
+            <div class="info-box">
+              <strong>🚀 CSV-Übersetzungen importieren:</strong><br>
+              1. CSV-Datei mit Übersetzungen hochladen<br>
+              2. Plugin erkennt automatisch alle Sprachen<br>
+              3. Frames werden gefunden und übersetzt
+            </div>
+            
+            <div class="file-input-wrapper">
+              <input type="file" id="csvFile" class="file-input" accept=".csv">
+              <div class="file-input-label">📄 CSV-Datei auswählen</div>
+            </div>
+            
+            <button class="btn" id="importBtn" disabled>
+              <span>⏳</span>
+              Übersetzungen importieren
+            </button>
+            
+            <button class="btn btn-secondary" id="showFrameIdsBtn">
+              🔍 Frame-IDs anzeigen
+            </button>
+            
+            <div id="progressContainer" class="hidden">
+              <div class="progress-container">
+                <div class="progress-bar" id="progressBar" style="width: 0%"></div>
+              </div>
+              <div class="progress-text" id="progressText">Wird geladen...</div>
+            </div>
+            
+            <div id="messageDiv"></div>
+          </div>
         </div>
       </div>
-      
-      <!-- Detaillierte Progress Section -->
-      <div id="progressSection" class="progress-section">
-        <div class="progress-header">
-          <div class="progress-title">Import-Status</div>
-          <div class="progress-stats" id="progressStats">0 / 0 Frames</div>
+
+      <!-- Export Section -->
+      <div class="accordion-card">
+        <div class="accordion-header" data-target="exportContent">
+          <div class="accordion-title">
+            <span class="accordion-icon">📤</span>
+            Layer Export Manager
+          </div>
+          <span class="accordion-arrow">▼</span>
         </div>
-        <div class="progress-bar-container">
-          <div class="progress-bar" id="progressBar"></div>
-        </div>
-        <div class="current-step" id="currentStep">Bereit für Import...</div>
-        <div class="frames-grid" id="framesGrid"></div>
-      </div>
-      
-      <div class="button-group">
-        <button id="importBtn" class="btn-primary" disabled>
-          <span class="status-indicator ready"></span>
-          Übersetzungen importieren
-        </button>
-        <button id="exportBtn" class="btn-export">
-          <span>📤</span>
-          Als PNG exportieren
-        </button>
-        <button id="getIdsBtn" class="btn-secondary">
-          <span>🔍</span>
-          Frame-IDs anzeigen
-        </button>
-      </div>
-      
-      <div id="messageDiv"></div>
-    </div>
-    
-    <!-- Export Modal -->
-    <div id="exportModal" class="export-modal">
-      <div class="export-modal-content">
-        <div class="export-modal-header">
-          <h2 class="export-modal-title">📤 PNG Export</h2>
-          <button class="export-close-btn" id="exportCloseBtn">✕</button>
-        </div>
-        
-        <div class="export-options">
-          <div class="export-option selected" data-option="all">
-            <input type="radio" name="exportOption" value="all" checked>
-            <div class="export-option-label">
-              <div class="export-option-title">Alle importierten Frames</div>
-              <div class="export-option-desc">Exportiert alle erfolgreich importierten und übersetzten Frames</div>
+        <div class="accordion-content" id="exportContent">
+          <div class="export-section">
+            <div class="info-box">
+              <strong>🎯 Layer-Export:</strong><br>
+              1. Ebenen laden → Alle verfügbaren Layers scannen<br>
+              2. Gewünschte Layers markieren<br>
+              3. Als PNG exportieren
+            </div>
+            
+            <button class="btn" id="loadLayersBtn">
+              🔄 Ebenen laden
+            </button>
+            
+            <div class="layer-browser hidden" id="layerBrowser">
+              <div style="display: flex; gap: 8px; margin-bottom: 12px;">
+                <button class="btn btn-secondary" id="selectAllBtn">Alle auswählen</button>
+                <button class="btn btn-secondary" id="selectFramesBtn">Nur Frames</button>
+                <button class="btn btn-secondary" id="selectInstancesBtn">Nur Instanzen ◊</button>
+              </div>
+              
+              <div id="layerList" style="max-height: 200px; overflow-y: auto;">
+                <!-- Layer werden hier dynamisch eingefügt -->
+              </div>
+              
+              <button class="btn" id="exportLayersBtn" disabled style="margin-top: 12px;">
+                📤 0 Elemente exportieren
+              </button>
             </div>
           </div>
-          
-          <div class="export-option" data-option="selected">
-            <input type="radio" name="exportOption" value="selected">
-            <div class="export-option-label">
-              <div class="export-option-title">Aktuell ausgewählte Frames</div>
-              <div class="export-option-desc">Exportiert nur die momentan in Figma ausgewählten Frames</div>
-            </div>
-          </div>
-          
-          <div class="export-option" data-option="custom">
-            <input type="radio" name="exportOption" value="custom">
-            <div class="export-option-label">
-              <div class="export-option-title">Manuell auswählen</div>
-              <div class="export-option-desc">Wähle einzelne Frames aus der Liste unten aus</div>
-            </div>
-          </div>
-        </div>
-        
-        <div id="exportFramesList" class="export-frames-list" style="display: none;">
-          <!-- Frames werden hier dynamisch eingefügt -->
-        </div>
-        
-        <div class="export-settings">
-          <div class="export-settings-title">Export-Einstellungen</div>
-          
-          <div class="export-setting-row">
-            <span class="export-setting-label">Qualität (Skalierung):</span>
-            <select id="exportScale" class="export-select">
-              <option value="1">1x (Standard)</option>
-              <option value="2" selected>2x (Hoch)</option>
-              <option value="3">3x (Sehr hoch)</option>
-              <option value="4">4x (Ultra)</option>
-            </select>
-          </div>
-          
-          <div class="export-setting-row">
-            <span class="export-setting-label">Dateiformat:</span>
-            <select id="exportFormat" class="export-select">
-              <option value="PNG" selected>PNG</option>
-              <option value="JPG">JPG</option>
-              <option value="SVG">SVG</option>
-            </select>
-          </div>
-          
-          <div class="export-setting-row">
-            <span class="export-setting-label">Dateinamen-Format:</span>
-            <select id="exportNaming" class="export-select">
-              <option value="frame_lang_date" selected>Frame_Sprache_Datum</option>
-              <option value="lang_frame_date">Sprache_Frame_Datum</option>
-              <option value="frame_lang">Frame_Sprache</option>
-              <option value="custom">Benutzerdefiniert</option>
-            </select>
-          </div>
-        </div>
-        
-        <div class="export-actions">
-          <button id="exportCancelBtn" class="btn-export-cancel">Abbrechen</button>
-          <button id="exportConfirmBtn" class="btn-export-confirm">
-            <span id="exportConfirmText">Export starten</span>
-          </button>
         </div>
       </div>
     </div>
-    
+
+    <!-- Footer -->
     <div class="footer">
-      Made with <span class="heart">♥</span> by Marian
+      <p class="footer-text">Made with <span class="heart">♥</span> by Marian</p>
     </div>
   </div>
 
   <script>
-    const csvFileInput = document.getElementById('csvFile');
-    const importBtn = document.getElementById('importBtn');
-    const getIdsBtn = document.getElementById('getIdsBtn');
-    const closeBtn = document.getElementById('closeBtn');
-    const messageDiv = document.getElementById('messageDiv');
-    const progressSection = document.getElementById('progressSection');
-    const progressBar = document.getElementById('progressBar');
-    const progressStats = document.getElementById('progressStats');
-    const currentStep = document.getElementById('currentStep');
-    const framesGrid = document.getElementById('framesGrid');
-    
-    // Export Tab Elemente
-    const loadLayersBtn = document.getElementById('loadLayersBtn');
-    const layerBrowser = document.getElementById('layerBrowser');
-    const selectAllBtn = document.getElementById('selectAllBtn');
-    const selectNoneBtn = document.getElementById('selectNoneBtn');
-    const selectFramesBtn = document.getElementById('selectFramesBtn');
-    const selectInstancesBtn = document.getElementById('selectInstancesBtn');
-    const refreshLayersBtn = document.getElementById('refreshLayersBtn');
-    const exportSelectedBtn = document.getElementById('exportSelectedBtn');
-    const selectionInfo = document.getElementById('selectionInfo');
+    console.log('DOM loaded, initializing Weleda Transcreate Workspace...');
     
     let csvData = null;
-    let importedFrames = [];
-    let totalFrames = 0;
-    let completedFrames = 0;
-    let selectedExportLayers = [];
-    let allLayers = [];
+    let availableLayers = [];
+    let selectedLayers = [];
     
-    function checkFormValidity() {
-      const hasFile = csvData !== null;
-      importBtn.disabled = !hasFile;
-    }
+    // DOM Elements
+    const elements = {
+      csvFile: document.getElementById('csvFile'),
+      importBtn: document.getElementById('importBtn'),
+      showFrameIdsBtn: document.getElementById('showFrameIdsBtn'),
+      closeBtn: document.getElementById('closeBtn'),
+      messageDiv: document.getElementById('messageDiv'),
+      progressContainer: document.getElementById('progressContainer'),
+      progressBar: document.getElementById('progressBar'),
+      progressText: document.getElementById('progressText'),
+      loadLayersBtn: document.getElementById('loadLayersBtn'),
+      layerBrowser: document.getElementById('layerBrowser'),
+      layerList: document.getElementById('layerList'),
+      selectAllBtn: document.getElementById('selectAllBtn'),
+      selectFramesBtn: document.getElementById('selectFramesBtn'),
+      selectInstancesBtn: document.getElementById('selectInstancesBtn'),
+      exportLayersBtn: document.getElementById('exportLayersBtn')
+    };
     
-    function updateProgress(completed, total, stepText) {
-      const percentage = total > 0 ? (completed / total) * 100 : 0;
-      progressBar.style.width = percentage + '%';
-      progressStats.textContent = `${completed} / ${total} Frames`;
-      currentStep.textContent = stepText || 'Verarbeite...';
-    }
+    // Accordion functionality
+    document.addEventListener('DOMContentLoaded', function() {
+      const accordionHeaders = document.querySelectorAll('.accordion-header');
+      console.log('Found accordion headers:', accordionHeaders.length);
+      
+      accordionHeaders.forEach(header => {
+        header.addEventListener('click', function() {
+          const targetId = this.getAttribute('data-target');
+          const content = document.getElementById(targetId);
+          
+          console.log('Accordion clicked:', targetId);
+          
+          // Toggle active states
+          this.classList.toggle('active');
+          content.classList.toggle('active');
+          
+          // Close other accordions (optional)
+          accordionHeaders.forEach(otherHeader => {
+            if (otherHeader !== this) {
+              const otherTargetId = otherHeader.getAttribute('data-target');
+              const otherContent = document.getElementById(otherTargetId);
+              otherHeader.classList.remove('active');
+              otherContent.classList.remove('active');
+            }
+          });
+        });
+      });
+    });
     
-    function addFrameCard(frameName, language, status = 'pending') {
-      const frameCard = document.createElement('div');
-      frameCard.className = `frame-card ${status === 'completed' ? 'completed' : ''}`;
-      frameCard.innerHTML = `
-        <div class="frame-name">${frameName}</div>
-        <div class="frame-language">${language}</div>
-        <div class="frame-stats">${status === 'completed' ? '✅ Importiert' : '⏳ Warten...'}</div>
-      `;
-      framesGrid.appendChild(frameCard);
-      return frameCard;
-    }
-    
-    function updateFrameCard(frameName, language, textsCount) {
-      const cards = framesGrid.querySelectorAll('.frame-card');
-      cards.forEach(card => {
-        const nameEl = card.querySelector('.frame-name');
-        const langEl = card.querySelector('.frame-language');
-        if (nameEl.textContent === frameName && langEl.textContent === language) {
-          card.classList.add('completed');
-          card.querySelector('.frame-stats').textContent = `✅ ${textsCount} Texte übersetzt`;
+    // File input handling
+    if (elements.csvFile) {
+      elements.csvFile.addEventListener('change', (e) => {
+        const file = e.target.files[0];
+        if (file) {
+          const reader = new FileReader();
+          reader.onload = (e) => {
+            csvData = e.target.result;
+            checkFormValidity();
+            showMessage('✅ CSV-Datei geladen', 'success');
+          };
+          reader.readAsText(file);
         }
       });
     }
     
-    csvFileInput.addEventListener('change', (e) => {
-      const file = e.target.files[0];
-      if (file) {
-        const reader = new FileReader();
-        reader.onload = (e) => {
-          csvData = e.target.result;
-          checkFormValidity();
+    // Import button
+    if (elements.importBtn) {
+      elements.importBtn.addEventListener('click', () => {
+        if (csvData) {
+          elements.importBtn.disabled = true;
+          elements.importBtn.innerHTML = '<span>⏳</span>Importiere...';
+          showProgress(true);
           
-          // Update button appearance
-          const statusIndicator = importBtn.querySelector('.status-indicator');
-          statusIndicator.className = 'status-indicator ready';
-          
-          showMessage(`📄 CSV-Datei "${file.name}" erfolgreich geladen! Plugin wird automatisch alle Sprachen erkennen.`, 'success');
-        };
-        reader.readAsText(file);
-      } else {
-        csvData = null;
-        checkFormValidity();
-        
-        // Reset button appearance
-        const statusIndicator = importBtn.querySelector('.status-indicator');
-        statusIndicator.className = 'status-indicator';
-      }
-    });
+          parent.postMessage({
+            pluginMessage: {
+              type: 'import-translations',
+              csvData: csvData
+            }
+          }, '*');
+        }
+      });
+    }
     
-    importBtn.addEventListener('click', () => {
-      if (csvData) {
-        importBtn.disabled = true;
-        exportBtn.classList.remove('show');
-        
-        // Reset progress
-        progressSection.classList.add('show');
-        framesGrid.innerHTML = '';
-        completedFrames = 0;
-        importedFrames = [];
-        
-        // Update button to loading state
-        const statusIndicator = importBtn.querySelector('.status-indicator');
-        statusIndicator.className = 'status-indicator loading';
-        importBtn.innerHTML = '<span class="status-indicator loading"></span>Importiere...';
+    // Frame IDs button
+    if (elements.showFrameIdsBtn) {
+      elements.showFrameIdsBtn.addEventListener('click', () => {
+        parent.postMessage({
+          pluginMessage: {
+            type: 'get-frame-ids'
+          }
+        }, '*');
+      });
+    }
+    
+    // Load layers button
+    if (elements.loadLayersBtn) {
+      elements.loadLayersBtn.addEventListener('click', () => {
+        elements.loadLayersBtn.disabled = true;
+        elements.loadLayersBtn.innerHTML = '⏳ Lade Ebenen...';
         
         parent.postMessage({
           pluginMessage: {
-            type: 'import-translations',
-            csvData: csvData
+            type: 'load-layers'
           }
         }, '*');
-      }
-    });
-    
-    // Section-System (ersetzt Tabs)
-    document.addEventListener('DOMContentLoaded', function() {
-      console.log('DOM loaded, initializing sections...');
-      
-      const sectionHeaders = document.querySelectorAll('.section-header');
-      
-      sectionHeaders.forEach(header => {
-        header.addEventListener('click', () => {
-          const sectionName = header.dataset.section;
-          const sectionContent = document.getElementById(sectionName + 'Section');
-          const arrow = header.querySelector('.expand-arrow');
-          
-          if (sectionContent.classList.contains('expanded')) {
-            // Zuklappen
-            sectionContent.classList.remove('expanded');
-            header.classList.remove('expanded');
-            arrow.textContent = '▶';
-          } else {
-            // Aufklappen
-            sectionContent.classList.add('expanded');
-            header.classList.add('expanded');
-            arrow.textContent = '▼';
-          }
-        });
       });
-      
-      // Import Section ist standardmäßig offen
-      const importHeader = document.querySelector('[data-section="import"]');
-      if (importHeader) {
-        importHeader.classList.add('expanded');
-      }
-    });
+    }
     
-    // Export Tab: Layer laden
-    if (loadLayersBtn) {
-      loadLayersBtn.addEventListener('click', () => {
-        loadLayersBtn.textContent = '⏳ Lade Ebenen...';
-        loadLayersBtn.disabled = true;
+    // Export layers button
+    if (elements.exportLayersBtn) {
+      elements.exportLayersBtn.addEventListener('click', () => {
+        if (selectedLayers.length > 0) {
+          parent.postMessage({
+            pluginMessage: {
+              type: 'export-selected-layers',
+              layers: selectedLayers
+            }
+          }, '*');
+        }
+      });
+    }
+    
+    // Select all button
+    if (elements.selectAllBtn) {
+      elements.selectAllBtn.addEventListener('click', () => {
+        const checkboxes = document.querySelectorAll('.layer-checkbox');
+        const allSelected = Array.from(checkboxes).every(cb => cb.checked);
         
-        parent.postMessage({
-          pluginMessage: { type: 'load-layers' }
-        }, '*');
-      });
-    }
-    
-    // Export Tab: Auswahl-Kontrollen
-    if (selectAllBtn) {
-      selectAllBtn.addEventListener('click', () => {
-        document.querySelectorAll('.layer-checkbox').forEach(cb => cb.checked = true);
+        checkboxes.forEach(cb => {
+          cb.checked = !allSelected;
+        });
+        
         updateSelectedLayers();
       });
     }
     
-    if (selectNoneBtn) {
-      selectNoneBtn.addEventListener('click', () => {
-        document.querySelectorAll('.layer-checkbox').forEach(cb => cb.checked = false);
-        updateSelectedLayers();
-      });
-    }
-    
-    if (selectFramesBtn) {
-      selectFramesBtn.addEventListener('click', () => {
-        document.querySelectorAll('.layer-checkbox').forEach(cb => {
+    // Select frames button
+    if (elements.selectFramesBtn) {
+      elements.selectFramesBtn.addEventListener('click', () => {
+        const checkboxes = document.querySelectorAll('.layer-checkbox');
+        checkboxes.forEach(cb => {
           const layerType = cb.dataset.type;
           cb.checked = layerType === 'FRAME' || layerType === 'COMPONENT';
         });
@@ -1044,115 +670,171 @@
       });
     }
     
-    if (selectInstancesBtn) {
-      selectInstancesBtn.addEventListener('click', () => {
-        document.querySelectorAll('.layer-checkbox').forEach(cb => {
-          cb.checked = cb.dataset.type === 'INSTANCE';
+    // Select instances button
+    if (elements.selectInstancesBtn) {
+      elements.selectInstancesBtn.addEventListener('click', () => {
+        const checkboxes = document.querySelectorAll('.layer-checkbox');
+        checkboxes.forEach(cb => {
+          const layerType = cb.dataset.type;
+          cb.checked = layerType === 'INSTANCE';
         });
         updateSelectedLayers();
       });
     }
     
-    if (refreshLayersBtn) {
-      refreshLayersBtn.addEventListener('click', () => {
-        if (loadLayersBtn) loadLayersBtn.click();
-      });
-    }
-    
-    // Export Tab: Export starten
-    if (exportSelectedBtn) {
-      exportSelectedBtn.addEventListener('click', () => {
-        const selectedLayers = [];
-        document.querySelectorAll('.layer-checkbox:checked').forEach(cb => {
-          const layerId = cb.dataset.layerId;
-          const layer = allLayers.find(l => l.id === layerId);
-          if (layer) selectedLayers.push(layer);
-        });
-        
-        if (selectedLayers.length === 0) {
-          showMessage('⚠️ Keine Ebenen ausgewählt!', 'warning');
-          return;
-        }
-        
-        const scale2Element = document.getElementById('exportScale2');
-        const format2Element = document.getElementById('exportFormat2');
-        const naming2Element = document.getElementById('exportNaming2');
-        
-        const settings = {
-          scale: scale2Element ? parseInt(scale2Element.value) : 2,
-          format: format2Element ? format2Element.value : 'PNG',
-          naming: naming2Element ? naming2Element.value : 'layer_name_date'
-        };
-        
-        exportSelectedBtn.textContent = '⏳ Exportiere...';
-        exportSelectedBtn.disabled = true;
-        
+    // Close button
+    if (elements.closeBtn) {
+      elements.closeBtn.addEventListener('click', () => {
         parent.postMessage({
-          pluginMessage: {
-            type: 'export-selected-layers',
-            layers: selectedLayers,
-            settings: settings
-          }
+          pluginMessage: { type: 'close' }
         }, '*');
       });
     }
     
-    function updateSelectedLayers() {
-      const selected = document.querySelectorAll('.layer-checkbox:checked').length;
-      if (selectionInfo) {
-        selectionInfo.textContent = `${selected} Elemente ausgewählt`;
-      }
+    // Message handling from plugin
+    window.addEventListener('message', (event) => {
+      const msg = event.data.pluginMessage;
+      if (!msg) return;
       
-      if (exportSelectedBtn) {
-        exportSelectedBtn.disabled = selected === 0;
-        
-        if (selected > 0) {
-          exportSelectedBtn.innerHTML = `<span>📦</span>${selected} Elemente exportieren`;
-        } else {
-          exportSelectedBtn.innerHTML = '<span>📦</span>Ausgewählte exportieren';
+      console.log('Received message:', msg.type);
+      
+      switch (msg.type) {
+        case 'progress':
+          updateProgress(msg.message, msg.progress);
+          break;
+          
+        case 'success':
+          showMessage(`✅ ${msg.message}`, 'success', msg.details);
+          resetImportButton();
+          showProgress(false);
+          break;
+          
+        case 'error':
+          showMessage(`❌ ${msg.message}`, 'error');
+          resetImportButton();
+          showProgress(false);
+          break;
+          
+        case 'layers-loaded':
+          displayLayers(msg.layers);
+          break;
+          
+        case 'export-completed':
+          showMessage(`✅ ${msg.message}`, 'success');
+          break;
+      }
+    });
+    
+    // Helper functions
+    function checkFormValidity() {
+      if (elements.importBtn) {
+        elements.importBtn.disabled = !csvData;
+        elements.importBtn.innerHTML = csvData ? 
+          '<span>🚀</span>Übersetzungen importieren' : 
+          '<span>⏳</span>Übersetzungen importieren';
+      }
+    }
+    
+    function resetImportButton() {
+      if (elements.importBtn) {
+        elements.importBtn.disabled = false;
+        elements.importBtn.innerHTML = '<span>🚀</span>Übersetzungen importieren';
+      }
+    }
+    
+    function showProgress(show, progress = 0) {
+      if (elements.progressContainer) {
+        elements.progressContainer.classList.toggle('hidden', !show);
+        if (show) {
+          elements.progressBar.style.width = progress + '%';
         }
       }
     }
     
-    function renderLayers(layers) {
-      allLayers = layers;
-      if (!layerBrowser) return;
+    function updateProgress(message, progress = 0) {
+      if (elements.progressText) {
+        elements.progressText.textContent = message;
+      }
+      if (elements.progressBar) {
+        elements.progressBar.style.width = progress + '%';
+      }
+    }
+    
+    function showMessage(text, type, details = null) {
+      if (!elements.messageDiv) return;
       
-      layerBrowser.innerHTML = '';
+      let className = 'message';
+      if (type === 'success') className += ' success';
+      else if (type === 'error') className += ' error';
+      else if (type === 'warning') className += ' warning';
       
-      if (layers.length === 0) {
-        layerBrowser.innerHTML = '<div style="padding: 20px; text-align: center; color: #b8c7ab;">Keine Ebenen gefunden</div>';
-        return;
+      let html = text;
+      if (details && Array.isArray(details)) {
+        html += '<div style="margin-top: 8px; font-size: 12px;">';
+        details.forEach(item => {
+          html += `<div>• <strong>${item.frameName}</strong> (${item.language}) - ${item.translatedTexts} Texte</div>`;
+        });
+        html += '</div>';
       }
       
-      layers.forEach(layer => {
-        const layerItem = document.createElement('div');
-        layerItem.className = `layer-item layer-indent-${Math.min(layer.depth || 0, 5)}`;
-        
-        const typeIcon = getLayerIcon(layer.type);
-        
-        layerItem.innerHTML = `
-          <input type="checkbox" class="layer-checkbox" data-layer-id="${layer.id}" data-type="${layer.type}">
-          <span class="layer-icon">${typeIcon}</span>
-          <span class="layer-name">${layer.name}</span>
-          <span class="layer-type">${layer.type}</span>
-          <span class="layer-size">${Math.round(layer.width)}×${Math.round(layer.height)}</span>
-        `;
-        
-        const checkbox = layerItem.querySelector('.layer-checkbox');
-        checkbox.addEventListener('change', updateSelectedLayers);
-        
-        layerItem.addEventListener('click', (e) => {
-          if (e.target !== checkbox) {
-            checkbox.checked = !checkbox.checked;
-            updateSelectedLayers();
-          }
+      elements.messageDiv.innerHTML = `<div class="${className}">${html}</div>`;
+      
+      // Auto-hide after 5 seconds
+      setTimeout(() => {
+        if (elements.messageDiv) {
+          elements.messageDiv.innerHTML = '';
+        }
+      }, 5000);
+    }
+    
+    function displayLayers(layers) {
+      availableLayers = layers;
+      
+      if (elements.loadLayersBtn) {
+        elements.loadLayersBtn.disabled = false;
+        elements.loadLayersBtn.innerHTML = '🔄 Ebenen laden';
+      }
+      
+      if (elements.layerBrowser) {
+        elements.layerBrowser.classList.remove('hidden');
+      }
+      
+      if (elements.layerList) {
+        let html = '';
+        layers.forEach((layer, index) => {
+          const indent = '  '.repeat(layer.depth);
+          const icon = getLayerIcon(layer.type);
+          
+          html += `
+            <div class="layer-item">
+              <input type="checkbox" class="layer-checkbox" data-index="${index}" data-type="${layer.type}">
+              <span class="layer-icon">${icon}</span>
+              <span class="layer-name">${indent}${layer.name}</span>
+            </div>
+          `;
         });
         
-        layerBrowser.appendChild(layerItem);
+        elements.layerList.innerHTML = html;
+        
+        // Add event listeners to checkboxes
+        const checkboxes = elements.layerList.querySelectorAll('.layer-checkbox');
+        checkboxes.forEach(cb => {
+          cb.addEventListener('change', updateSelectedLayers);
+        });
+      }
+    }
+    
+    function updateSelectedLayers() {
+      const checkboxes = document.querySelectorAll('.layer-checkbox:checked');
+      selectedLayers = Array.from(checkboxes).map(cb => {
+        const index = parseInt(cb.dataset.index);
+        return availableLayers[index];
       });
       
-      updateSelectedLayers();
+      if (elements.exportLayersBtn) {
+        elements.exportLayersBtn.disabled = selectedLayers.length === 0;
+        elements.exportLayersBtn.textContent = `📤 ${selectedLayers.length} Elemente exportieren`;
+      }
     }
     
     function getLayerIcon(type) {
@@ -1162,213 +844,15 @@
         'INSTANCE': '◊',
         'GROUP': '📁',
         'RECTANGLE': '▮',
-        'ELLIPSE': '⬮',
+        'ELLIPSE': '○',
         'TEXT': '📝',
         'VECTOR': '✏️',
-        'STAR': '⭐',
-        'POLYGON': '⬟'
+        'IMAGE': '🖼️'
       };
-      return icons[type] || '📄';
+      return icons[type] || '📦';
     }
     
-    getIdsBtn.addEventListener('click', () => {
-      parent.postMessage({
-        pluginMessage: { type: 'get-frame-ids' }
-      }, '*');
-    });
-    
-    closeBtn.addEventListener('click', () => {
-      parent.postMessage({
-        pluginMessage: { type: 'close' }
-      }, '*');
-    });
-    
-    function showMessage(text, type) {
-      messageDiv.innerHTML = `<div class="message ${type}">${text}</div>`;
-    }
-    
-    // Nachrichten vom Plugin empfangen
-    window.onmessage = (event) => {
-      const msg = event.data.pluginMessage;
-      
-      if (msg.type === 'import-start') {
-        totalFrames = msg.totalFrames;
-        updateProgress(0, totalFrames, 'Import gestartet...');
-        
-        // Create frame cards
-        msg.frames.forEach(frame => {
-          addFrameCard(frame.frameName, frame.language);
-        });
-        
-      } else if (msg.type === 'frame-completed') {
-        completedFrames++;
-        updateProgress(completedFrames, totalFrames, `Frame "${msg.frameName}" importiert`);
-        updateFrameCard(msg.frameName, msg.language, msg.textsCount);
-        
-        // Add to imported frames list
-        importedFrames.push({
-          frameName: msg.frameName,
-          language: msg.language,
-          textsCount: msg.textsCount
-        });
-        
-      } else if (msg.type === 'success') {
-        updateProgress(totalFrames, totalFrames, 'Import abgeschlossen!');
-        showMessage(`✅ ${msg.message}`, 'success');
-        
-        importBtn.disabled = false;
-        importBtn.innerHTML = '<span class="status-indicator ready"></span>Übersetzungen importieren';
-        
-        // Show export button
-        exportBtn.classList.add('show');
-        exportBtn.innerHTML = '<span>📤</span>Als PNG exportieren';
-        
-      } else if (msg.type === 'export-completed') {
-        showMessage(`📤 ${msg.message}`, 'success');
-        exportBtn.innerHTML = '<span>📤</span>Als PNG exportieren';
-        
-      } else if (msg.type === 'error') {
-        showMessage(`❌ ${msg.message}`, 'error');
-        importBtn.disabled = false;
-        importBtn.innerHTML = '<span class="status-indicator ready"></span>Übersetzungen importieren';
-        
-      } else if (msg.type === 'warning') {
-        showMessage(`⚠️ ${msg.message}`, 'warning');
-        
-      } else if (msg.type === 'frame-ids-list') {
-        const framesList = msg.frames;
-        let framesInfo = '<div class="message success">';
-        framesInfo += '<strong>📋 Verfügbare Frames mit Node-IDs:</strong><br><br>';
-        framesInfo += '<div style="font-family: monospace; font-size: 11px; line-height: 1.6; background: rgba(0,0,0,0.2); padding: 12px; border-radius: 6px; max-height: 200px; overflow-y: auto;">';
-        
-        framesList.forEach(frame => {
-          framesInfo += '<div style="margin-bottom: 8px;">';
-          framesInfo += '<strong style="color: #8ab885;">"' + frame.name + '"</strong><br>';
-          framesInfo += 'ID: <span style="color: #ffc107; background: rgba(0,0,0,0.3); padding: 2px 6px; border-radius: 3px;">' + frame.id + '</span><br>';
-          framesInfo += 'Type: ' + frame.type + ' | ' + Math.round(frame.width) + '×' + Math.round(frame.height) + 'px';
-          framesInfo += '</div>';
-        });
-        
-        framesInfo += '</div>';
-        framesInfo += '<br><strong>💡 Tipp:</strong> Kopiere die ID in deine CSV-Spalte "Figma Frame ID" für zuverlässige Frame-Erkennung!';
-        framesInfo += '</div>';
-        
-        messageDiv.innerHTML = framesInfo;
-        
-      } else if (msg.type === 'layers-loaded') {
-        const layers = msg.layers;
-        if (loadLayersBtn) {
-          loadLayersBtn.textContent = '📋 Ebenen laden';
-          loadLayersBtn.disabled = false;
-        }
-        
-        renderLayers(layers);
-        showMessage(`✅ ${layers.length} Ebenen, Gruppen und Frames geladen!`, 'success');
-        
-      } else if (msg.type === 'export-completed') {
-        showMessage(`📤 ${msg.message}`, 'success');
-        
-        // Reset Export Button
-        if (exportSelectedBtn) {
-          exportSelectedBtn.textContent = 'Ausgewählte exportieren';
-          exportSelectedBtn.disabled = document.querySelectorAll('.layer-checkbox:checked').length === 0;
-        }
-        
-      } else if (msg.type === 'download-ready') {
-        // Direkter Download-Manager
-        const files = msg.files;
-        let downloadInfo = '<div class="message success">';
-        downloadInfo += '<strong>📥 Direkter Download bereit:</strong><br><br>';
-        
-        downloadInfo += '<div style="margin-bottom: 16px;">';
-        downloadInfo += '<button id="downloadAllBtn" style="background: #8ab885; color: #083025; border: none; padding: 12px 20px; border-radius: 8px; cursor: pointer; font-weight: 600; margin-right: 8px;">📦 Alle ' + files.length + ' Dateien herunterladen</button>';
-        downloadInfo += '<button id="downloadZipBtn" style="background: #083025; color: #8ab885; border: 2px solid #8ab885; padding: 12px 20px; border-radius: 8px; cursor: pointer; font-weight: 600;">📦 Als ZIP herunterladen</button>';
-        downloadInfo += '</div>';
-        
-        downloadInfo += '<div style="background: rgba(0,0,0,0.2); border-radius: 6px; padding: 12px; max-height: 200px; overflow-y: auto; font-family: monospace; font-size: 11px;">';
-        files.forEach((file, index) => {
-          downloadInfo += '<div style="margin: 4px 0; display: flex; justify-content: space-between; align-items: center;">';
-          downloadInfo += '<span>📄 ' + file.fileName + '</span>';
-          downloadInfo += '<span style="color: #8ab885;">' + Math.round(file.width) + '×' + Math.round(file.height) + 'px</span>';
-          downloadInfo += '</div>';
-        });
-        downloadInfo += '</div>';
-        
-        downloadInfo += '<div style="margin-top: 12px; font-size: 12px; color: #b8c7ab;">';
-        downloadInfo += '💡 <strong>Tipp:</strong> Browser wird einzelne Downloads nacheinander starten. Bei vielen Dateien ZIP-Download verwenden.';
-        downloadInfo += '</div>';
-        
-        downloadInfo += '</div>';
-        messageDiv.innerHTML = downloadInfo;
-        
-        // Download-Button Event Listeners
-        setTimeout(() => {
-          const downloadAllBtn = document.getElementById('downloadAllBtn');
-          const downloadZipBtn = document.getElementById('downloadZipBtn');
-          
-          if (downloadAllBtn) {
-            downloadAllBtn.addEventListener('click', () => {
-              downloadAllBtn.textContent = '⏳ Lade herunter...';
-              downloadAllBtn.disabled = true;
-              
-              files.forEach((file, index) => {
-                setTimeout(() => {
-                  try {
-                    const blob = new Blob([file.imageData], { type: 'image/png' });
-                    const url = URL.createObjectURL(blob);
-                    const a = document.createElement('a');
-                    a.href = url;
-                    a.download = file.fileName;
-                    a.style.display = 'none';
-                    document.body.appendChild(a);
-                    a.click();
-                    document.body.removeChild(a);
-                    URL.revokeObjectURL(url);
-                    
-                    // Fortschritt anzeigen
-                    if (index === files.length - 1) {
-                      downloadAllBtn.textContent = '✅ Download abgeschlossen';
-                      setTimeout(() => {
-                        downloadAllBtn.textContent = '📦 Alle ' + files.length + ' Dateien herunterladen';
-                        downloadAllBtn.disabled = false;
-                      }, 2000);
-                    }
-                  } catch (error) {
-                    console.error('Download-Fehler:', error);
-                    downloadAllBtn.textContent = '❌ Fehler beim Download';
-                    downloadAllBtn.disabled = false;
-                  }
-                }, index * 300); // 300ms Verzögerung zwischen Downloads
-              });
-            });
-          }
-          
-          if (downloadZipBtn) {
-            downloadZipBtn.addEventListener('click', () => {
-              downloadZipBtn.textContent = '⏳ ZIP erstellen...';
-              downloadZipBtn.disabled = true;
-              
-              // ZIP-Download würde hier implementiert werden
-              // Für jetzt: Einzelne Downloads mit kurzer Verzögerung
-              setTimeout(() => {
-                downloadZipBtn.textContent = '💡 ZIP-Feature kommt bald';
-                setTimeout(() => {
-                  downloadZipBtn.textContent = '📦 Als ZIP herunterladen';
-                  downloadZipBtn.disabled = false;
-                }, 2000);
-              }, 1000);
-            });
-          }
-        }, 100);
-        
-        // Reset Export Button
-        exportSelectedBtn.textContent = 'Ausgewählte exportieren';
-        exportSelectedBtn.disabled = document.querySelectorAll('.layer-checkbox:checked').length === 0;
-        
-      } else if (msg.type === 'progress') {
-        currentStep.textContent = msg.message;
-      }
-    };
+    console.log('Weleda Transcreate Workspace initialized');
   </script>
 </body>
 </html>
