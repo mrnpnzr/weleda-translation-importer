@@ -90,110 +90,85 @@
     /* Main Content */
     .main-content {
       flex: 1;
-      padding: 16px;
+      padding: 20px;
       overflow-y: auto;
       display: flex;
       flex-direction: column;
-      gap: 16px;
+      gap: 20px;
     }
     
-    /* Accordion Cards */
-    .accordion-card {
+    /* Import Section */
+    .import-section {
       background: rgba(255,255,255,0.08);
       border-radius: 12px;
       border: 1px solid rgba(255,255,255,0.12);
       overflow: hidden;
       backdrop-filter: blur(8px);
+      padding: 24px;
     }
     
-    .accordion-header {
-      padding: 16px 20px;
-      cursor: pointer;
+    .section-header {
       display: flex;
       align-items: center;
-      justify-content: space-between;
-      background: rgba(255,255,255,0.05);
-      border-bottom: 1px solid rgba(255,255,255,0.1);
-      transition: all 0.2s ease;
+      gap: 12px;
+      margin-bottom: 20px;
     }
     
-    .accordion-header:hover {
-      background: rgba(255,255,255,0.1);
-    }
-    
-    .accordion-header.active {
+    .section-icon {
+      width: 40px;
+      height: 40px;
       background: rgba(139,184,133,0.2);
-      border-bottom-color: rgba(139,184,133,0.3);
-    }
-    
-    .accordion-title {
+      border-radius: 8px;
       display: flex;
       align-items: center;
-      gap: 10px;
-      font-size: 15px;
-      font-weight: 600;
-      color: #ffffff;
+      justify-content: center;
+      font-size: 20px;
     }
     
-    .accordion-icon {
+    .section-title {
       font-size: 18px;
+      font-weight: 700;
+      color: #ffffff;
+      margin: 0;
     }
     
-    .accordion-arrow {
-      font-size: 14px;
+    .section-subtitle {
+      font-size: 12px;
       color: #b8c7ab;
-      transition: transform 0.2s ease;
-    }
-    
-    .accordion-header.active .accordion-arrow {
-      transform: rotate(180deg);
-    }
-    
-    /* Accordion Content */
-    .accordion-content {
-      padding: 0;
-      max-height: 0;
-      overflow: hidden;
-      transition: all 0.3s ease;
-    }
-    
-    .accordion-content.active {
-      padding: 20px;
-      max-height: calc(100vh - 200px);
-      overflow-y: auto;
-    }
-    
-    /* Import Section */
-    .import-section {
-      display: flex;
-      flex-direction: column;
-      gap: 16px;
+      margin: 2px 0 0 0;
     }
     
     .info-box {
       background: rgba(139,184,133,0.15);
       border: 1px solid rgba(139,184,133,0.3);
       border-radius: 8px;
-      padding: 12px;
-      font-size: 12px;
-      line-height: 1.4;
+      padding: 16px;
+      font-size: 13px;
+      line-height: 1.5;
       color: #e8f1e6;
+      margin-bottom: 20px;
+    }
+    
+    .info-box strong {
+      color: #8ab885;
     }
     
     .file-input-wrapper {
       position: relative;
       background: rgba(255,255,255,0.08);
       border: 2px dashed rgba(139,184,133,0.4);
-      border-radius: 8px;
-      padding: 20px;
+      border-radius: 12px;
+      padding: 30px 20px;
       text-align: center;
       cursor: pointer;
       transition: all 0.2s ease;
+      margin-bottom: 20px;
     }
     
     .file-input-wrapper:hover {
       background: rgba(255,255,255,0.12);
       border-color: rgba(139,184,133,0.6);
+      transform: translateY(-2px);
     }
     
     .file-input {
@@ -206,8 +181,17 @@
     
     .file-input-label {
       color: #b8c7ab;
-      font-size: 13px;
+      font-size: 14px;
       pointer-events: none;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 8px;
+    }
+    
+    .file-icon {
+      font-size: 32px;
+      color: #8ab885;
     }
     
     /* Buttons */
@@ -216,8 +200,8 @@
       color: #0b4535;
       border: none;
       border-radius: 8px;
-      padding: 12px 20px;
-      font-size: 13px;
+      padding: 14px 24px;
+      font-size: 14px;
       font-weight: 600;
       cursor: pointer;
       transition: all 0.2s ease;
@@ -225,12 +209,14 @@
       align-items: center;
       justify-content: center;
       gap: 8px;
+      width: 100%;
+      margin-bottom: 12px;
     }
     
-    .btn:hover {
+    .btn:hover:not(:disabled) {
       background: #a0c896;
-      transform: translateY(-1px);
-      box-shadow: 0 4px 12px rgba(139,184,133,0.3);
+      transform: translateY(-2px);
+      box-shadow: 0 6px 16px rgba(139,184,133,0.3);
     }
     
     .btn:disabled {
@@ -247,782 +233,22 @@
       border: 1px solid rgba(255,255,255,0.2);
     }
     
-    .btn-secondary:hover {
+    .btn-secondary:hover:not(:disabled) {
       background: rgba(255,255,255,0.15);
       color: #ffffff;
+      box-shadow: 0 4px 12px rgba(255,255,255,0.1);
     }
     
-    /* Export Section */
-    .export-section {
-      display: flex;
-      flex-direction: column;
-      gap: 16px;
-    }
-    
-    .layer-browser {
-      background: rgba(0,0,0,0.15);
-      border-radius: 8px;
-      padding: 16px;
-      max-height: 500px;
-      overflow-y: auto;
-    }
-    
-    .frame-grid {
-      display: grid;
-      grid-template-columns: 1fr;
-      gap: 12px;
-      max-height: 250px;
-      overflow-y: auto;
-    }
-    
-    .frame-card {
-      background: rgba(255,255,255,0.06);
-      border: 1px solid rgba(255,255,255,0.1);
-      border-radius: 12px;
-      overflow: hidden;
-      transition: all 0.2s ease;
-    }
-    
-    .frame-card:hover {
-      background: rgba(255,255,255,0.08);
-      border-color: rgba(139,184,133,0.3);
-      transform: translateY(-1px);
-      box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-    }
-    
-    .frame-header {
-      display: flex;
-      align-items: center;
-      gap: 16px;
-      padding: 16px 20px;
-      background: rgba(11,69,53,0.3);
-      border-bottom: 1px solid rgba(255,255,255,0.1);
-      cursor: pointer;
-    }
-    
-    .frame-header:hover {
-      background: rgba(11,69,53,0.4);
-    }
-    
-    .frame-thumbnail {
-      width: 48px;
-      height: 36px;
-      background: rgba(255,255,255,0.1);
-      border-radius: 6px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 16px;
-      overflow: hidden;
-      flex-shrink: 0;
-      border: 1px solid rgba(255,255,255,0.15);
-    }
-    
-    .frame-thumbnail img {
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-      border-radius: 4px;
-    }
-    
-    .frame-info {
-      flex: 1;
-      min-width: 0;
-    }
-    
-    .frame-name {
-      font-size: 15px;
-      font-weight: 600;
-      color: #ffffff;
-      margin: 0 0 4px 0;
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-    }
-    
-    .frame-size {
-      font-size: 12px;
-      color: #b8c7ab;
-      margin: 0;
-      opacity: 0.8;
-    }
-    
-    .frame-toggle {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      font-size: 12px;
-      color: #8ab885;
-      font-weight: 500;
-    }
-    
-    .frame-toggle-icon {
-      font-size: 10px;
-      transition: transform 0.2s ease;
-    }
-    
-    .frame-card.collapsed .frame-toggle-icon {
-      transform: rotate(-90deg);
-    }
-    
-    .frame-card.collapsed .frame-children {
-      display: none;
-    }
-    
-    .frame-children {
-      padding: 0;
-      background: rgba(0,0,0,0.1);
-    }
-    
-    .children-header {
-      background: rgba(139,184,133,0.1);
-      padding: 12px 20px;
-      border-bottom: 1px solid rgba(255,255,255,0.05);
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-    }
-    
-    .children-title {
-      font-size: 13px;
-      font-weight: 600;
-      color: #8ab885;
-      margin: 0;
-    }
-    
-    .select-all-children {
-      display: flex;
-      align-items: center;
-      gap: 6px;
-      font-size: 11px;
-      color: #b8c7ab;
-      cursor: pointer;
-      padding: 4px 8px;
-      border-radius: 4px;
-      transition: all 0.2s ease;
-    }
-    
-    .select-all-children:hover {
-      background: rgba(139,184,133,0.2);
-      color: #8ab885;
-    }
-    
-    .children-grid {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 1px;
-      background: rgba(255,255,255,0.05);
-    }
-    
-    .child-item {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      padding: 16px;
-      background: rgba(0,0,0,0.1);
-      transition: all 0.2s ease;
-      cursor: pointer;
-      border: 2px solid transparent;
-    }
-    
-    .child-item:hover {
-      background: rgba(139,184,133,0.1);
-      border-color: rgba(139,184,133,0.2);
-    }
-    
-    .child-item.selected {
-      background: rgba(139,184,133,0.2);
-      border-color: rgba(139,184,133,0.4);
-    }
-    
-    .child-checkbox {
-      accent-color: #8ab885;
-      transform: scale(1.1);
-    }
-    
-    .child-icon {
-      width: 20px;
-      height: 20px;
-      background: rgba(139,184,133,0.2);
-      border-radius: 4px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 12px;
-      color: #8ab885;
-      flex-shrink: 0;
-    }
-    
-    .child-info {
-      flex: 1;
-      min-width: 0;
-    }
-    
-    .child-name {
-      font-size: 13px;
-      color: #ffffff;
-      margin: 0 0 4px 0;
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-      font-weight: 500;
-    }
-    
-    .child-size {
-      font-size: 11px;
-      color: #b8c7ab;
-      opacity: 0.7;
-      margin: 0;
-    }
-    
-    .quick-actions {
-      background: rgba(11,69,53,0.2);
-      padding: 16px 20px;
-      border-top: 1px solid rgba(255,255,255,0.1);
-      display: flex;
-      gap: 8px;
-      flex-wrap: wrap;
-    }
-    
-    .quick-btn {
-      background: rgba(139,184,133,0.15);
-      border: 1px solid rgba(139,184,133,0.3);
-      border-radius: 6px;
-      padding: 4px 8px;
-      font-size: 10px;
-      color: #8ab885;
-      cursor: pointer;
-      transition: all 0.2s ease;
-      white-space: nowrap;
-    }
-    
-    .quick-btn:hover {
-      background: rgba(139,184,133,0.25);
-      border-color: rgba(139,184,133,0.5);
-    }
-    
-    .child-item.hidden {
-      opacity: 0.5;
-      background: rgba(255,255,255,0.02);
-    }
-    
-    .child-item.locked {
-      opacity: 0.6;
-      background: rgba(255,193,7,0.1);
-      border-color: rgba(255,193,7,0.2);
-    }
-    
-    .child-status {
-      display: flex;
-      gap: 4px;
-      align-items: center;
-      font-size: 10px;
-    }
-    
-    .status-badge {
-      background: rgba(255,193,7,0.2);
-      color: #ffc107;
-      padding: 2px 6px;
-      border-radius: 3px;
-      font-size: 9px;
-      font-weight: 500;
-    }
-    
-    .status-badge.hidden {
-      background: rgba(255,69,58,0.2);
-      color: #ff453a;
-    }
-    
-    .status-badge.locked {
-      background: rgba(255,193,7,0.2);
-      color: #ffc107;
-    }
-    
-    .auto-export-section {
-      background: rgba(139,184,133,0.15);
-      border: 2px solid rgba(139,184,133,0.4);
-      border-radius: 8px;
-      padding: 16px;
-      margin-bottom: 16px;
-    }
-    
-    .auto-export-header {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      margin-bottom: 12px;
-    }
-    
-    .auto-export-icon {
-      width: 32px;
-      height: 32px;
-      background: rgba(139,184,133,0.3);
-      border-radius: 6px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 16px;
-      flex-shrink: 0;
-    }
-    
-    .auto-export-title {
-      font-size: 14px;
-      font-weight: 700;
-      color: #8ab885;
-      margin: 0;
-    }
-    
-    .auto-export-subtitle {
-      font-size: 11px;
-      color: #b8c7ab;
-      margin: 1px 0 0 0;
-    }
-    
-    .auto-export-rules {
-      background: rgba(0,0,0,0.1);
-      border-radius: 6px;
-      padding: 12px;
-      margin-bottom: 12px;
-    }
-    
-    .rule-item {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      margin-bottom: 8px;
-      font-size: 11px;
-    }
-    
-    .rule-item:last-child {
-      margin-bottom: 0;
-    }
-    
-    .rule-pattern {
-      background: rgba(139,184,133,0.2);
-      color: #8ab885;
-      padding: 3px 6px;
-      border-radius: 3px;
-      font-family: monospace;
-      font-weight: 600;
-      min-width: 70px;
-      text-align: center;
-      font-size: 10px;
-    }
-    
-    .rule-arrow {
-      color: #b8c7ab;
-      font-size: 12px;
-    }
-    
-    .rule-result {
-      color: #ffffff;
-      font-weight: 500;
-      font-size: 11px;
-    }
-    
-    .auto-export-stats {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 8px;
-      margin-bottom: 12px;
-    }
-    
-    .stat-card {
-      background: rgba(0,0,0,0.15);
-      border-radius: 6px;
-      padding: 8px;
-      text-align: center;
-    }
-    
-    .stat-number {
-      font-size: 16px;
-      font-weight: 700;
-      color: #8ab885;
-      margin: 0;
-    }
-    
-    .stat-label {
-      font-size: 10px;
-      color: #b8c7ab;
-      margin: 2px 0 0 0;
-    }
-    
-    .auto-export-items {
-      max-height: 100px;
-      overflow-y: auto;
-      background: rgba(0,0,0,0.1);
-      border-radius: 6px;
-      margin-bottom: 12px;
-    }
-    
-    .auto-item {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      padding: 8px 12px;
-      border-bottom: 1px solid rgba(255,255,255,0.05);
-    }
-    
-    .auto-item:last-child {
-      border-bottom: none;
-    }
-    
-    .auto-item-icon {
-      width: 20px;
-      height: 20px;
-      background: rgba(139,184,133,0.2);
-      border-radius: 3px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 10px;
-      color: #8ab885;
-      flex-shrink: 0;
-    }
-    
-    .auto-item-info {
-      flex: 1;
-      min-width: 0;
-    }
-    
-    .auto-item-name {
-      font-size: 11px;
-      color: #ffffff;
-      margin: 0 0 1px 0;
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-    }
-    
-    .auto-item-frame {
-      font-size: 9px;
-      color: #b8c7ab;
-      opacity: 0.8;
-      margin: 0;
-    }
-    
-    .auto-item-badge {
-      background: rgba(139,184,133,0.2);
-      color: #8ab885;
-      padding: 2px 4px;
-      border-radius: 3px;
-      font-size: 8px;
-      font-weight: 600;
-      white-space: nowrap;
-    }
-    
-    .auto-item-badge.pattern-1zu1 {
-      background: rgba(52,199,89,0.2);
-      color: #34c759;
-    }
-    
-    .export-progress {
-      background: rgba(139,184,133,0.1);
-      border: 1px solid rgba(139,184,133,0.3);
-      border-radius: 8px;
-      padding: 16px;
-      margin: 12px 0;
-      display: none;
-    }
-    
-    .export-progress.active {
-      display: block;
-    }
-    
-    .progress-header {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      margin-bottom: 12px;
-    }
-    
-    .progress-spinner {
-      width: 20px;
-      height: 20px;
-      border: 2px solid rgba(139,184,133,0.3);
-      border-top: 2px solid #8ab885;
-      border-radius: 50%;
-      animation: spin 1s linear infinite;
-    }
-    
-    @keyframes spin {
-      0% { transform: rotate(0deg); }
-      100% { transform: rotate(360deg); }
-    }
-    
-    .progress-title {
-      font-size: 14px;
-      font-weight: 600;
-      color: #8ab885;
-      margin: 0;
-    }
-    
-    .progress-bar-container {
-      background: rgba(0,0,0,0.2);
-      border-radius: 8px;
-      height: 8px;
-      overflow: hidden;
-      margin-bottom: 8px;
-    }
-    
-    .progress-bar-fill {
-      height: 100%;
-      background: linear-gradient(90deg, #8ab885, #a0c896);
-      border-radius: 8px;
-      transition: width 0.3s ease;
-      position: relative;
-    }
-    
-    .progress-bar-fill::after {
-      content: '';
-      position: absolute;
-      top: 0;
-      left: 0;
-      bottom: 0;
-      right: 0;
-      background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
-      animation: shimmer 1.5s infinite;
-    }
-    
-    @keyframes shimmer {
-      0% { transform: translateX(-100%); }
-      100% { transform: translateX(100%); }
-    }
-    
-    .progress-details {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      font-size: 12px;
-      color: #b8c7ab;
-    }
-    
-    .progress-current {
-      font-weight: 500;
-    }
-    
-    .progress-percentage {
-      font-weight: 600;
-      color: #8ab885;
-    }
-    
-    .export-results {
-      background: rgba(52,199,89,0.15);
-      border: 1px solid rgba(52,199,89,0.3);
-      border-radius: 8px;
-      padding: 16px;
-      margin: 12px 0;
-      display: none;
-    }
-    
-    .export-results.active {
-      display: block;
-    }
-    
-    .results-header {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      margin-bottom: 12px;
-    }
-    
-    .results-icon {
-      width: 24px;
-      height: 24px;
-      background: rgba(52,199,89,0.2);
-      border-radius: 50%;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 14px;
-      color: #34c759;
-    }
-    
-    .results-title {
-      font-size: 14px;
-      font-weight: 600;
-      color: #34c759;
-      margin: 0;
-    }
-    
-    .results-summary {
-      font-size: 12px;
-      color: #b8c7ab;
-      margin-bottom: 12px;
-    }
-    
-    .results-files {
-      max-height: 120px;
-      overflow-y: auto;
-      background: rgba(0,0,0,0.1);
-      border-radius: 6px;
-      margin-bottom: 12px;
-    }
-    
-    .result-file {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      padding: 8px 12px;
-      border-bottom: 1px solid rgba(255,255,255,0.05);
-      font-size: 11px;
-    }
-    
-    .result-file:last-child {
-      border-bottom: none;
-    }
-    
-    .result-file-icon {
-      color: #34c759;
-      font-size: 12px;
-    }
-    
-    .result-file-name {
-      flex: 1;
-      color: #ffffff;
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-    }
-    
-    .result-file-size {
-      color: #b8c7ab;
-      font-size: 10px;
-    }
-    
-    .download-all-btn {
-      background: rgba(52,199,89,0.2);
-      border: 1px solid rgba(52,199,89,0.4);
-      color: #34c759;
-      width: 100%;
-    }
-    
-    .download-all-btn:hover {
-      background: rgba(52,199,89,0.3);
-      border-color: rgba(52,199,89,0.6);
-    }
-    
-    .export-settings {
-      background: rgba(255,255,255,0.08);
-      border-radius: 8px;
-      padding: 16px;
-      margin-top: 16px;
-      border: 1px solid rgba(255,255,255,0.12);
-    }
-    
-    .setting-group {
-      margin-bottom: 16px;
-    }
-    
-    .setting-group:last-child {
-      margin-bottom: 0;
-    }
-    
-    .setting-label {
-      font-size: 12px;
-      font-weight: 600;
-      color: #ffffff;
-      margin-bottom: 8px;
-      display: block;
-    }
-    
-    .setting-options {
-      display: flex;
-      gap: 6px;
-      flex-wrap: wrap;
-    }
-    
-    .setting-option {
-      background: rgba(255,255,255,0.08);
-      border: 1px solid rgba(255,255,255,0.15);
-      border-radius: 6px;
-      padding: 6px 12px;
-      font-size: 11px;
-      color: #b8c7ab;
-      cursor: pointer;
-      transition: all 0.2s ease;
-      white-space: nowrap;
-    }
-    
-    .setting-option.active {
-      background: rgba(139,184,133,0.2);
-      border-color: rgba(139,184,133,0.4);
-      color: #8ab885;
-    }
-    
-    .setting-option:hover {
-      background: rgba(255,255,255,0.12);
-    }
-    
-    .custom-input {
-      background: rgba(255,255,255,0.08);
-      border: 1px solid rgba(255,255,255,0.15);
-      border-radius: 6px;
-      padding: 8px 12px;
-      font-size: 11px;
-      color: #ffffff;
-      width: 100%;
-      margin-top: 6px;
-    }
-    
-    .custom-input:focus {
-      outline: none;
-      border-color: rgba(139,184,133,0.6);
-      background: rgba(255,255,255,0.12);
-    }
-    
-    .export-summary {
-      background: rgba(139,184,133,0.1);
-      border: 1px solid rgba(139,184,133,0.3);
-      border-radius: 6px;
-      padding: 12px;
-      margin-top: 16px;
-      font-size: 12px;
-      color: #e8f1e6;
-    }
-    
-    .export-counter {
-      font-weight: 600;
-      color: #8ab885;
-    }
-    
-    /* Status Messages */
-    .message {
-      padding: 12px;
-      border-radius: 8px;
-      margin: 8px 0;
-      font-size: 13px;
-      line-height: 1.4;
-    }
-    
-    .message.success {
-      background: rgba(139,184,133,0.2);
-      color: #8ab885;
-      border: 1px solid rgba(139,184,133,0.4);
-    }
-    
-    .message.error {
-      background: rgba(220,53,69,0.2);
-      color: #ff6b7a;
-      border: 1px solid rgba(220,53,69,0.4);
-    }
-    
-    .message.warning {
-      background: rgba(255,193,7,0.2);
-      color: #ffc107;
-      border: 1px solid rgba(255,193,7,0.4);
-    }
-    
-    /* Progress Bar */
+    /* Progress */
     .progress-container {
       background: rgba(0,0,0,0.2);
       border-radius: 8px;
       overflow: hidden;
-      margin: 12px 0;
+      margin: 16px 0;
     }
     
     .progress-bar {
-      height: 6px;
+      height: 8px;
       background: linear-gradient(90deg, #8ab885, #a0c896);
       border-radius: 8px;
       transition: width 0.3s ease;
@@ -1048,12 +274,50 @@
     .progress-text {
       font-size: 12px;
       color: #b8c7ab;
-      margin-top: 6px;
+      margin-top: 8px;
+      text-align: center;
+    }
+    
+    /* Messages */
+    .message {
+      padding: 16px;
+      border-radius: 8px;
+      margin: 12px 0;
+      font-size: 13px;
+      line-height: 1.5;
+    }
+    
+    .message.success {
+      background: rgba(139,184,133,0.2);
+      color: #8ab885;
+      border: 1px solid rgba(139,184,133,0.4);
+    }
+    
+    .message.error {
+      background: rgba(220,53,69,0.2);
+      color: #ff6b7a;
+      border: 1px solid rgba(220,53,69,0.4);
+    }
+    
+    .message.warning {
+      background: rgba(255,193,7,0.2);
+      color: #ffc107;
+      border: 1px solid rgba(255,193,7,0.4);
+    }
+    
+    .message-details {
+      margin-top: 12px;
+      font-size: 12px;
+      opacity: 0.9;
+    }
+    
+    .message-details div {
+      margin-bottom: 4px;
     }
     
     /* Footer */
     .footer {
-      padding: 12px 20px;
+      padding: 16px 20px;
       text-align: center;
       background: rgba(0,0,0,0.1);
       border-top: 1px solid rgba(255,255,255,0.1);
@@ -1113,7 +377,7 @@
       <div class="logo-section">
         <img src="logo.svg" alt="Weleda" class="weleda-logo">
         <div class="brand-text">
-          <h1 class="brand-title">Transcreate Workspace</h1>
+          <h1 class="brand-title">Translation Import</h1>
           <p class="brand-subtitle">WELEDA DIGITAL LAB</p>
         </div>
       </div>
@@ -1123,172 +387,49 @@
     <!-- Main Content -->
     <div class="main-content">
       <!-- Import Section -->
-      <div class="accordion-card">
-        <div class="accordion-header active" data-target="importContent">
-          <div class="accordion-title">
-            <span class="accordion-icon">📥</span>
-            CSV Translation Import
-          </div>
-          <span class="accordion-arrow">▼</span>
-        </div>
-        <div class="accordion-content active" id="importContent">
-          <div class="import-section">
-            <div class="info-box">
-              <strong>🚀 CSV-Übersetzungen importieren:</strong><br>
-              1. CSV-Datei mit Übersetzungen hochladen<br>
-              2. Plugin erkennt automatisch alle Sprachen<br>
-              3. Frames werden gefunden und übersetzt
-            </div>
-            
-            <div class="file-input-wrapper">
-              <input type="file" id="csvFile" class="file-input" accept=".csv">
-              <div class="file-input-label">📄 CSV-Datei auswählen</div>
-            </div>
-            
-            <button class="btn" id="importBtn" disabled>
-              <span>⏳</span>
-              Übersetzungen importieren
-            </button>
-            
-            <button class="btn btn-secondary" id="showFrameIdsBtn">
-              🔍 Frame-IDs anzeigen
-            </button>
-            
-            <div id="progressContainer" class="hidden">
-              <div class="progress-container">
-                <div class="progress-bar" id="progressBar" style="width: 0%"></div>
-              </div>
-              <div class="progress-text" id="progressText">Wird geladen...</div>
-            </div>
-            
-            <div id="messageDiv"></div>
+      <div class="import-section">
+        <div class="section-header">
+          <div class="section-icon">📥</div>
+          <div>
+            <h2 class="section-title">CSV Translation Import</h2>
+            <p class="section-subtitle">Importiere und wende Übersetzungen auf Figma Frames an</p>
           </div>
         </div>
-      </div>
-
-      <!-- Export Section -->
-      <div class="accordion-card">
-        <div class="accordion-header" data-target="exportContent">
-          <div class="accordion-title">
-            <span class="accordion-icon">📤</span>
-            Layer Export Manager
-          </div>
-          <span class="accordion-arrow">▼</span>
+        
+        <div class="info-box">
+          <strong>🚀 So funktioniert der Import:</strong><br>
+          1. CSV-Datei mit Übersetzungen hochladen<br>
+          2. Plugin erkennt automatisch alle Sprachen<br>
+          3. Frames werden gefunden und dupliziert<br>
+          4. Texte werden automatisch übersetzt
         </div>
-        <div class="accordion-content" id="exportContent">
-          <div class="export-section">
-            <div class="info-box">
-              <strong>🎯 Automatischer Export:</strong><br>
-              1. Frames scannen → Erkennt automatisch Export-Patterns<br>
-              2. Auto-Export → Exportiert basierend auf Namensregeln<br>
-              3. Oder manuell auswählen → Individuelle Kontrolle
-            </div>
-            
-            <div class="auto-export-section" id="autoExportSection" style="display: none;">
-              <div class="auto-export-header">
-                <div class="auto-export-icon">🤖</div>
-                <div>
-                  <h3 class="auto-export-title">Smart Auto-Export</h3>
-                  <p class="auto-export-subtitle">Automatische Erkennung basierend auf Gruppennamen</p>
-                </div>
-              </div>
-              
-              <div class="auto-export-rules">
-                <div class="rule-item">
-                  <span class="rule-pattern">1zu1</span>
-                  <span class="rule-arrow">→</span>
-                  <span class="rule-result">PNG • 2x Auflösung</span>
-                </div>
-                <div class="rule-item">
-                  <span class="rule-pattern">768x1344</span>
-                  <span class="rule-arrow">→</span>
-                  <span class="rule-result">JPG • 1x Auflösung</span>
-                </div>
-              </div>
-              
-              <div class="auto-export-stats">
-                <div class="stat-card">
-                  <div class="stat-number" id="autoCount1zu1">0</div>
-                  <div class="stat-label">1zu1 Elemente</div>
-                </div>
-                <div class="stat-card">
-                  <div class="stat-number" id="autoCount768">0</div>
-                  <div class="stat-label">768x1344 Elemente</div>
-                </div>
-              </div>
-              
-              <div class="auto-export-items hidden" id="autoExportItems">
-                <!-- Auto-export items will be inserted here -->
-              </div>
-              
-              <button class="btn" id="autoExportBtn" disabled style="width: 100%; margin-bottom: 12px;">
-                🤖 0 Elemente automatisch exportieren
-              </button>
-              
-              <div class="export-progress" id="exportProgress">
-                <div class="progress-header">
-                  <div class="progress-spinner"></div>
-                  <h4 class="progress-title" id="progressTitle">Exportiere Elemente...</h4>
-                </div>
-                <div class="progress-bar-container">
-                  <div class="progress-bar-fill" id="progressBarFill" style="width: 0%"></div>
-                </div>
-                <div class="progress-details">
-                  <span class="progress-current" id="progressCurrent">Bereite Export vor...</span>
-                  <span class="progress-percentage" id="progressPercentage">0%</span>
-                </div>
-              </div>
-              
-              <div class="export-results" id="exportResults">
-                <div class="results-header">
-                  <div class="results-icon">✓</div>
-                  <h4 class="results-title">Export erfolgreich!</h4>
-                </div>
-                <div class="results-summary" id="resultsSummary">
-                  5 Dateien wurden exportiert und stehen zum Download bereit.
-                </div>
-                <div class="results-files" id="resultsFiles">
-                  <!-- Export results will be inserted here -->
-                </div>
-                <button class="btn download-all-btn" id="downloadAllBtn">
-                  💾 Alle Dateien herunterladen
-                </button>
-              </div>
-            </div>
-            
-            <button class="btn" id="loadLayersBtn">
-              🔍 Frames scannen
-            </button>
-            
-            <div class="layer-browser hidden" id="layerBrowser">
-              <div class="selection-summary">
-                <div class="selection-count" id="selectionCount">0 Elemente</div>
-                <div class="selection-details" id="selectionDetails">ausgewählt zum Export</div>
-              </div>
-              
-              <div class="quick-actions">
-                <div class="quick-btn" id="selectAllBtn">📋 Alle</div>
-                <div class="quick-btn" id="selectNoneBtn">🗑️ Keine</div>
-                <div class="quick-btn" id="selectInstancesBtn">◊ Instanzen</div>
-                <div class="quick-btn" id="selectFramesBtn">📄 Frames</div>
-              </div>
-              
-              <div class="frame-grid" id="frameGrid">
-                <!-- Frame cards with children will be inserted here -->
-              </div>
-              
-              <div class="export-settings" style="margin-top: 12px;">
-                <button class="btn" id="exportLayersBtn" disabled style="width: 100%; margin-bottom: 8px;">
-                  📤 0 Elemente exportieren
-                </button>
-                
-                <button class="btn btn-secondary" id="downloadDirectBtn" disabled style="width: 100%;">
-                  💾 Direkt herunterladen
-                </button>
-              </div>
-            </div>
+        
+        <div class="file-input-wrapper">
+          <input type="file" id="csvFile" class="file-input" accept=".csv">
+          <div class="file-input-label">
+            <div class="file-icon">📄</div>
+            <div>CSV-Datei auswählen oder hier ablegen</div>
+            <div style="font-size: 11px; opacity: 0.7;">Nur .csv Dateien werden unterstützt</div>
           </div>
         </div>
+        
+        <button class="btn" id="importBtn" disabled>
+          <span>⏳</span>
+          Übersetzungen importieren
+        </button>
+        
+        <button class="btn btn-secondary" id="showFrameIdsBtn">
+          🔍 Frame-IDs in Console anzeigen
+        </button>
+        
+        <div id="progressContainer" class="hidden">
+          <div class="progress-container">
+            <div class="progress-bar" id="progressBar" style="width: 0%"></div>
+          </div>
+          <div class="progress-text" id="progressText">Wird geladen...</div>
+        </div>
+        
+        <div id="messageDiv"></div>
       </div>
     </div>
 
@@ -1299,12 +440,9 @@
   </div>
 
   <script>
-    console.log('DOM loaded, initializing Weleda Transcreate Workspace...');
+    console.log('DOM loaded, initializing Weleda Translation Import...');
     
     let csvData = null;
-    let availableFrames = [];
-    let selectedItems = [];
-    let autoExportItems = [];
     
     // DOM Elements
     const elements = {
@@ -1315,67 +453,8 @@
       messageDiv: document.getElementById('messageDiv'),
       progressContainer: document.getElementById('progressContainer'),
       progressBar: document.getElementById('progressBar'),
-      progressText: document.getElementById('progressText'),
-      loadLayersBtn: document.getElementById('loadLayersBtn'),
-      layerBrowser: document.getElementById('layerBrowser'),
-      frameGrid: document.getElementById('frameGrid'),
-      exportLayersBtn: document.getElementById('exportLayersBtn'),
-      downloadDirectBtn: document.getElementById('downloadDirectBtn'),
-      selectionCount: document.getElementById('selectionCount'),
-      selectionDetails: document.getElementById('selectionDetails'),
-      customNaming: document.getElementById('customNaming'),
-      selectAllBtn: document.getElementById('selectAllBtn'),
-      selectNoneBtn: document.getElementById('selectNoneBtn'),
-      selectInstancesBtn: document.getElementById('selectInstancesBtn'),
-      selectFramesBtn: document.getElementById('selectFramesBtn'),
-      scanResults: document.getElementById('scanResults'),
-      visibleCount: document.getElementById('visibleCount'),
-      hiddenCount: document.getElementById('hiddenCount'),
-      lockedCount: document.getElementById('lockedCount'),
-      autoExportSection: document.getElementById('autoExportSection'),
-      autoExportBtn: document.getElementById('autoExportBtn'),
-      autoExportItems: document.getElementById('autoExportItems'),
-      autoCount1zu1: document.getElementById('autoCount1zu1'),
-      autoCount768: document.getElementById('autoCount768'),
-      exportProgress: document.getElementById('exportProgress'),
-      progressTitle: document.getElementById('progressTitle'),
-      progressBarFill: document.getElementById('progressBarFill'),
-      progressCurrent: document.getElementById('progressCurrent'),
-      progressPercentage: document.getElementById('progressPercentage'),
-      exportResults: document.getElementById('exportResults'),
-      resultsSummary: document.getElementById('resultsSummary'),
-      resultsFiles: document.getElementById('resultsFiles'),
-      downloadAllBtn: document.getElementById('downloadAllBtn')
+      progressText: document.getElementById('progressText')
     };
-    
-    // Accordion functionality
-    document.addEventListener('DOMContentLoaded', function() {
-      const accordionHeaders = document.querySelectorAll('.accordion-header');
-      console.log('Found accordion headers:', accordionHeaders.length);
-      
-      accordionHeaders.forEach(header => {
-        header.addEventListener('click', function() {
-          const targetId = this.getAttribute('data-target');
-          const content = document.getElementById(targetId);
-          
-          console.log('Accordion clicked:', targetId);
-          
-          // Toggle active states
-          this.classList.toggle('active');
-          content.classList.toggle('active');
-          
-          // Close other accordions (optional)
-          accordionHeaders.forEach(otherHeader => {
-            if (otherHeader !== this) {
-              const otherTargetId = otherHeader.getAttribute('data-target');
-              const otherContent = document.getElementById(otherTargetId);
-              otherHeader.classList.remove('active');
-              otherContent.classList.remove('active');
-            }
-          });
-        });
-      });
-    });
     
     // File input handling
     if (elements.csvFile) {
@@ -1386,9 +465,32 @@
           reader.onload = (e) => {
             csvData = e.target.result;
             checkFormValidity();
-            showMessage('✅ CSV-Datei geladen', 'success');
+            showMessage('✅ CSV-Datei geladen: ' + file.name, 'success');
           };
           reader.readAsText(file);
+        }
+      });
+      
+      // Drag and drop support
+      elements.csvFile.parentElement.addEventListener('dragover', (e) => {
+        e.preventDefault();
+        e.currentTarget.style.borderColor = 'rgba(139,184,133,0.8)';
+      });
+      
+      elements.csvFile.parentElement.addEventListener('dragleave', (e) => {
+        e.preventDefault();
+        e.currentTarget.style.borderColor = 'rgba(139,184,133,0.4)';
+      });
+      
+      elements.csvFile.parentElement.addEventListener('drop', (e) => {
+        e.preventDefault();
+        e.currentTarget.style.borderColor = 'rgba(139,184,133,0.4)';
+        
+        const files = e.dataTransfer.files;
+        if (files.length > 0 && files[0].name.endsWith('.csv')) {
+          elements.csvFile.files = files;
+          const event = new Event('change', { bubbles: true });
+          elements.csvFile.dispatchEvent(event);
         }
       });
     }
@@ -1421,170 +523,6 @@
         }, '*');
       });
     }
-    
-    // Load layers button
-    if (elements.loadLayersBtn) {
-      elements.loadLayersBtn.addEventListener('click', () => {
-        elements.loadLayersBtn.disabled = true;
-        elements.loadLayersBtn.innerHTML = '⏳ Lade Ebenen...';
-        
-        parent.postMessage({
-          pluginMessage: {
-            type: 'load-layers'
-          }
-        }, '*');
-      });
-    }
-    
-    // Export layers button
-    if (elements.exportLayersBtn) {
-      elements.exportLayersBtn.addEventListener('click', () => {
-        if (selectedItems.length > 0) {
-          parent.postMessage({
-            pluginMessage: {
-              type: 'export-selected-layers',
-              layers: selectedItems
-            }
-          }, '*');
-        }
-      });
-    }
-    
-    // Direct download button
-    if (elements.downloadDirectBtn) {
-      elements.downloadDirectBtn.addEventListener('click', () => {
-        if (selectedItems.length > 0) {
-          const exportSettings = getExportSettings();
-          
-          elements.downloadDirectBtn.disabled = true;
-          elements.downloadDirectBtn.textContent = '⏳ Lade herunter...';
-          
-          parent.postMessage({
-            pluginMessage: {
-              type: 'download-layers-direct',
-              selectedItems: selectedItems,
-              settings: exportSettings
-            }
-          }, '*');
-        }
-      });
-    }
-    
-    // Auto-Export button
-    if (elements.autoExportBtn) {
-      elements.autoExportBtn.addEventListener('click', () => {
-        console.log('Auto-Export Button geklickt');
-        console.log('AutoExportItems:', autoExportItems.length);
-        
-        if (autoExportItems.length > 0) {
-          console.log('Starte Auto-Export...');
-          startExportProgress();
-          
-          parent.postMessage({
-            pluginMessage: {
-              type: 'auto-export'
-            }
-          }, '*');
-          
-          console.log('Auto-Export Message gesendet');
-        }
-      });
-    }
-    
-    // Download All Button
-    if (elements.downloadAllBtn) {
-      elements.downloadAllBtn.addEventListener('click', () => {
-        if (window.lastExportData) {
-          downloadFiles(window.lastExportData);
-        }
-      });
-    }
-    
-    // Download format selection
-    document.addEventListener('click', (e) => {
-      if (e.target.classList.contains('download-format')) {
-        if (e.target.dataset.format) {
-          // Format selection
-          document.querySelectorAll('.download-format[data-format]').forEach(btn => {
-            btn.classList.remove('active');
-          });
-          e.target.classList.add('active');
-        } else if (e.target.dataset.scale) {
-          // Scale selection
-          document.querySelectorAll('.download-format[data-scale]').forEach(btn => {
-            btn.classList.remove('active');
-          });
-          e.target.classList.add('active');
-        }
-      }
-    });
-    
-    // Select all button
-    if (elements.selectAllBtn) {
-      elements.selectAllBtn.addEventListener('click', () => {
-        const checkboxes = document.querySelectorAll('.child-checkbox');
-        checkboxes.forEach(cb => cb.checked = true);
-        updateSelectedItems();
-      });
-    }
-    
-    // Select none button
-    if (elements.selectNoneBtn) {
-      elements.selectNoneBtn.addEventListener('click', () => {
-        const checkboxes = document.querySelectorAll('.child-checkbox');
-        checkboxes.forEach(cb => cb.checked = false);
-        updateSelectedItems();
-      });
-    }
-    
-    // Select frames button
-    if (elements.selectFramesBtn) {
-      elements.selectFramesBtn.addEventListener('click', () => {
-        const checkboxes = document.querySelectorAll('.child-checkbox');
-        checkboxes.forEach(cb => {
-          const layerType = cb.getAttribute('data-element-type');
-          cb.checked = layerType === 'FRAME' || layerType === 'COMPONENT';
-        });
-        updateSelectedItems();
-      });
-    }
-    
-    // Select instances button
-    if (elements.selectInstancesBtn) {
-      elements.selectInstancesBtn.addEventListener('click', () => {
-        const checkboxes = document.querySelectorAll('.child-checkbox');
-        checkboxes.forEach(cb => {
-          const layerType = cb.getAttribute('data-element-type');
-          cb.checked = layerType === 'INSTANCE';
-        });
-        updateSelectedItems();
-      });
-    }
-    
-    // Export settings selection
-    document.addEventListener('click', (e) => {
-      if (e.target.classList.contains('setting-option')) {
-        const group = e.target.parentNode;
-        
-        // Remove active from siblings
-        group.querySelectorAll('.setting-option').forEach(opt => {
-          opt.classList.remove('active');
-        });
-        
-        // Add active to clicked option
-        e.target.classList.add('active');
-        
-        // Show/hide custom input for naming
-        if (e.target.dataset.naming === 'custom') {
-          elements.customNaming.classList.remove('hidden');
-          elements.customNaming.focus();
-        } else if (e.target.dataset.naming) {
-          elements.customNaming.classList.add('hidden');
-        }
-        
-        updateSelectionSummary();
-      }
-    });
     
     // Close button
     if (elements.closeBtn) {
@@ -1640,21 +578,21 @@
       
       let html = text;
       if (details && Array.isArray(details)) {
-        html += '<div style="margin-top: 8px; font-size: 12px;">';
+        html += '<div class="message-details">';
         details.forEach(item => {
-          html += `<div>• <strong>${item.frameName}</strong> (${item.language}) - ${item.translatedTexts} Texte</div>`;
+          html += `<div>• <strong>${item.frameName}</strong> (${item.language}) - ${item.translatedTexts} Texte übersetzt</div>`;
         });
         html += '</div>';
       }
       
       elements.messageDiv.innerHTML = `<div class="${className}">${html}</div>`;
       
-      // Auto-hide after 5 seconds
+      // Auto-hide after 8 seconds
       setTimeout(() => {
         if (elements.messageDiv) {
           elements.messageDiv.innerHTML = '';
         }
-      }, 5000);
+      }, 8000);
     }
     
     // Message handling from plugin
@@ -1662,12 +600,11 @@
       const msg = event.data.pluginMessage;
       if (!msg) return;
       
-      console.log('Received message:', msg.type, msg);
+      console.log('Received message:', msg.type);
       
       switch (msg.type) {
         case 'progress':
           updateProgress(msg.message, msg.progress);
-          updateExportProgress(msg.message, msg.progress);
           break;
           
         case 'success':
@@ -1681,176 +618,13 @@
           resetImportButton();
           showProgress(false);
           break;
-          
-        case 'layers-loaded':
-          displayLayers(msg.layers);
-          break;
-          
-        case 'frames-loaded':
-          displayFrames(msg.frames);
-          if (msg.autoExportItems) {
-            displayAutoExportItems(msg.autoExportItems);
-          }
-          break;
-          
-        case 'export-completed':
-          showMessage(`✅ ${msg.message}`, 'success');
-          break;
-          
-        case 'download-ready':
-          showExportResults(msg.exports, msg.count);
-          window.lastExportData = msg.exports; // Store for download
-          break;
-          
-        case 'download-progress':
-          updateExportProgress(msg.itemName, Math.round((msg.current / msg.total) * 100));
-          break;
       }
     });
     
-    function displayFrames(frames) {
-      availableFrames = frames;
-      
-      if (elements.loadLayersBtn) {
-        elements.loadLayersBtn.disabled = false;
-        elements.loadLayersBtn.innerHTML = '🔍 Frames scannen';
-      }
-      
-      if (elements.layerBrowser) {
-        elements.layerBrowser.classList.remove('hidden');
-      }
-      
-      // Update scan statistics
-      updateScanStatistics(frames);
-      
-      if (elements.frameGrid && frames.length > 0) {
-        let html = '';
-        
-        frames.forEach((frame, frameIndex) => {
-          const thumbnailSrc = frame.thumbnail && frame.thumbnail.length > 0 ? 
-            `data:image/png;base64,${btoa(String.fromCharCode.apply(null, frame.thumbnail))}` : 
-            null;
-          
-          html += `
-            <div class="frame-card" data-frame-id="${frame.frameId}" data-frame-index="${frameIndex}">
-              <div class="frame-header" data-frame-index="${frameIndex}">
-                <div class="frame-thumbnail">
-                  ${thumbnailSrc ? 
-                    `<img src="${thumbnailSrc}" alt="${frame.frameName}">` : 
-                    '📄'
-                  }
-                </div>
-                <div class="frame-info">
-                  <h4 class="frame-name">${frame.frameName}</h4>
-                  <p class="frame-size">${frame.frameWidth}×${frame.frameHeight}px • ${frame.children.length} Elemente</p>
-                </div>
-                <div class="frame-toggle">
-                  <span class="frame-toggle-icon">▼</span>
-                  Anzeigen
-                </div>
-              </div>
-              <div class="frame-children">
-                <div class="children-header">
-                  <h5 class="children-title">📦 Exportierbare Elemente</h5>
-                  <div class="select-all-children" data-frame-index="${frameIndex}">
-                    <input type="checkbox" class="frame-checkbox">
-                    Alle auswählen
-                  </div>
-                </div>
-                <div class="children-grid">
-          `;
-          
-          frame.children.forEach((child, childIndex) => {
-            const icon = getLayerIcon(child.type);
-            const uniqueId = `${frameIndex}_${childIndex}`;
-            const isHidden = child.visible === false;
-            const isLocked = child.locked === true;
-            const statusClasses = `${isHidden ? 'hidden' : ''} ${isLocked ? 'locked' : ''}`.trim();
-            
-            html += `
-              <div class="child-item ${statusClasses}" data-item-id="${uniqueId}">
-                <input type="checkbox" class="child-checkbox" 
-                       data-frame-index="${frameIndex}" 
-                       data-child-index="${childIndex}"
-                       data-frame-id="${frame.frameId}"
-                       data-element-id="${child.id}"
-                       data-element-type="${child.type}">
-                <div class="child-icon">${icon}</div>
-                <div class="child-info">
-                  <p class="child-name">${child.name}</p>
-                  <p class="child-size">${child.width}×${child.height}px</p>
-                  ${(isHidden || isLocked) ? `
-                    <div class="child-status">
-                      ${isHidden ? '<span class="status-badge hidden">👁️‍🗨️ Ausgeblendet</span>' : ''}
-                      ${isLocked ? '<span class="status-badge locked">🔒 Gesperrt</span>' : ''}
-                    </div>
-                  ` : ''}
-                </div>
-              </div>
-            `;
-          });
-          
-          html += `
-                </div>
-              </div>
-            </div>
-          `;
-        });
-        
-        elements.frameGrid.innerHTML = html;
-        
-        // Add event listeners
-        addFrameEventListeners();
-        updateSelectionSummary();
-      } else if (elements.frameGrid) {
-        elements.frameGrid.innerHTML = `
-          <div style="text-align: center; padding: 40px; color: #b8c7ab;">
-            <p>📄 Keine Frames mit exportierbaren Elementen gefunden</p>
-            <p style="font-size: 12px; opacity: 0.8;">Frames sind möglicherweise ausgeblendet oder gesperrt</p>
-          </div>
-        `;
-      }
-    }
+    // Initialize form state
+    checkFormValidity();
     
-    function displayAutoExportItems(items) {
-      autoExportItems = items;
-      
-      if (elements.autoExportSection) {
-        elements.autoExportSection.style.display = items.length > 0 ? 'block' : 'none';
-      }
-      
-      // Update statistics
-      let count1zu1 = 0;
-      let count768 = 0;
-      
-      items.forEach(item => {
-        if (item.pattern === '1zu1') count1zu1++;
-        if (item.pattern === '768x1344') count768++;
-      });
-      
-      if (elements.autoCount1zu1) {
-        elements.autoCount1zu1.textContent = count1zu1;
-      }
-      
-      if (elements.autoCount768) {
-        elements.autoCount768.textContent = count768;
-      }
-      
-      // Update button
-      if (elements.autoExportBtn) {
-        elements.autoExportBtn.disabled = items.length === 0;
-        elements.autoExportBtn.textContent = `🤖 ${items.length} Elemente automatisch exportieren`;
-      }
-      
-      // Show items list if there are auto-export items
-      if (elements.autoExportItems && items.length > 0) {
-        elements.autoExportItems.classList.remove('hidden');
-        
-        let html = '';
-        items.forEach(item => {
-          const icon = getLayerIcon(item.elementType);
-          const badgeClass = `pattern-${item.pattern.replace('x', 'x')}`;
-          
-          html += `
-            <div class="auto-item">
-              <div class="auto-item-icon">${icon}</div>
+    console.log('Weleda Translation Import Plugin initialized! 🌿');
+  </script>
+</body>
+</html>
