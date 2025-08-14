@@ -261,136 +261,228 @@
       background: rgba(0,0,0,0.15);
       border-radius: 8px;
       padding: 16px;
-      max-height: 400px;
+      max-height: 500px;
       overflow-y: auto;
     }
     
-    .layer-tree {
-      font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
+    .frame-grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 12px;
     }
     
-    .layer-group {
-      margin-bottom: 8px;
+    .frame-card {
+      background: rgba(255,255,255,0.08);
+      border: 1px solid rgba(255,255,255,0.12);
+      border-radius: 8px;
+      overflow: hidden;
+      transition: all 0.2s ease;
     }
     
-    .layer-parent {
+    .frame-card:hover {
+      background: rgba(255,255,255,0.12);
+      border-color: rgba(139,184,133,0.4);
+    }
+    
+    .frame-header {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 12px;
+      background: rgba(0,0,0,0.1);
+      border-bottom: 1px solid rgba(255,255,255,0.1);
+    }
+    
+    .frame-thumbnail {
+      width: 40px;
+      height: 30px;
+      background: rgba(255,255,255,0.1);
+      border-radius: 4px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 12px;
+      overflow: hidden;
+      flex-shrink: 0;
+    }
+    
+    .frame-thumbnail img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+    
+    .frame-info {
+      flex: 1;
+      min-width: 0;
+    }
+    
+    .frame-name {
+      font-size: 13px;
+      font-weight: 600;
+      color: #ffffff;
+      margin: 0;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    
+    .frame-size {
+      font-size: 11px;
+      color: #b8c7ab;
+      margin: 2px 0 0 0;
+    }
+    
+    .frame-select-all {
       display: flex;
       align-items: center;
       gap: 6px;
-      padding: 8px 4px;
-      background: rgba(139,184,133,0.1);
-      border-radius: 6px;
-      margin-bottom: 4px;
+      font-size: 11px;
+      color: #8ab885;
       cursor: pointer;
-      transition: all 0.2s ease;
     }
     
-    .layer-parent:hover {
-      background: rgba(139,184,133,0.15);
+    .frame-children {
+      padding: 12px;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
     }
     
-    .layer-parent.collapsed .layer-children {
-      display: none;
-    }
-    
-    .layer-toggle {
-      color: #b8c7ab;
-      font-size: 10px;
-      width: 12px;
-      text-align: center;
-      transition: transform 0.2s ease;
-    }
-    
-    .layer-parent.collapsed .layer-toggle {
-      transform: rotate(-90deg);
-    }
-    
-    .layer-item {
+    .child-item {
       display: flex;
       align-items: center;
       gap: 8px;
-      padding: 4px 8px;
-      font-size: 12px;
-      color: #e8f1e6;
-      transition: background 0.1s ease;
-    }
-    
-    .layer-item:hover {
+      padding: 8px;
       background: rgba(255,255,255,0.05);
-      border-radius: 4px;
+      border-radius: 6px;
+      transition: all 0.2s ease;
+      cursor: pointer;
     }
     
-    .layer-children .layer-item {
-      margin-left: 20px;
-      padding-left: 12px;
-      border-left: 1px solid rgba(139,184,133,0.2);
-      position: relative;
+    .child-item:hover {
+      background: rgba(139,184,133,0.1);
     }
     
-    .layer-children .layer-item::before {
-      content: '';
-      position: absolute;
-      left: -1px;
-      top: 50%;
-      width: 8px;
-      height: 1px;
+    .child-item.selected {
       background: rgba(139,184,133,0.2);
+      border: 1px solid rgba(139,184,133,0.4);
     }
     
-    .layer-checkbox {
-      margin-right: 4px;
+    .child-checkbox {
       accent-color: #8ab885;
     }
     
-    .layer-icon {
-      width: 16px;
+    .child-icon {
+      width: 14px;
       text-align: center;
+      font-size: 10px;
       opacity: 0.7;
-      font-size: 11px;
     }
     
-    .layer-name {
+    .child-info {
       flex: 1;
-      font-size: 11px;
+      min-width: 0;
     }
     
-    .layer-info {
+    .child-name {
+      font-size: 11px;
+      color: #e8f1e6;
+      margin: 0;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    
+    .child-size {
       font-size: 10px;
       color: #b8c7ab;
-      opacity: 0.6;
+      opacity: 0.8;
+      margin: 1px 0 0 0;
     }
     
-    .download-section {
+    .export-settings {
+      background: rgba(255,255,255,0.08);
+      border-radius: 8px;
+      padding: 16px;
       margin-top: 16px;
-      padding-top: 16px;
-      border-top: 1px solid rgba(255,255,255,0.1);
+      border: 1px solid rgba(255,255,255,0.12);
     }
     
-    .download-options {
+    .setting-group {
+      margin-bottom: 16px;
+    }
+    
+    .setting-group:last-child {
+      margin-bottom: 0;
+    }
+    
+    .setting-label {
+      font-size: 12px;
+      font-weight: 600;
+      color: #ffffff;
+      margin-bottom: 8px;
+      display: block;
+    }
+    
+    .setting-options {
       display: flex;
-      gap: 8px;
-      margin-bottom: 12px;
+      gap: 6px;
+      flex-wrap: wrap;
     }
     
-    .download-format {
+    .setting-option {
       background: rgba(255,255,255,0.08);
       border: 1px solid rgba(255,255,255,0.15);
       border-radius: 6px;
-      padding: 8px 12px;
+      padding: 6px 12px;
       font-size: 11px;
       color: #b8c7ab;
       cursor: pointer;
       transition: all 0.2s ease;
+      white-space: nowrap;
     }
     
-    .download-format.active {
+    .setting-option.active {
       background: rgba(139,184,133,0.2);
       border-color: rgba(139,184,133,0.4);
       color: #8ab885;
     }
     
-    .download-format:hover {
+    .setting-option:hover {
       background: rgba(255,255,255,0.12);
+    }
+    
+    .custom-input {
+      background: rgba(255,255,255,0.08);
+      border: 1px solid rgba(255,255,255,0.15);
+      border-radius: 6px;
+      padding: 8px 12px;
+      font-size: 11px;
+      color: #ffffff;
+      width: 100%;
+      margin-top: 6px;
+    }
+    
+    .custom-input:focus {
+      outline: none;
+      border-color: rgba(139,184,133,0.6);
+      background: rgba(255,255,255,0.12);
+    }
+    
+    .export-summary {
+      background: rgba(139,184,133,0.1);
+      border: 1px solid rgba(139,184,133,0.3);
+      border-radius: 6px;
+      padding: 12px;
+      margin-top: 16px;
+      font-size: 12px;
+      color: #e8f1e6;
+    }
+    
+    .export-counter {
+      font-weight: 600;
+      color: #8ab885;
     }
     
     /* Status Messages */
@@ -592,31 +684,51 @@
             </div>
             
             <button class="btn" id="loadLayersBtn">
-              🔄 Ebenen laden
+              🔍 Frames scannen
             </button>
             
             <div class="layer-browser hidden" id="layerBrowser">
-              <div style="display: flex; gap: 8px; margin-bottom: 12px;">
-                <button class="btn btn-secondary" id="selectAllBtn">Alle auswählen</button>
-                <button class="btn btn-secondary" id="selectFramesBtn">Nur Frames</button>
-                <button class="btn btn-secondary" id="selectInstancesBtn">Nur Instanzen ◊</button>
+              <div class="frame-grid" id="frameGrid">
+                <!-- Frame cards with children will be inserted here -->
               </div>
               
-              <div class="layer-tree" id="layerTree">
-                <!-- Hierarchical layer tree will be inserted here -->
-              </div>
-              
-              <div class="download-section">
-                <div class="download-options">
-                  <div class="download-format active" data-format="PNG">PNG</div>
-                  <div class="download-format" data-format="JPG">JPG</div>
-                  <div class="download-format" data-format="SVG">SVG</div>
-                  <div class="download-format" data-scale="1">1x</div>
-                  <div class="download-format active" data-scale="2">2x</div>
-                  <div class="download-format" data-scale="4">4x</div>
+              <div class="export-settings">
+                <div class="setting-group">
+                  <label class="setting-label">📐 Qualität</label>
+                  <div class="setting-options">
+                    <div class="setting-option" data-scale="1">1x</div>
+                    <div class="setting-option active" data-scale="2">2x</div>
+                    <div class="setting-option" data-scale="3">3x</div>
+                    <div class="setting-option" data-scale="4">4x</div>
+                  </div>
                 </div>
                 
-                <button class="btn" id="exportLayersBtn" disabled style="width: 100%;">
+                <div class="setting-group">
+                  <label class="setting-label">📄 Format</label>
+                  <div class="setting-options">
+                    <div class="setting-option active" data-format="PNG">PNG</div>
+                    <div class="setting-option" data-format="JPG">JPG</div>
+                    <div class="setting-option" data-format="SVG">SVG</div>
+                  </div>
+                </div>
+                
+                <div class="setting-group">
+                  <label class="setting-label">🏷️ Dateinamen</label>
+                  <div class="setting-options">
+                    <div class="setting-option active" data-naming="frame_element_scale_date">Frame_Element_2x_Date</div>
+                    <div class="setting-option" data-naming="element_frame_scale_date">Element_Frame_2x_Date</div>
+                    <div class="setting-option" data-naming="frame_element_scale">Frame_Element_2x</div>
+                    <div class="setting-option" data-naming="element_frame_scale">Element_Frame_2x</div>
+                    <div class="setting-option" data-naming="custom">Benutzerdefiniert</div>
+                  </div>
+                  <input type="text" class="custom-input hidden" id="customNaming" placeholder="Muster: {frame}_{element}_{date}">
+                </div>
+                
+                <div class="export-summary" id="exportSummary">
+                  <span class="export-counter">0 Elemente</span> ausgewählt zum Export
+                </div>
+                
+                <button class="btn" id="exportLayersBtn" disabled style="width: 100%; margin-top: 12px;">
                   📤 0 Elemente exportieren
                 </button>
                 
@@ -640,8 +752,8 @@
     console.log('DOM loaded, initializing Weleda Transcreate Workspace...');
     
     let csvData = null;
-    let availableLayers = [];
-    let selectedLayers = [];
+    let availableFrames = [];
+    let selectedItems = [];
     
     // DOM Elements
     const elements = {
@@ -655,12 +767,11 @@
       progressText: document.getElementById('progressText'),
       loadLayersBtn: document.getElementById('loadLayersBtn'),
       layerBrowser: document.getElementById('layerBrowser'),
-      layerTree: document.getElementById('layerTree'),
-      selectAllBtn: document.getElementById('selectAllBtn'),
-      selectFramesBtn: document.getElementById('selectFramesBtn'),
-      selectInstancesBtn: document.getElementById('selectInstancesBtn'),
+      frameGrid: document.getElementById('frameGrid'),
       exportLayersBtn: document.getElementById('exportLayersBtn'),
-      downloadDirectBtn: document.getElementById('downloadDirectBtn')
+      downloadDirectBtn: document.getElementById('downloadDirectBtn'),
+      exportSummary: document.getElementById('exportSummary'),
+      customNaming: document.getElementById('customNaming')
     };
     
     // Accordion functionality
@@ -879,6 +990,10 @@
           displayLayers(msg.layers);
           break;
           
+        case 'frames-loaded':
+          displayFrames(msg.frames);
+          break;
+          
         case 'export-completed':
           showMessage(`✅ ${msg.message}`, 'success');
           break;
@@ -898,7 +1013,7 @@
           
         case 'download-progress':
           if (elements.downloadDirectBtn) {
-            elements.downloadDirectBtn.textContent = `⏳ ${msg.current}/${msg.total} - ${msg.nodeName}`;
+            elements.downloadDirectBtn.textContent = `⏳ ${msg.current}/${msg.total} - ${msg.itemName}`;
           }
           break;
       }
@@ -966,138 +1081,187 @@
       }, 5000);
     }
     
-    function displayLayers(layers) {
-      availableLayers = layers;
+    function displayFrames(frames) {
+      availableFrames = frames;
       
       if (elements.loadLayersBtn) {
         elements.loadLayersBtn.disabled = false;
-        elements.loadLayersBtn.innerHTML = '🔄 Ebenen laden';
+        elements.loadLayersBtn.innerHTML = '🔍 Frames scannen';
       }
       
       if (elements.layerBrowser) {
         elements.layerBrowser.classList.remove('hidden');
       }
       
-      // Build hierarchical tree
-      const tree = buildLayerTree(layers);
-      
-      if (elements.layerTree) {
-        elements.layerTree.innerHTML = renderLayerTree(tree);
+      if (elements.frameGrid) {
+        let html = '';
+        
+        frames.forEach((frame, frameIndex) => {
+          const thumbnailSrc = frame.thumbnail ? 
+            `data:image/png;base64,${btoa(String.fromCharCode(...frame.thumbnail))}` : 
+            null;
+          
+          html += `
+            <div class="frame-card" data-frame-id="${frame.frameId}">
+              <div class="frame-header">
+                <div class="frame-thumbnail">
+                  ${thumbnailSrc ? 
+                    `<img src="${thumbnailSrc}" alt="${frame.frameName}">` : 
+                    '📄'
+                  }
+                </div>
+                <div class="frame-info">
+                  <h4 class="frame-name">${frame.frameName}</h4>
+                  <p class="frame-size">${frame.frameWidth}×${frame.frameHeight}px • ${frame.children.length} Elemente</p>
+                </div>
+                <div class="frame-select-all" data-frame-index="${frameIndex}">
+                  <input type="checkbox" class="frame-checkbox"> Alle
+                </div>
+              </div>
+              <div class="frame-children">
+          `;
+          
+          frame.children.forEach((child, childIndex) => {
+            const icon = getLayerIcon(child.type);
+            const uniqueId = `${frameIndex}_${childIndex}`;
+            
+            html += `
+              <div class="child-item" data-item-id="${uniqueId}">
+                <input type="checkbox" class="child-checkbox" 
+                       data-frame-index="${frameIndex}" 
+                       data-child-index="${childIndex}"
+                       data-frame-id="${frame.frameId}"
+                       data-element-id="${child.id}">
+                <span class="child-icon">${icon}</span>
+                <div class="child-info">
+                  <p class="child-name">${child.name}</p>
+                  <p class="child-size">${child.width}×${child.height}px</p>
+                </div>
+              </div>
+            `;
+          });
+          
+          html += `
+              </div>
+            </div>
+          `;
+        });
+        
+        elements.frameGrid.innerHTML = html;
         
         // Add event listeners
-        addTreeEventListeners();
+        addFrameEventListeners();
       }
     }
     
-    function buildLayerTree(layers) {
-      const tree = [];
-      const parentMap = new Map();
-      
-      // First pass: organize by parent
-      layers.forEach((layer, index) => {
-        layer.index = index;
-        
-        if (layer.depth === 0) {
-          // Top level
-          tree.push({
-            ...layer,
-            children: []
+    function addFrameEventListeners() {
+      // Frame select all checkboxes
+      document.querySelectorAll('.frame-checkbox').forEach(checkbox => {
+        checkbox.addEventListener('change', (e) => {
+          const frameIndex = parseInt(e.target.closest('.frame-select-all').dataset.frameIndex);
+          const frameCard = e.target.closest('.frame-card');
+          const childCheckboxes = frameCard.querySelectorAll('.child-checkbox');
+          
+          childCheckboxes.forEach(childCheckbox => {
+            childCheckbox.checked = e.target.checked;
           });
-          parentMap.set(layer.fullPath, tree[tree.length - 1]);
-        } else {
-          // Find parent
-          const parentPath = layer.fullPath.substring(0, layer.fullPath.lastIndexOf(' > '));
-          const parent = parentMap.get(parentPath);
           
-          if (parent) {
-            const childNode = {
-              ...layer,
-              children: []
-            };
-            parent.children.push(childNode);
-            parentMap.set(layer.fullPath, childNode);
-          }
-        }
+          updateSelectedItems();
+        });
       });
       
-      return tree;
-    }
-    
-    function renderLayerTree(tree, level = 0) {
-      let html = '';
-      
-      tree.forEach(node => {
-        const hasChildren = node.children && node.children.length > 0;
-        const icon = getLayerIcon(node.type);
-        
-        if (hasChildren) {
-          // Parent node
-          html += `
-            <div class="layer-group">
-              <div class="layer-parent" data-path="${node.fullPath}">
-                <span class="layer-toggle">▼</span>
-                <input type="checkbox" class="layer-checkbox parent-checkbox" data-index="${node.index}" data-type="${node.type}">
-                <span class="layer-icon">${icon}</span>
-                <span class="layer-name">${node.name}</span>
-                <span class="layer-info">${node.width}×${node.height}</span>
-              </div>
-              <div class="layer-children">
-                ${renderLayerTree(node.children, level + 1)}
-              </div>
-            </div>
-          `;
-        } else {
-          // Child node
-          html += `
-            <div class="layer-item">
-              <input type="checkbox" class="layer-checkbox" data-index="${node.index}" data-type="${node.type}">
-              <span class="layer-icon">${icon}</span>
-              <span class="layer-name">${node.name}</span>
-              <span class="layer-info">${node.width}×${node.height}</span>
-            </div>
-          `;
-        }
+      // Child checkboxes
+      document.querySelectorAll('.child-checkbox').forEach(checkbox => {
+        checkbox.addEventListener('change', updateSelectedItems);
       });
       
-      return html;
-    }
-    
-    function addTreeEventListeners() {
-      // Parent toggle functionality
-      document.querySelectorAll('.layer-parent').forEach(parent => {
-        parent.addEventListener('click', (e) => {
+      // Child item click (toggle checkbox)
+      document.querySelectorAll('.child-item').forEach(item => {
+        item.addEventListener('click', (e) => {
           if (e.target.type !== 'checkbox') {
-            parent.classList.toggle('collapsed');
+            const checkbox = item.querySelector('.child-checkbox');
+            checkbox.checked = !checkbox.checked;
+            updateSelectedItems();
           }
+        });
+      });
+    }
+    
+    function updateSelectedItems() {
+      const checkedBoxes = document.querySelectorAll('.child-checkbox:checked');
+      selectedItems = [];
+      
+      checkedBoxes.forEach(checkbox => {
+        const frameIndex = parseInt(checkbox.dataset.frameIndex);
+        const childIndex = parseInt(checkbox.dataset.childIndex);
+        const frame = availableFrames[frameIndex];
+        const child = frame.children[childIndex];
+        
+        selectedItems.push({
+          frameId: checkbox.dataset.frameId,
+          frameName: frame.frameName,
+          elementId: checkbox.dataset.elementId,
+          elementName: child.name,
+          elementType: child.type,
+          width: child.width,
+          height: child.height
         });
       });
       
-      // Checkbox listeners
-      document.querySelectorAll('.layer-checkbox').forEach(checkbox => {
-        checkbox.addEventListener('change', () => {
-          // If it's a parent checkbox, toggle all children
-          if (checkbox.classList.contains('parent-checkbox')) {
-            const parent = checkbox.closest('.layer-parent');
-            const children = parent.parentNode.querySelectorAll('.layer-children .layer-checkbox');
-            
-            children.forEach(child => {
-              child.checked = checkbox.checked;
-            });
-          }
-          
-          updateSelectedLayers();
-        });
+      // Update UI
+      document.querySelectorAll('.child-item').forEach(item => {
+        const checkbox = item.querySelector('.child-checkbox');
+        item.classList.toggle('selected', checkbox.checked);
       });
+      
+      updateExportSummary();
+      updateExportButtons();
+    }
+    
+    function updateExportSummary() {
+      if (elements.exportSummary) {
+        const settings = getExportSettings();
+        const count = selectedItems.length;
+        
+        elements.exportSummary.innerHTML = `
+          <span class="export-counter">${count} Element${count !== 1 ? 'e' : ''}</span> 
+          ausgewählt → ${settings.format} ${settings.scale}x
+        `;
+      }
+    }
+    
+    function updateExportButtons() {
+      const count = selectedItems.length;
+      
+      if (elements.exportLayersBtn) {
+        elements.exportLayersBtn.disabled = count === 0;
+        elements.exportLayersBtn.textContent = `📤 ${count} Element${count !== 1 ? 'e' : ''} exportieren`;
+      }
+      
+      if (elements.downloadDirectBtn) {
+        elements.downloadDirectBtn.disabled = count === 0;
+        elements.downloadDirectBtn.textContent = count > 0 ? 
+          `💾 ${count} Datei${count !== 1 ? 'en' : ''} herunterladen` : 
+          '💾 Direkt herunterladen';
+      }
     }
     
     function getExportSettings() {
-      const activeFormat = document.querySelector('.download-format[data-format].active');
-      const activeScale = document.querySelector('.download-format[data-scale].active');
+      const activeFormat = document.querySelector('.setting-option[data-format].active');
+      const activeScale = document.querySelector('.setting-option[data-scale].active');
+      const activeNaming = document.querySelector('.setting-option[data-naming].active');
       
-      return {
+      const settings = {
         format: activeFormat ? activeFormat.dataset.format : 'PNG',
-        scale: activeScale ? parseInt(activeScale.dataset.scale) : 2
+        scale: activeScale ? parseInt(activeScale.dataset.scale) : 2,
+        naming: activeNaming ? activeNaming.dataset.naming : 'frame_element_scale_date'
       };
+      
+      if (settings.naming === 'custom' && elements.customNaming) {
+        settings.customPattern = elements.customNaming.value || 'export';
+      }
+      
+      return settings;
     }
     
     function downloadFiles(exports) {
@@ -1170,6 +1334,11 @@
           `💾 ${selectedLayers.length} Dateien herunterladen` : 
           '💾 Direkt herunterladen';
       }
+    }
+    
+    function displayLayers(layers) {
+      // Fallback for old layer system
+      console.log('Using fallback layer display');
     }
     
     function getLayerIcon(type) {
