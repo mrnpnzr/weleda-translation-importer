@@ -861,7 +861,6 @@
   <script>
     const csvFileInput = document.getElementById('csvFile');
     const importBtn = document.getElementById('importBtn');
-    const exportBtn = document.getElementById('exportBtn');
     const getIdsBtn = document.getElementById('getIdsBtn');
     const closeBtn = document.getElementById('closeBtn');
     const messageDiv = document.getElementById('messageDiv');
@@ -871,21 +870,23 @@
     const currentStep = document.getElementById('currentStep');
     const framesGrid = document.getElementById('framesGrid');
     
-    // Export Modal Elemente
-    const exportModal = document.getElementById('exportModal');
-    const exportCloseBtn = document.getElementById('exportCloseBtn');
-    const exportCancelBtn = document.getElementById('exportCancelBtn');
-    const exportConfirmBtn = document.getElementById('exportConfirmBtn');
-    const exportFramesList = document.getElementById('exportFramesList');
-    const exportScale = document.getElementById('exportScale');
-    const exportFormat = document.getElementById('exportFormat');
-    const exportNaming = document.getElementById('exportNaming');
+    // Export Tab Elemente
+    const loadLayersBtn = document.getElementById('loadLayersBtn');
+    const layerBrowser = document.getElementById('layerBrowser');
+    const selectAllBtn = document.getElementById('selectAllBtn');
+    const selectNoneBtn = document.getElementById('selectNoneBtn');
+    const selectFramesBtn = document.getElementById('selectFramesBtn');
+    const selectInstancesBtn = document.getElementById('selectInstancesBtn');
+    const refreshLayersBtn = document.getElementById('refreshLayersBtn');
+    const exportSelectedBtn = document.getElementById('exportSelectedBtn');
+    const selectionInfo = document.getElementById('selectionInfo');
     
     let csvData = null;
     let importedFrames = [];
     let totalFrames = 0;
     let completedFrames = 0;
-    let selectedExportFrames = [];
+    let selectedExportLayers = [];
+    let allLayers = [];
     
     function checkFormValidity() {
       const hasFile = csvData !== null;
@@ -973,115 +974,158 @@
       }
     });
     
-    exportBtn.addEventListener('click', () => {
-      if (importedFrames.length > 0) {
-        exportModal.classList.add('show');
-        populateExportFramesList();
-      }
-    });
-    
-    // Export Modal Event Listeners
-    exportCloseBtn.addEventListener('click', () => {
-      exportModal.classList.remove('show');
-    });
-    
-    exportCancelBtn.addEventListener('click', () => {
-      exportModal.classList.remove('show');
-    });
-    
-    // Export Option Selection
-    document.querySelectorAll('.export-option').forEach(option => {
-      option.addEventListener('click', () => {
-        document.querySelectorAll('.export-option').forEach(o => o.classList.remove('selected'));
-        option.classList.add('selected');
-        option.querySelector('input[type="radio"]').checked = true;
+    // Tab Navigation
+    document.querySelectorAll('.tab-button').forEach(button => {
+      button.addEventListener('click', () => {
+        const targetTab = button.dataset.tab;
         
-        const optionValue = option.dataset.option;
-        if (optionValue === 'custom') {
-          exportFramesList.style.display = 'block';
-        } else {
-          exportFramesList.style.display = 'none';
-        }
+        // Tab-Buttons aktualisieren
+        document.querySelectorAll('.tab-button').forEach(b => b.classList.remove('active'));
+        button.classList.add('active');
         
-        updateExportButton();
+        // Tab-Content aktualisieren
+        document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
+        document.getElementById(targetTab + 'Tab').classList.add('active');
       });
     });
     
-    exportConfirmBtn.addEventListener('click', () => {
-      const selectedOption = document.querySelector('input[name="exportOption"]:checked').value;
-      const scale = parseInt(exportScale.value);
-      const format = exportFormat.value;
-      const naming = exportNaming.value;
+    // Export Tab: Layer laden
+    loadLayersBtn.addEventListener('click', () => {
+      loadLayersBtn.textContent = '⏳ Lade Ebenen...';
+      loadLayersBtn.disabled = true;
       
-      let framesToExport = [];
+      parent.postMessage({
+        pluginMessage: { type: 'load-layers' }
+      }, '*');
+    });
+    
+    // Export Tab: Auswahl-Kontrollen
+    selectAllBtn.addEventListener('click', () => {
+      document.querySelectorAll('.layer-checkbox').forEach(cb => cb.checked = true);
+      updateSelectedLayers();
+    });
+    
+    selectNoneBtn.addEventListener('click', () => {
+      document.querySelectorAll('.layer-checkbox').forEach(cb => cb.checked = false);
+      updateSelectedLayers();
+    });
+    
+    selectFramesBtn.addEventListener('click', () => {
+      document.querySelectorAll('.layer-checkbox').forEach(cb => {
+        const layerType = cb.dataset.type;
+        cb.checked = layerType === 'FRAME' || layerType === 'COMPONENT';
+      });
+      updateSelectedLayers();
+    });
+    
+    selectInstancesBtn.addEventListener('click', () => {
+      document.querySelectorAll('.layer-checkbox').forEach(cb => {
+        cb.checked = cb.dataset.type === 'INSTANCE';
+      });
+      updateSelectedLayers();
+    });
+    
+    refreshLayersBtn.addEventListener('click', () => {
+      loadLayersBtn.click();
+    });
+    
+    // Export Tab: Export starten
+    exportSelectedBtn.addEventListener('click', () => {
+      const selectedLayers = [];
+      document.querySelectorAll('.layer-checkbox:checked').forEach(cb => {
+        const layerId = cb.dataset.layerId;
+        const layer = allLayers.find(l => l.id === layerId);
+        if (layer) selectedLayers.push(layer);
+      });
       
-      if (selectedOption === 'all') {
-        framesToExport = importedFrames;
-      } else if (selectedOption === 'selected') {
-        // Plugin wird aktuell ausgewählte Frames aus Figma holen
-        framesToExport = 'selected';
-      } else if (selectedOption === 'custom') {
-        framesToExport = selectedExportFrames;
+      if (selectedLayers.length === 0) {
+        showMessage('⚠️ Keine Ebenen ausgewählt!', 'warning');
+        return;
       }
       
-      exportModal.classList.remove('show');
+      const settings = {
+        scale: parseInt(document.getElementById('exportScale2').value),
+        format: document.getElementById('exportFormat2').value,
+        naming: document.getElementById('exportNaming2').value
+      };
+      
+      exportSelectedBtn.textContent = '⏳ Exportiere...';
+      exportSelectedBtn.disabled = true;
       
       parent.postMessage({
         pluginMessage: {
-          type: 'export-frames',
-          frames: framesToExport,
-          settings: {
-            scale: scale,
-            format: format,
-            naming: naming
-          }
+          type: 'export-selected-layers',
+          layers: selectedLayers,
+          settings: settings
         }
       }, '*');
     });
     
-    function populateExportFramesList() {
-      exportFramesList.innerHTML = '';
-      selectedExportFrames = [...importedFrames]; // Standardmäßig alle auswählen
+    function updateSelectedLayers() {
+      const selected = document.querySelectorAll('.layer-checkbox:checked').length;
+      selectionInfo.textContent = `${selected} Elemente ausgewählt`;
+      exportSelectedBtn.disabled = selected === 0;
       
-      importedFrames.forEach((frame, index) => {
-        const frameItem = document.createElement('div');
-        frameItem.className = 'export-frame-item';
-        frameItem.innerHTML = `
-          <input type="checkbox" id="frame-${index}" checked>
-          <label for="frame-${index}" class="export-frame-name">${frame.frameName}</label>
-          <span class="export-frame-lang">${frame.language}</span>
-        `;
-        
-        const checkbox = frameItem.querySelector('input[type="checkbox"]');
-        checkbox.addEventListener('change', () => {
-          if (checkbox.checked) {
-            if (!selectedExportFrames.find(f => f.frameName === frame.frameName)) {
-              selectedExportFrames.push(frame);
-            }
-          } else {
-            selectedExportFrames = selectedExportFrames.filter(f => f.frameName !== frame.frameName);
-          }
-          updateExportButton();
-        });
-        
-        exportFramesList.appendChild(frameItem);
-      });
+      if (selected > 0) {
+        exportSelectedBtn.innerHTML = `<span>📦</span>${selected} Elemente exportieren`;
+      } else {
+        exportSelectedBtn.innerHTML = '<span>📦</span>Ausgewählte exportieren';
+      }
     }
     
-    function updateExportButton() {
-      const selectedOption = document.querySelector('input[name="exportOption"]:checked').value;
-      const confirmText = document.getElementById('exportConfirmText');
+    function renderLayers(layers) {
+      allLayers = layers;
+      layerBrowser.innerHTML = '';
       
-      if (selectedOption === 'all') {
-        confirmText.textContent = `${importedFrames.length} Frames exportieren`;
-        exportConfirmBtn.disabled = importedFrames.length === 0;
-      } else if (selectedOption === 'selected') {
-        confirmText.textContent = 'Ausgewählte exportieren';
-        exportConfirmBtn.disabled = false;
-      } else if (selectedOption === 'custom') {
-        confirmText.textContent = `${selectedExportFrames.length} Frames exportieren`;
-        exportConfirmBtn.disabled = selectedExportFrames.length === 0;
+      if (layers.length === 0) {
+        layerBrowser.innerHTML = '<div style="padding: 20px; text-align: center; color: #b8c7ab;">Keine Ebenen gefunden</div>';
+        return;
       }
+      
+      layers.forEach(layer => {
+        const layerItem = document.createElement('div');
+        layerItem.className = `layer-item layer-indent-${Math.min(layer.depth || 0, 5)}`;
+        
+        const typeIcon = getLayerIcon(layer.type);
+        
+        layerItem.innerHTML = `
+          <input type="checkbox" class="layer-checkbox" data-layer-id="${layer.id}" data-type="${layer.type}">
+          <span class="layer-icon">${typeIcon}</span>
+          <span class="layer-name">${layer.name}</span>
+          <span class="layer-type">${layer.type}</span>
+          <span class="layer-size">${Math.round(layer.width)}×${Math.round(layer.height)}</span>
+        `;
+        
+        const checkbox = layerItem.querySelector('.layer-checkbox');
+        checkbox.addEventListener('change', updateSelectedLayers);
+        
+        layerItem.addEventListener('click', (e) => {
+          if (e.target !== checkbox) {
+            checkbox.checked = !checkbox.checked;
+            updateSelectedLayers();
+          }
+        });
+        
+        layerBrowser.appendChild(layerItem);
+      });
+      
+      updateSelectedLayers();
+    }
+    
+    function getLayerIcon(type) {
+      const icons = {
+        'FRAME': '📄',
+        'COMPONENT': '🧩',
+        'INSTANCE': '◊',
+        'GROUP': '📁',
+        'RECTANGLE': '▮',
+        'ELLIPSE': '⬮',
+        'TEXT': '📝',
+        'VECTOR': '✏️',
+        'STAR': '⭐',
+        'POLYGON': '⬟'
+      };
+      return icons[type] || '📄';
     }
     
     getIdsBtn.addEventListener('click', () => {
@@ -1167,6 +1211,14 @@
         framesInfo += '</div>';
         
         messageDiv.innerHTML = framesInfo;
+        
+      } else if (msg.type === 'layers-loaded') {
+        const layers = msg.layers;
+        loadLayersBtn.textContent = '📋 Ebenen laden';
+        loadLayersBtn.disabled = false;
+        
+        renderLayers(layers);
+        showMessage(`✅ ${layers.length} Ebenen, Gruppen und Frames geladen!`, 'success');
         
       } else if (msg.type === 'download-ready') {
         // Direkter Download-Manager
@@ -1254,6 +1306,10 @@
             });
           }
         }, 100);
+        
+        // Reset Export Button
+        exportSelectedBtn.textContent = 'Ausgewählte exportieren';
+        exportSelectedBtn.disabled = document.querySelectorAll('.layer-checkbox:checked').length === 0;
         
       } else if (msg.type === 'progress') {
         currentStep.textContent = msg.message;
