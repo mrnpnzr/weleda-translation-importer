@@ -161,7 +161,7 @@ function handleGetFrameIds() {
       console.log((i + 1) + '. Name: "' + frame.name + '" | ID: "' + frame.id + '"');
     }
     
-    console.log('\n📝 CSV-TEMPLATE (mit Frame-IDs):');
+    console.log('\n📝 CSV-TEMPLATE (mit Frame-IDs und Markdown-Formatting):');
     console.log('=====================================');
     console.log('frame_name,node_id,source_text,target_language,translated_text');
     
@@ -176,18 +176,23 @@ function handleGetFrameIds() {
         console.log('\n// Frame: ' + frame.name + ' (ID: ' + frame.id + ')');
         for (var j = 0; j < visibleTextNodes.length; j++) {
           var textNode = visibleTextNodes[j];
-          var textContent = textNode.characters.replace(/"/g, '""');
-          console.log('"' + frame.id + '","' + textNode.id + '","' + textContent + '","de",""');
+          
+          // Extract text with markdown formatting for mixed styles
+          var formattedText = extractTextWithMarkdown(textNode);
+          var csvSafeText = formattedText.replace(/"/g, '""');
+          
+          console.log('"' + frame.id + '","' + textNode.id + '","' + csvSafeText + '","de",""');
         }
       }
     }
     
     console.log('\n=====================================');
-    console.log('💡 HINWEIS: Nutze Frame-IDs statt Namen für bessere Zuordnung!');
+    console.log('💡 HINWEIS: Fette Wörter sind mit **text** markiert!');
+    console.log('💡 Beispiel: **VITAMIN** C + E → **VITAMIN** C + E');
     
     figma.ui.postMessage({
       type: 'success',
-      message: allFrames.length + ' Frame(s) gefunden. Siehe Console für Frame-IDs und Namen.'
+      message: allFrames.length + ' Frame(s) gefunden. Siehe Console für Frame-IDs und formatierte Texte.'
     });
     
   } catch (error) {
@@ -196,6 +201,53 @@ function handleGetFrameIds() {
       type: 'error',
       message: 'Fehler beim Abrufen der Frame-IDs: ' + error.message
     });
+  }
+}
+
+// NEW: Extract text with markdown formatting for mixed styles
+function extractTextWithMarkdown(textNode) {
+  try {
+    var text = textNode.characters;
+    var result = '';
+    var currentFontStyle = '';
+    var inBoldSection = false;
+    
+    for (var i = 0; i < text.length; i++) {
+      var char = text[i];
+      var charFont = textNode.getRangeFontName(i, i + 1);
+      var fontStyle = charFont.style.toLowerCase();
+      
+      // Check if this character has bold/medium/heavy styling
+      var isBold = fontStyle.includes('bold') || 
+                   fontStyle.includes('medium') || 
+                   fontStyle.includes('heavy') ||
+                   fontStyle.includes('black');
+      
+      // Handle bold transitions
+      if (isBold && !inBoldSection) {
+        // Starting bold section
+        result += '**';
+        inBoldSection = true;
+      } else if (!isBold && inBoldSection) {
+        // Ending bold section
+        result += '**';
+        inBoldSection = false;
+      }
+      
+      result += char;
+    }
+    
+    // Close any open bold section
+    if (inBoldSection) {
+      result += '**';
+    }
+    
+    console.log('📝 Extracted: "' + text + '" → "' + result + '"');
+    return result;
+    
+  } catch (error) {
+    console.log('⚠️ Could not extract font formatting, using plain text');
+    return textNode.characters;
   }
 }
 
