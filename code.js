@@ -165,7 +165,7 @@ async function translateTextNode(textNode, translatedText) {
   try {
     console.log('🎯 Creating new text node for:', translatedText);
     
-    // Save original properties
+    // Save original properties INCLUDING FONT PROPERTIES
     var props = {
       x: textNode.x,
       y: textNode.y,
@@ -176,13 +176,27 @@ async function translateTextNode(textNode, translatedText) {
       opacity: textNode.opacity,
       rotation: textNode.rotation,
       parent: textNode.parent,
-      index: textNode.parent.children.indexOf(textNode)
+      index: textNode.parent.children.indexOf(textNode),
+      // FONT PROPERTIES
+      fontName: textNode.fontName,
+      fontSize: textNode.fontSize,
+      fontWeight: textNode.fontWeight,
+      textAlignHorizontal: textNode.textAlignHorizontal,
+      textAlignVertical: textNode.textAlignVertical,
+      letterSpacing: textNode.letterSpacing,
+      lineHeight: textNode.lineHeight,
+      fills: textNode.fills,
+      strokes: textNode.strokes,
+      strokeWeight: textNode.strokeWeight
     };
+    
+    console.log('📝 Original font:', props.fontName.family, props.fontName.style);
+    console.log('📝 Original color:', props.fills);
     
     // Create new text node
     var newTextNode = figma.createText();
     
-    // Apply properties
+    // Apply basic properties
     newTextNode.x = props.x;
     newTextNode.y = props.y;
     newTextNode.constraints = props.constraints;
@@ -190,12 +204,24 @@ async function translateTextNode(textNode, translatedText) {
     newTextNode.opacity = props.opacity;
     newTextNode.rotation = props.rotation;
     
-    // Apply text with markdown
+    // Apply text with markdown (using original fonts)
     if (translatedText.includes('**')) {
-      await applyMarkdownText(newTextNode, translatedText);
+      await applyMarkdownText(newTextNode, translatedText, props);
     } else {
-      await applyPlainText(newTextNode, translatedText);
+      await applyPlainText(newTextNode, translatedText, props);
     }
+    
+    // Apply text styling
+    newTextNode.fontSize = props.fontSize;
+    newTextNode.textAlignHorizontal = props.textAlignHorizontal;
+    newTextNode.textAlignVertical = props.textAlignVertical;
+    newTextNode.letterSpacing = props.letterSpacing;
+    newTextNode.lineHeight = props.lineHeight;
+    newTextNode.fills = props.fills;
+    newTextNode.strokes = props.strokes;
+    newTextNode.strokeWeight = props.strokeWeight;
+    
+    console.log('✅ Applied all styling properties');
     
     // Try to match size
     try {
@@ -210,7 +236,7 @@ async function translateTextNode(textNode, translatedText) {
     // Remove old
     textNode.remove();
     
-    console.log('✅ Text node recreated successfully');
+    console.log('✅ Text node recreated with original styling');
     return true;
     
   } catch (error) {
@@ -228,8 +254,8 @@ async function translateTextNode(textNode, translatedText) {
   }
 }
 
-async function applyMarkdownText(textNode, markdownText) {
-  console.log('🎨 Applying markdown:', markdownText);
+async function applyMarkdownText(textNode, markdownText, originalProps) {
+  console.log('🎨 Applying markdown with original fonts:', markdownText);
   
   // Parse markdown
   var segments = [];
@@ -263,35 +289,43 @@ async function applyMarkdownText(textNode, markdownText) {
     fullText += segments[j].text;
   }
   
-  // Load fonts
-  var regularFont = { family: "Inter", style: "Regular" };
-  var boldFont = { family: "Inter", style: "Bold" };
+  // Use original font as base
+  var regularFont = originalProps.fontName;
+  var boldFont = getBoldVariantOfFont(regularFont);
+  
+  console.log('🔤 Using original font:', regularFont.family, regularFont.style);
+  console.log('🔤 Bold variant:', boldFont.family, boldFont.style);
   
   try {
+    // Try to load original fonts
     await figma.loadFontAsync(regularFont);
-    console.log('✅ Loaded Inter Regular');
-    await figma.loadFontAsync(boldFont);
-    console.log('✅ Loaded Inter Bold');
-  } catch (e) {
-    console.log('⚠️ Inter failed, trying Arial...');
-    // Fallback to Arial
-    regularFont = { family: "Arial", style: "Regular" };
-    boldFont = { family: "Arial", style: "Bold" };
-    await figma.loadFontAsync(regularFont);
-    console.log('✅ Loaded Arial Regular');
+    console.log('✅ Loaded original regular font');
+    
     try {
       await figma.loadFontAsync(boldFont);
-      console.log('✅ Loaded Arial Bold');
+      console.log('✅ Loaded original bold font');
+    } catch (e) {
+      console.log('⚠️ Bold variant not available, using regular');
+      boldFont = regularFont;
+    }
+    
+  } catch (e) {
+    console.log('⚠️ Original font failed, using Inter fallback');
+    regularFont = { family: "Inter", style: "Regular" };
+    boldFont = { family: "Inter", style: "Bold" };
+    
+    await figma.loadFontAsync(regularFont);
+    try {
+      await figma.loadFontAsync(boldFont);
     } catch (e2) {
       boldFont = regularFont;
-      console.log('⚠️ Using Regular for Bold too');
     }
   }
   
   // Set text FIRST with regular font
   textNode.fontName = regularFont;
   textNode.characters = fullText;
-  console.log('✅ Set base text:', fullText);
+  console.log('✅ Set base text with original font:', fullText);
   
   // Apply formatting
   var charIndex = 0;
@@ -300,31 +334,47 @@ async function applyMarkdownText(textNode, markdownText) {
     if (segment.text.length > 0) {
       var font = segment.bold ? boldFont : regularFont;
       textNode.setRangeFontName(charIndex, charIndex + segment.text.length, font);
+      console.log('🎨 Applied', font.style, 'to "' + segment.text + '"');
       charIndex += segment.text.length;
     }
   }
   
-  console.log('✅ Markdown applied');
+  console.log('✅ Markdown applied with original fonts');
 }
 
-async function applyPlainText(textNode, text) {
-  console.log('📝 Applying plain text:', text);
+function getBoldVariantOfFont(regularFont) {
+  var family = regularFont.family;
+  var style = regularFont.style;
   
-  var font = { family: "Inter", style: "Regular" };
+  // Try to create bold variant
+  if (style.toLowerCase().includes('regular') || style.toLowerCase().includes('normal')) {
+    return { family: family, style: "Bold" };
+  } else if (style.toLowerCase().includes('light')) {
+    return { family: family, style: "Regular" };
+  } else {
+    // Already bold or other style, return as is
+    return regularFont;
+  }
+}
+
+async function applyPlainText(textNode, text, originalProps) {
+  console.log('📝 Applying plain text with original font:', text);
+  
+  var font = originalProps.fontName;
   
   try {
     await figma.loadFontAsync(font);
-    console.log('✅ Loaded Inter Regular for plain text');
+    console.log('✅ Loaded original font for plain text:', font.family, font.style);
   } catch (e) {
-    font = { family: "Arial", style: "Regular" };
+    console.log('⚠️ Original font failed, using Inter fallback');
+    font = { family: "Inter", style: "Regular" };
     await figma.loadFontAsync(font);
-    console.log('✅ Loaded Arial Regular for plain text');
   }
   
   textNode.fontName = font;
   textNode.characters = text;
   
-  console.log('✅ Plain text applied:', text);
+  console.log('✅ Plain text applied with original font:', text);
 }
 
 function findFrame(frameId) {
