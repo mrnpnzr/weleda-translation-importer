@@ -1,4 +1,4 @@
-// Weleda Translation Import Plugin
+// Weleda Translation Import Plugin - Optimized for Simple CSV
 figma.showUI(__html__, { 
   width: 420, 
   height: 600,
@@ -31,11 +31,10 @@ figma.ui.onmessage = function(msg) {
 async function handleImportTranslations(csvData) {
   try {
     var parsedData = parseTranslations(csvData);
-    var translationsByFile = parsedData.translationsByFile;
-    var uniqueFiles = parsedData.uniqueFiles;
+    var framesByLanguage = parsedData.framesByLanguage;
     var detectedLanguages = parsedData.detectedLanguages;
     
-    if (Object.keys(translationsByFile).length === 0) {
+    if (Object.keys(framesByLanguage).length === 0) {
       figma.ui.postMessage({
         type: 'error',
         message: 'Keine gültigen Übersetzungen in der CSV gefunden.'
@@ -51,22 +50,26 @@ async function handleImportTranslations(csvData) {
     
     var importedCount = 0;
     var importDetails = [];
+    var totalFramesToProcess = Object.keys(framesByLanguage).length;
     
-    // Process each unique file sequentially
-    for (var i = 0; i < uniqueFiles.length; i++) {
-      var fileInfo = uniqueFiles[i];
+    // Process each language/frame combination
+    for (var languageFrame in framesByLanguage) {
+      var parts = languageFrame.split('|');
+      var targetLanguage = parts[0];
+      var frameName = parts[1];
+      var translations = framesByLanguage[languageFrame];
       
       try {
         figma.ui.postMessage({
           type: 'progress',
-          message: 'Suche Frame "' + fileInfo.frameName + '"...',
-          progress: 20 + (importedCount / uniqueFiles.length) * 60
+          message: 'Suche Frame "' + frameName + '" für Sprache "' + targetLanguage + '"...',
+          progress: 20 + (importedCount / totalFramesToProcess) * 60
         });
         
-        var frameNode = findFrame(fileInfo);
+        var frameNode = findFrameByName(frameName);
         if (frameNode) {
           var duplicatedFrame = frameNode.clone();
-          duplicatedFrame.name = frameNode.name + ' - ' + fileInfo.targetLanguage;
+          duplicatedFrame.name = frameNode.name + ' - ' + targetLanguage;
           
           // Position the duplicated frame next to the original
           duplicatedFrame.x = frameNode.x + frameNode.width + 100;
@@ -75,15 +78,15 @@ async function handleImportTranslations(csvData) {
           figma.ui.postMessage({
             type: 'progress',
             message: 'Übersetze Texte in "' + duplicatedFrame.name + '"...',
-            progress: 30 + (importedCount / uniqueFiles.length) * 60
+            progress: 30 + (importedCount / totalFramesToProcess) * 60
           });
           
-          // Apply translations to the duplicated frame (await the async function)
-          var translatedCount = await applyTranslations(duplicatedFrame, translationsByFile[fileInfo.fileKey][fileInfo.targetLanguage]);
+          // Apply translations to the duplicated frame
+          var translatedCount = await applyTranslations(duplicatedFrame, translations);
           
           importDetails.push({
             frameName: duplicatedFrame.name,
-            language: fileInfo.targetLanguage,
+            language: targetLanguage,
             translatedTexts: translatedCount
           });
           
@@ -91,10 +94,10 @@ async function handleImportTranslations(csvData) {
           
           console.log('✅ Frame erstellt: "' + duplicatedFrame.name + '" mit ' + translatedCount + ' übersetzten Texten');
         } else {
-          console.log('❌ Frame nicht gefunden: "' + fileInfo.frameName + '"');
+          console.log('❌ Frame nicht gefunden: "' + frameName + '"');
         }
       } catch (error) {
-        console.error('Fehler bei Frame "' + fileInfo.frameName + '":', error);
+        console.error('Fehler bei Frame "' + frameName + '":', error);
       }
     }
     
@@ -135,39 +138,34 @@ function handleGetFrameIds() {
       return node.type === 'FRAME' || node.type === 'COMPONENT';
     });
     
-    console.log('\n🔍 FRAME-IDS DER AKTUELLEN SEITE:');
+    console.log('\n🔍 CSV-EXPORT-DATEN:');
     console.log('=====================================');
+    console.log('frame_name,node_id,source_text,target_language,translated_text');
     
     for (var i = 0; i < allFrames.length; i++) {
       var frame = allFrames[i];
-      console.log('📄 "' + frame.name + '"');
-      console.log('   ID: ' + frame.id);
-      console.log('   Type: ' + frame.type);
-      console.log('   Size: ' + Math.round(frame.width) + '×' + Math.round(frame.height) + 'px');
       
-      // Also show text node IDs within this frame
+      // Find all text nodes in this frame
       var textNodes = frame.findAll(function(node) {
         return node.type === 'TEXT';
       });
       
       if (textNodes.length > 0) {
-        console.log('   📝 Text Nodes:');
+        console.log('\n// Frame: ' + frame.name);
         for (var j = 0; j < textNodes.length; j++) {
           var textNode = textNodes[j];
-          var textPreview = textNode.characters.length > 30 ? 
-            textNode.characters.substring(0, 30) + '...' : 
-            textNode.characters;
-          console.log('      • ID: ' + textNode.id + ' | Text: "' + textPreview + '"');
+          var textContent = textNode.characters.replace(/"/g, '""'); // Escape quotes
+          console.log('"' + frame.name + '","' + textNode.id + '","' + textContent + '","de",""');
         }
       }
-      console.log('   ---');
     }
     
-    console.log('\nGefunden: ' + allFrames.length + ' Frame(s) auf Seite "' + figma.currentPage.name + '"');
+    console.log('\n=====================================');
+    console.log('📄 Kopiere die CSV-Zeilen oben und füge deine Übersetzungen hinzu!');
     
     figma.ui.postMessage({
       type: 'success',
-      message: allFrames.length + ' Frame-IDs und Text-Node-IDs in der Console ausgegeben. Öffne die Console (F12) um sie zu sehen.'
+      message: 'CSV-Template in der Console ausgegeben. Öffne die Console (F12) um es zu kopieren.'
     });
     
   } catch (error) {
@@ -179,30 +177,14 @@ function handleGetFrameIds() {
   }
 }
 
-function findFrame(fileInfo) {
-  console.log('Suche Frame: "' + fileInfo.frameName + '" mit ID: "' + fileInfo.frameId + '"');
-  
-  // Primary: Search by Node-ID (if available)
-  if (fileInfo.frameId && fileInfo.frameId.trim() !== '') {
-    try {
-      var nodeById = figma.getNodeById(fileInfo.frameId);
-      if (nodeById && (nodeById.type === 'FRAME' || nodeById.type === 'COMPONENT')) {
-        console.log('✅ Frame über ID gefunden: "' + nodeById.name + '"');
-        return nodeById;
-      }
-    } catch (error) {
-      console.log('ID-Suche fehlgeschlagen für "' + fileInfo.frameId + '": ' + error.message);
-    }
-  }
-  
-  // Fallback: Search by name
+function findFrameByName(frameName) {
   var allFrames = figma.currentPage.findAll(function(node) {
     return node.type === 'FRAME' || node.type === 'COMPONENT';
   });
   
   // Exact match first
   for (var i = 0; i < allFrames.length; i++) {
-    if (allFrames[i].name === fileInfo.frameName) {
+    if (allFrames[i].name === frameName) {
       console.log('✅ Frame über Namen gefunden: "' + allFrames[i].name + '"');
       return allFrames[i];
     }
@@ -210,19 +192,28 @@ function findFrame(fileInfo) {
   
   // Partial match as fallback
   for (var j = 0; j < allFrames.length; j++) {
-    if (allFrames[j].name.indexOf(fileInfo.frameName) !== -1 || 
-        fileInfo.frameName.indexOf(allFrames[j].name) !== -1) {
+    if (allFrames[j].name.indexOf(frameName) !== -1 || 
+        frameName.indexOf(allFrames[j].name) !== -1) {
       console.log('✅ Frame über Teilübereinstimmung gefunden: "' + allFrames[j].name + '"');
       return allFrames[j];
     }
   }
   
-  console.log('❌ Frame nicht gefunden: "' + fileInfo.frameName + '"');
+  console.log('❌ Frame nicht gefunden: "' + frameName + '"');
   return null;
 }
 
 async function applyTranslations(frame, translations) {
   var translatedCount = 0;
+  
+  // Create a lookup map for faster node ID matching
+  var translationMap = {};
+  for (var i = 0; i < translations.length; i++) {
+    var t = translations[i];
+    if (t.nodeId) {
+      translationMap[t.nodeId] = t;
+    }
+  }
   
   // Find all text nodes in the frame recursively
   var textNodes = frame.findAll(function(node) {
@@ -230,93 +221,90 @@ async function applyTranslations(frame, translations) {
   });
   
   console.log('Gefunden: ' + textNodes.length + ' Text-Nodes in Frame "' + frame.name + '"');
+  console.log('Verfügbare Übersetzungen:', Object.keys(translationMap).length);
   
-  // Process text nodes sequentially to avoid font loading conflicts
+  // Process text nodes sequentially
   for (var i = 0; i < textNodes.length; i++) {
     var textNode = textNodes[i];
     
     try {
-      var currentText = textNode.characters;
-      var normalizedCurrentText = currentText.replace(/\r\n|\r|\n/g, '\n').trim();
       var nodeId = textNode.id;
+      var currentText = textNode.characters;
       
-      console.log('Processing text node ID:', nodeId, 'Text:', normalizedCurrentText);
+      console.log('Processing Node ID:', nodeId, '| Text:', currentText.substring(0, 50) + '...');
       
-      // Look for translation - first by node ID, then by text content
-      var translation = null;
+      // Look for translation by node ID
+      var translation = translationMap[nodeId];
       
-      // Priority 1: Match by Node ID (if available in CSV)
-      for (var j = 0; j < translations.length; j++) {
-        var t = translations[j];
-        if (t.nodeId && t.nodeId === nodeId) {
-          translation = t;
-          console.log('✅ Übersetzung über Node-ID gefunden:', nodeId);
-          break;
-        }
-      }
-      
-      // Priority 2: Match by text content (fallback)
-      if (!translation) {
-        for (var k = 0; k < translations.length; k++) {
-          var t = translations[k];
-          var normalizedSourceText = t.sourceText.replace(/\r\n|\r|\n/g, '\n').trim();
-          if (normalizedSourceText === normalizedCurrentText) {
-            translation = t;
-            console.log('✅ Übersetzung über Text-Inhalt gefunden:', normalizedCurrentText);
-            break;
-          }
-        }
-      }
-      
-      // Apply translation if found and not empty
-      if (translation && translation.translatedText && translation.translatedText.trim() !== '') {
-        try {
-          // Load font before changing text (await the promise)
-          await figma.loadFontAsync(textNode.fontName);
-          
-          // Only change text if translation is different from original
-          if (translation.translatedText !== currentText) {
-            textNode.characters = translation.translatedText;
-            translatedCount++;
-            console.log('✅ Text übersetzt:', currentText, '→', translation.translatedText);
-          } else {
-            console.log('ℹ️ Text ist bereits übersetzt:', currentText);
-          }
-        } catch (fontError) {
-          console.error('Fehler beim Laden der Schriftart:', fontError);
-          // Try to change text anyway (might work with default font)
+      if (translation) {
+        console.log('✅ Übersetzung gefunden für Node ID:', nodeId);
+        
+        // Apply translation if it's not empty
+        if (translation.translatedText && translation.translatedText.trim() !== '') {
           try {
+            // Load font before changing text
+            await figma.loadFontAsync(textNode.fontName);
+            
+            // Apply the translation
             textNode.characters = translation.translatedText;
             translatedCount++;
-            console.log('⚠️ Text übersetzt ohne Schriftart-Laden:', currentText, '→', translation.translatedText);
-          } catch (textError) {
-            console.error('Fehler beim Setzen des Textes:', textError);
+            
+            console.log('✅ Text übersetzt:', currentText.substring(0, 30) + '...', '→', translation.translatedText.substring(0, 30) + '...');
+          } catch (fontError) {
+            console.error('Fehler beim Laden der Schriftart:', fontError);
+            // Try without font loading
+            try {
+              textNode.characters = translation.translatedText;
+              translatedCount++;
+              console.log('⚠️ Text übersetzt ohne Schriftart-Laden');
+            } catch (textError) {
+              console.error('Fehler beim Setzen des Textes:', textError);
+            }
           }
+        } else {
+          console.log('ℹ️ Leere Übersetzung für Node ID:', nodeId, '- Original beibehalten');
         }
-      } else if (translation && (!translation.translatedText || translation.translatedText.trim() === '')) {
-        console.log('⚠️ Leere Übersetzung gefunden für:', currentText, '- Original beibehalten');
       } else {
-        console.log('ℹ️ Keine Übersetzung gefunden für:', currentText, '- Original beibehalten');
+        console.log('ℹ️ Keine Übersetzung für Node ID:', nodeId, '- Original beibehalten');
       }
     } catch (error) {
       console.error('Fehler beim Übersetzen von Text-Node:', error);
     }
   }
   
+  console.log('🎯 Übersetzung abgeschlossen:', translatedCount, 'von', textNodes.length, 'Texten übersetzt');
   return translatedCount;
 }
 
 function parseTranslations(csvData) {
+  console.log('📄 Parsing CSV with simple structure...');
+  
   var lines = csvData.split('\n');
-  var headers = lines[0].split(',').map(function(h) {
-    return h.replace(/"/g, '').trim();
+  var expectedHeaders = ['frame_name', 'node_id', 'source_text', 'target_language', 'translated_text'];
+  
+  if (lines.length < 2) {
+    throw new Error('CSV muss mindestens Header und eine Datenzeile enthalten');
+  }
+  
+  // Parse headers
+  var headers = parseCSVLine(lines[0]).map(function(h) {
+    return h.replace(/"/g, '').trim().toLowerCase();
   });
   
-  var translationsByFile = {};
-  var uniqueFiles = [];
-  var seenFiles = {};
+  console.log('📋 Gefundene Headers:', headers);
+  console.log('📋 Erwartete Headers:', expectedHeaders);
+  
+  // Validate headers
+  for (var h = 0; h < expectedHeaders.length; h++) {
+    if (headers.indexOf(expectedHeaders[h]) === -1) {
+      throw new Error('Fehlender Header: ' + expectedHeaders[h] + '. Gefunden: ' + headers.join(', '));
+    }
+  }
+  
+  var framesByLanguage = {};
   var detectedLanguages = [];
   
+  // Parse data rows
   for (var i = 1; i < lines.length; i++) {
     var line = lines[i].trim();
     if (!line) continue;
@@ -324,60 +312,51 @@ function parseTranslations(csvData) {
     var values = parseCSVLine(line);
     if (values.length < headers.length) continue;
     
+    // Create entry object
     var entry = {};
     for (var j = 0; j < headers.length; j++) {
       entry[headers[j]] = values[j] ? values[j].replace(/"/g, '').trim() : '';
     }
     
-    // Extract required fields
-    var frameName = entry['Frame Name'] || '';
-    var sourceText = entry['Source Text'] || '';
-    var translatedText = entry['Translated Text'] || '';
-    var targetLanguage = entry['Target Language'] || '';
-    var figmaFileKey = entry['Figma File Key'] || 'current';
-    var figmaFrameId = entry['Figma Frame ID'] || '';
-    var nodeId = entry['Node ID'] || entry['Text Node ID'] || ''; // Support multiple column names
+    var frameName = entry.frame_name;
+    var nodeId = entry.node_id;
+    var sourceText = entry.source_text;
+    var targetLanguage = entry.target_language;
+    var translatedText = entry.translated_text;
     
-    if (!frameName || !sourceText || !targetLanguage) {
+    // Validate required fields
+    if (!frameName || !nodeId || !sourceText || !targetLanguage) {
+      console.log('⚠️ Zeile', i, 'übersprungen - fehlende Pflichtfelder');
       continue;
     }
     
+    // Track detected languages
     if (detectedLanguages.indexOf(targetLanguage) === -1) {
       detectedLanguages.push(targetLanguage);
     }
     
-    // Initialize nested structure
-    if (!translationsByFile[figmaFileKey]) {
-      translationsByFile[figmaFileKey] = {};
-    }
-    if (!translationsByFile[figmaFileKey][targetLanguage]) {
-      translationsByFile[figmaFileKey][targetLanguage] = [];
+    // Group by language and frame
+    var key = targetLanguage + '|' + frameName;
+    if (!framesByLanguage[key]) {
+      framesByLanguage[key] = [];
     }
     
-    // Add translation with node ID support
-    translationsByFile[figmaFileKey][targetLanguage].push({
+    framesByLanguage[key].push({
+      nodeId: nodeId,
       sourceText: sourceText,
       translatedText: translatedText,
-      frameName: frameName,
-      nodeId: nodeId // Add node ID for better matching
+      frameName: frameName
     });
     
-    // Track unique files
-    var fileKey = figmaFileKey + '_' + frameName + '_' + targetLanguage;
-    if (!seenFiles[fileKey]) {
-      seenFiles[fileKey] = true;
-      uniqueFiles.push({
-        fileKey: figmaFileKey,
-        frameName: frameName,
-        frameId: figmaFrameId,
-        targetLanguage: targetLanguage
-      });
-    }
+    console.log('✅ Translation entry added:', frameName, nodeId, targetLanguage);
   }
   
+  console.log('📊 Parse complete:');
+  console.log('  - Languages:', detectedLanguages);
+  console.log('  - Frame/Language combinations:', Object.keys(framesByLanguage).length);
+  
   return {
-    translationsByFile: translationsByFile,
-    uniqueFiles: uniqueFiles,
+    framesByLanguage: framesByLanguage,
     detectedLanguages: detectedLanguages
   };
 }
