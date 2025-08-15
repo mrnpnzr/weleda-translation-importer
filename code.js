@@ -271,19 +271,26 @@ async function applyTranslations(frame, translations) {
   console.log('🎯 Applying translations to frame:', frame.name);
   console.log('🎯 Translations available:', translations.length);
   
-  // Create translation map - only for non-empty translations
+  // Create translation map based on SOURCE TEXT instead of node IDs
   var translationMap = {};
   var validTranslations = 0;
   
   for (var i = 0; i < translations.length; i++) {
     var t = translations[i];
-    if (t.nodeId && t.translatedText && t.translatedText.trim() !== '') {
-      translationMap[t.nodeId] = t;
+    if (t.sourceText && t.translatedText && t.translatedText.trim() !== '') {
+      // Use source text as key (normalize whitespace)
+      var normalizedSourceText = t.sourceText.trim().replace(/\s+/g, ' ');
+      translationMap[normalizedSourceText] = t;
       validTranslations++;
     }
   }
   
   console.log('📊 Valid translations with text:', validTranslations);
+  console.log('📊 Translation map keys (first 10):');
+  var mapKeys = Object.keys(translationMap);
+  for (var k = 0; k < Math.min(10, mapKeys.length); k++) {
+    console.log('  "' + mapKeys[k] + '" → "' + translationMap[mapKeys[k]].translatedText + '"');
+  }
   
   // Find visible text nodes in frame
   var visibleTextNodes = frame.findAll(function(node) {
@@ -292,14 +299,15 @@ async function applyTranslations(frame, translations) {
   
   console.log('📊 Visible text nodes in frame:', visibleTextNodes.length);
   
-  // Apply translations
+  // Apply translations based on text content matching
   for (var i = 0; i < visibleTextNodes.length; i++) {
     var textNode = visibleTextNodes[i];
-    var translation = translationMap[textNode.id];
+    var currentText = textNode.characters.trim().replace(/\s+/g, ' ');
+    var translation = translationMap[currentText];
     
     if (translation) {
       try {
-        console.log('🔄 Translating node ' + textNode.id + ': "' + textNode.characters + '" → "' + translation.translatedText + '"');
+        console.log('🔄 Translating text: "' + currentText + '" → "' + translation.translatedText + '"');
         
         await figma.loadFontAsync(textNode.fontName);
         textNode.characters = translation.translatedText;
@@ -319,7 +327,7 @@ async function applyTranslations(frame, translations) {
         }
       }
     } else {
-      console.log('ℹ️ No translation for node ' + textNode.id + ' - keeping original');
+      console.log('ℹ️ No translation for text: "' + currentText + '" - keeping original');
     }
   }
   
