@@ -1,4 +1,4 @@
-// Weleda Translation Import Plugin - Optimized for Simple CSV
+// Weleda Translation Import Plugin - Fixed Version
 figma.showUI(__html__, { 
   width: 420, 
   height: 600,
@@ -30,9 +30,14 @@ figma.ui.onmessage = function(msg) {
 
 async function handleImportTranslations(csvData) {
   try {
+    console.log('Starting import with CSV data length:', csvData.length);
+    
     var parsedData = parseTranslations(csvData);
     var framesByLanguage = parsedData.framesByLanguage;
     var detectedLanguages = parsedData.detectedLanguages;
+    
+    console.log('Parsed data:', framesByLanguage);
+    console.log('Detected languages:', detectedLanguages);
     
     if (Object.keys(framesByLanguage).length === 0) {
       figma.ui.postMessage({
@@ -58,6 +63,8 @@ async function handleImportTranslations(csvData) {
       var targetLanguage = parts[0];
       var frameName = parts[1];
       var translations = framesByLanguage[languageFrame];
+      
+      console.log('Processing:', targetLanguage, frameName, 'with', translations.length, 'translations');
       
       try {
         figma.ui.postMessage({
@@ -182,6 +189,8 @@ function findFrameByName(frameName) {
     return node.type === 'FRAME' || node.type === 'COMPONENT';
   });
   
+  console.log('Looking for frame:', frameName);
+  
   // Exact match first
   for (var i = 0; i < allFrames.length; i++) {
     if (allFrames[i].name === frameName) {
@@ -200,11 +209,15 @@ function findFrameByName(frameName) {
   }
   
   console.log('❌ Frame nicht gefunden: "' + frameName + '"');
+  console.log('Verfügbare Frames:', allFrames.map(function(f) { return f.name; }));
   return null;
 }
 
 async function applyTranslations(frame, translations) {
   var translatedCount = 0;
+  
+  console.log('Starting translation for frame:', frame.name);
+  console.log('Available translations:', translations.length);
   
   // Create a lookup map for faster node ID matching
   var translationMap = {};
@@ -212,6 +225,7 @@ async function applyTranslations(frame, translations) {
     var t = translations[i];
     if (t.nodeId) {
       translationMap[t.nodeId] = t;
+      console.log('Added translation for nodeId:', t.nodeId, '- Text:', t.translatedText);
     }
   }
   
@@ -278,6 +292,7 @@ async function applyTranslations(frame, translations) {
 
 function parseTranslations(csvData) {
   console.log('📄 Parsing CSV with simple structure...');
+  console.log('CSV preview:', csvData.substring(0, 300));
   
   var lines = csvData.split('\n');
   var expectedHeaders = ['frame_name', 'node_id', 'source_text', 'target_language', 'translated_text'];
@@ -309,8 +324,13 @@ function parseTranslations(csvData) {
     var line = lines[i].trim();
     if (!line) continue;
     
+    console.log('Processing line ' + i + ':', line);
+    
     var values = parseCSVLine(line);
-    if (values.length < headers.length) continue;
+    if (values.length < headers.length) {
+      console.log('Skipping line due to insufficient values:', line);
+      continue;
+    }
     
     // Create entry object
     var entry = {};
@@ -323,6 +343,14 @@ function parseTranslations(csvData) {
     var sourceText = entry.source_text;
     var targetLanguage = entry.target_language;
     var translatedText = entry.translated_text;
+    
+    console.log('Extracted:', {
+      frameName: frameName,
+      nodeId: nodeId,
+      sourceText: sourceText.substring(0, 30) + '...',
+      targetLanguage: targetLanguage,
+      translatedText: translatedText.substring(0, 30) + '...'
+    });
     
     // Validate required fields
     if (!frameName || !nodeId || !sourceText || !targetLanguage) {
