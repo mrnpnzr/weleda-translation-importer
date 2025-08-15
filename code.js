@@ -1,4 +1,4 @@
-// Weleda Translation Import Plugin - Frame Finding Debug
+// Weleda Translation Import Plugin - Fixed for Frame ID Search
 figma.showUI(__html__, { 
   width: 420, 
   height: 600,
@@ -30,25 +30,13 @@ figma.ui.onmessage = function(msg) {
 
 async function handleImportTranslations(csvData) {
   try {
-    console.log('🚀 Starting import with FRAME FINDING DEBUG...');
-    
-    // First, let's see what frames are available
-    console.log('🔍 AVAILABLE FRAMES ON PAGE:');
-    var allFrames = figma.currentPage.findAll(function(node) {
-      return node.type === 'FRAME' || node.type === 'COMPONENT';
-    });
-    
-    console.log('📋 Found', allFrames.length, 'frames/components on page "' + figma.currentPage.name + '":');
-    for (var x = 0; x < allFrames.length; x++) {
-      console.log('  ' + (x + 1) + '. "' + allFrames[x].name + '" (Type: ' + allFrames[x].type + ', ID: ' + allFrames[x].id + ')');
-    }
+    console.log('🚀 Starting import with Frame ID search...');
     
     var parsedData = parseTranslations(csvData);
     var framesByLanguage = parsedData.framesByLanguage;
     var detectedLanguages = parsedData.detectedLanguages;
     
     console.log('✅ Parsed data:', Object.keys(framesByLanguage).length, 'frame/language combinations');
-    console.log('🎯 Frame/Language keys:', Object.keys(framesByLanguage));
     
     if (Object.keys(framesByLanguage).length === 0) {
       figma.ui.postMessage({
@@ -67,34 +55,28 @@ async function handleImportTranslations(csvData) {
     var importedCount = 0;
     var importDetails = [];
     var totalFramesToProcess = Object.keys(framesByLanguage).length;
-    var frameSearchResults = [];
     
     // Process each language/frame combination
     for (var languageFrame in framesByLanguage) {
       var parts = languageFrame.split('|');
       var targetLanguage = parts[0];
-      var frameName = parts[1];
+      var frameIdentifier = parts[1]; // Could be name or ID
       var translations = framesByLanguage[languageFrame];
       
-      console.log('🔄 PROCESSING:', languageFrame);
+      console.log('🔄 Processing:', languageFrame);
       console.log('  - Target Language:', targetLanguage);
-      console.log('  - Frame Name from CSV: "' + frameName + '"');
+      console.log('  - Frame Identifier:', frameIdentifier);
       console.log('  - Translations available:', translations.length);
       
       try {
         figma.ui.postMessage({
           type: 'progress',
-          message: 'Suche Frame "' + frameName + '" für Sprache "' + targetLanguage + '"...',
+          message: 'Suche Frame "' + frameIdentifier + '" für Sprache "' + targetLanguage + '"...',
           progress: 20 + (importedCount / totalFramesToProcess) * 60
         });
         
-        var frameNode = findFrameByName(frameName);
-        
-        frameSearchResults.push({
-          csvFrameName: frameName,
-          found: !!frameNode,
-          actualFrameName: frameNode ? frameNode.name : null
-        });
+        // Try to find frame by ID first, then by name
+        var frameNode = findFrameByIdOrName(frameIdentifier);
         
         if (frameNode) {
           console.log('✅ FRAME FOUND! Creating duplicate...');
@@ -127,21 +109,10 @@ async function handleImportTranslations(csvData) {
           
           console.log('✅ Frame erstellt: "' + duplicatedFrame.name + '" mit ' + translatedCount + ' übersetzten Texten');
         } else {
-          console.log('❌ FRAME NOT FOUND for: "' + frameName + '"');
+          console.log('❌ FRAME NOT FOUND for: "' + frameIdentifier + '"');
         }
       } catch (error) {
-        console.error('Fehler bei Frame "' + frameName + '":', error);
-      }
-    }
-    
-    // Show frame search summary
-    console.log('🔍 FRAME SEARCH SUMMARY:');
-    for (var i = 0; i < frameSearchResults.length; i++) {
-      var result = frameSearchResults[i];
-      if (result.found) {
-        console.log('✅ "' + result.csvFrameName + '" → Found: "' + result.actualFrameName + '"');
-      } else {
-        console.log('❌ "' + result.csvFrameName + '" → NOT FOUND');
+        console.error('Fehler bei Frame "' + frameIdentifier + '":', error);
       }
     }
     
@@ -182,45 +153,41 @@ function handleGetFrameIds() {
       return node.type === 'FRAME' || node.type === 'COMPONENT';
     });
     
-    console.log('\n🔍 AKTUELLE SEITE: "' + figma.currentPage.name + '"');
-    console.log('🔍 VERFÜGBARE FRAMES:');
+    console.log('\n🔍 VERFÜGBARE FRAMES:');
     console.log('=====================================');
     
     for (var i = 0; i < allFrames.length; i++) {
       var frame = allFrames[i];
-      console.log((i + 1) + '. "' + frame.name + '" (ID: ' + frame.id + ', Type: ' + frame.type + ')');
+      console.log((i + 1) + '. Name: "' + frame.name + '" | ID: "' + frame.id + '"');
     }
     
-    console.log('\n🔍 CSV-TEMPLATE (nur sichtbare Texte):');
+    console.log('\n🔍 CSV-TEMPLATE (mit Frame-IDs):');
     console.log('=====================================');
     console.log('frame_name,node_id,source_text,target_language,translated_text');
     
     for (var i = 0; i < allFrames.length; i++) {
       var frame = allFrames[i];
       
-      var allTextNodes = frame.findAll(function(node) {
-        return node.type === 'TEXT';
-      });
-      
-      var visibleTextNodes = allTextNodes.filter(function(node) {
-        return isNodeTrulyVisible(node);
+      var visibleTextNodes = frame.findAll(function(node) {
+        return node.type === 'TEXT' && isNodeTrulyVisible(node);
       });
       
       if (visibleTextNodes.length > 0) {
-        console.log('\n// Frame: ' + frame.name + ' (Sichtbare Texte: ' + visibleTextNodes.length + ')');
+        console.log('\n// Frame: ' + frame.name + ' (ID: ' + frame.id + ')');
         for (var j = 0; j < visibleTextNodes.length; j++) {
           var textNode = visibleTextNodes[j];
           var textContent = textNode.characters.replace(/"/g, '""');
-          console.log('"' + frame.name + '","' + textNode.id + '","' + textContent + '","de",""');
+          console.log('"' + frame.id + '","' + textNode.id + '","' + textContent + '","de",""');
         }
       }
     }
     
     console.log('\n=====================================');
+    console.log('💡 HINWEIS: Nutze Frame-IDs statt Namen für bessere Zuordnung!');
     
     figma.ui.postMessage({
       type: 'success',
-      message: allFrames.length + ' Frame(s) gefunden auf Seite "' + figma.currentPage.name + '". Siehe Console für Details.'
+      message: allFrames.length + ' Frame(s) gefunden. Siehe Console für Frame-IDs und Namen.'
     });
     
   } catch (error) {
@@ -233,13 +200,8 @@ function handleGetFrameIds() {
 }
 
 function isNodeTrulyVisible(node) {
-  if (node.visible === false) {
-    return false;
-  }
-  
-  if (node.opacity !== undefined && node.opacity < 0.01) {
-    return false;
-  }
+  if (node.visible === false) return false;
+  if (node.opacity !== undefined && node.opacity < 0.01) return false;
   
   if (node.type === "TEXT") {
     var hasFills = node.fills && node.fills.length > 0 && node.fills.some(function(fill) {
@@ -250,60 +212,56 @@ function isNodeTrulyVisible(node) {
       return stroke.visible !== false && stroke.opacity > 0;
     });
     
-    if (!hasFills && !hasStrokes) {
-      return false;
-    }
+    if (!hasFills && !hasStrokes) return false;
   }
   
   return true;
 }
 
-function findFrameByName(frameName) {
-  console.log('🔍 DETAILED FRAME SEARCH for: "' + frameName + '"');
+// NEW: Enhanced frame finding function that searches by ID first, then name
+function findFrameByIdOrName(identifier) {
+  console.log('🔍 ENHANCED FRAME SEARCH for: "' + identifier + '"');
   
   var allFrames = figma.currentPage.findAll(function(node) {
     return node.type === 'FRAME' || node.type === 'COMPONENT';
   });
   
-  console.log('🔍 Available frames to search in:');
+  console.log('🔍 Available frames:');
   for (var x = 0; x < allFrames.length; x++) {
-    console.log('  ' + (x + 1) + '. "' + allFrames[x].name + '"');
+    console.log('  ' + (x + 1) + '. Name: "' + allFrames[x].name + '" | ID: "' + allFrames[x].id + '"');
   }
   
-  console.log('🔍 Searching for exact match: "' + frameName + '"');
-  
-  // Exact match first
+  // PRIORITY 1: Search by Frame ID (exact match)
+  console.log('🔍 Step 1: Searching by Frame ID...');
   for (var i = 0; i < allFrames.length; i++) {
-    console.log('🔍 Comparing "' + allFrames[i].name + '" === "' + frameName + '" ?', allFrames[i].name === frameName);
-    if (allFrames[i].name === frameName) {
-      console.log('✅ EXACT MATCH FOUND: "' + allFrames[i].name + '"');
+    if (allFrames[i].id === identifier) {
+      console.log('✅ FRAME FOUND BY ID: "' + allFrames[i].name + '" (ID: ' + allFrames[i].id + ')');
       return allFrames[i];
     }
   }
   
-  console.log('🔍 No exact match, trying partial matches...');
-  
-  // Partial match as fallback
+  // PRIORITY 2: Search by Frame Name (exact match)
+  console.log('🔍 Step 2: Searching by Frame Name...');
   for (var j = 0; j < allFrames.length; j++) {
-    var frameContainsSearch = allFrames[j].name.indexOf(frameName) !== -1;
-    var searchContainsFrame = frameName.indexOf(allFrames[j].name) !== -1;
-    
-    console.log('🔍 Partial match check for "' + allFrames[j].name + '":');
-    console.log('  - Frame contains search: ' + frameContainsSearch);
-    console.log('  - Search contains frame: ' + searchContainsFrame);
-    
-    if (frameContainsSearch || searchContainsFrame) {
-      console.log('✅ PARTIAL MATCH FOUND: "' + allFrames[j].name + '"');
+    if (allFrames[j].name === identifier) {
+      console.log('✅ FRAME FOUND BY NAME: "' + allFrames[j].name + '" (ID: ' + allFrames[j].id + ')');
       return allFrames[j];
     }
   }
   
-  console.log('❌ NO MATCH FOUND for: "' + frameName + '"');
-  console.log('❌ Available frame names are:');
-  for (var z = 0; z < allFrames.length; z++) {
-    console.log('  - "' + allFrames[z].name + '"');
+  // PRIORITY 3: Search by partial matches
+  console.log('🔍 Step 3: Searching by partial matches...');
+  for (var k = 0; k < allFrames.length; k++) {
+    var frameContainsIdentifier = allFrames[k].name.indexOf(identifier) !== -1;
+    var identifierContainsFrame = identifier.indexOf(allFrames[k].name) !== -1;
+    
+    if (frameContainsIdentifier || identifierContainsFrame) {
+      console.log('✅ FRAME FOUND BY PARTIAL MATCH: "' + allFrames[k].name + '" (ID: ' + allFrames[k].id + ')');
+      return allFrames[k];
+    }
   }
   
+  console.log('❌ NO FRAME FOUND for identifier: "' + identifier + '"');
   return null;
 }
 
@@ -313,47 +271,66 @@ async function applyTranslations(frame, translations) {
   console.log('🎯 Applying translations to frame:', frame.name);
   console.log('🎯 Translations available:', translations.length);
   
-  // Quick translation application for now
+  // Create translation map - only for non-empty translations
   var translationMap = {};
+  var validTranslations = 0;
+  
   for (var i = 0; i < translations.length; i++) {
     var t = translations[i];
     if (t.nodeId && t.translatedText && t.translatedText.trim() !== '') {
       translationMap[t.nodeId] = t;
+      validTranslations++;
     }
   }
   
+  console.log('📊 Valid translations with text:', validTranslations);
+  
+  // Find visible text nodes in frame
   var visibleTextNodes = frame.findAll(function(node) {
     return node.type === 'TEXT' && isNodeTrulyVisible(node);
   });
   
+  console.log('📊 Visible text nodes in frame:', visibleTextNodes.length);
+  
+  // Apply translations
   for (var i = 0; i < visibleTextNodes.length; i++) {
     var textNode = visibleTextNodes[i];
     var translation = translationMap[textNode.id];
     
     if (translation) {
       try {
+        console.log('🔄 Translating node ' + textNode.id + ': "' + textNode.characters + '" → "' + translation.translatedText + '"');
+        
         await figma.loadFontAsync(textNode.fontName);
         textNode.characters = translation.translatedText;
         translatedCount++;
+        
+        console.log('✅ Translation applied successfully');
+        
       } catch (error) {
-        console.error('Translation error:', error);
+        console.error('❌ Translation error:', error);
+        // Try without font loading
+        try {
+          textNode.characters = translation.translatedText;
+          translatedCount++;
+          console.log('⚠️ Translation applied without font loading');
+        } catch (textError) {
+          console.error('❌ Failed to set text:', textError);
+        }
       }
+    } else {
+      console.log('ℹ️ No translation for node ' + textNode.id + ' - keeping original');
     }
   }
   
-  console.log('🎯 Translation completed:', translatedCount, 'texts translated');
+  console.log('🎯 Translation completed:', translatedCount, 'of', visibleTextNodes.length, 'texts translated');
   return translatedCount;
 }
 
 function parseTranslations(csvData) {
-  console.log('📄 PARSING CSV...');
-  console.log('📄 CSV first 800 characters:');
-  console.log(csvData.substring(0, 800));
-  console.log('📄 =====================================');
+  console.log('📄 Parsing CSV...');
   
   var lines = csvData.split('\n');
-  console.log('📄 Total lines in CSV:', lines.length);
-  
   if (lines.length < 2) {
     throw new Error('CSV muss mindestens Header und eine Datenzeile enthalten');
   }
@@ -365,7 +342,7 @@ function parseTranslations(csvData) {
   
   console.log('📄 Headers found:', headers);
   
-  // Find column indices
+  // Find column indices flexibly
   var requiredColumns = {
     frameName: -1,
     nodeId: -1,
@@ -400,7 +377,7 @@ function parseTranslations(csvData) {
   
   var framesByLanguage = {};
   var detectedLanguages = [];
-  var processedRows = 0;
+  var validRows = 0;
   
   // Parse data rows
   for (var i = 1; i < lines.length; i++) {
@@ -416,16 +393,6 @@ function parseTranslations(csvData) {
     var targetLanguage = values[requiredColumns.targetLanguage] ? values[requiredColumns.targetLanguage].replace(/"/g, '').trim() : '';
     var translatedText = values[requiredColumns.translatedText] ? values[requiredColumns.translatedText].replace(/"/g, '').trim() : '';
     
-    if (processedRows < 5) {
-      console.log('📄 Sample row ' + i + ':', {
-        frameName: frameName,
-        nodeId: nodeId,
-        sourceText: sourceText.substring(0, 20) + '...',
-        targetLanguage: targetLanguage,
-        translatedText: translatedText.substring(0, 20) + '...'
-      });
-    }
-    
     if (!frameName || !nodeId || !sourceText || !targetLanguage) {
       continue;
     }
@@ -434,6 +401,7 @@ function parseTranslations(csvData) {
       detectedLanguages.push(targetLanguage);
     }
     
+    // Use frameName (which might be ID) as the key
     var key = targetLanguage + '|' + frameName;
     if (!framesByLanguage[key]) {
       framesByLanguage[key] = [];
@@ -446,23 +414,13 @@ function parseTranslations(csvData) {
       frameName: frameName
     });
     
-    processedRows++;
+    validRows++;
   }
   
-  console.log('📄 PARSING RESULTS:');
-  console.log('  - Processed rows: ' + processedRows);
-  console.log('  - Detected languages: ' + detectedLanguages.join(', '));
-  console.log('  - Frame/Language combinations: ' + Object.keys(framesByLanguage).length);
-  console.log('  - Frame names from CSV:');
-  
-  var uniqueFrameNames = [];
-  for (var key in framesByLanguage) {
-    var frameName = key.split('|')[1];
-    if (uniqueFrameNames.indexOf(frameName) === -1) {
-      uniqueFrameNames.push(frameName);
-      console.log('    - "' + frameName + '"');
-    }
-  }
+  console.log('📄 Parsing complete:');
+  console.log('  - Valid rows: ' + validRows);
+  console.log('  - Languages: ' + detectedLanguages.join(', '));
+  console.log('  - Frame identifiers: ' + Object.keys(framesByLanguage).map(function(k) { return k.split('|')[1]; }).join(', '));
   
   return {
     framesByLanguage: framesByLanguage,
