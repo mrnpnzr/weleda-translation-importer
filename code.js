@@ -165,7 +165,10 @@ async function translateTextNode(textNode, translatedText) {
   try {
     console.log('🎯 Creating new text node for:', translatedText);
     
-    // Save original properties INCLUDING FONT PROPERTIES
+    // Handle mixed style text nodes
+    var originalFont = getRepresentativeFont(textNode);
+    
+    // Save original properties
     var props = {
       x: textNode.x,
       y: textNode.y,
@@ -178,7 +181,7 @@ async function translateTextNode(textNode, translatedText) {
       parent: textNode.parent,
       index: textNode.parent.children.indexOf(textNode),
       // FONT PROPERTIES
-      fontName: textNode.fontName,
+      fontName: originalFont,
       fontSize: textNode.fontSize,
       fontWeight: textNode.fontWeight,
       textAlignHorizontal: textNode.textAlignHorizontal,
@@ -190,7 +193,7 @@ async function translateTextNode(textNode, translatedText) {
       strokeWeight: textNode.strokeWeight
     };
     
-    console.log('📝 Original font:', props.fontName.family, props.fontName.style);
+    console.log('📝 Representative font:', props.fontName.family, props.fontName.style);
     console.log('📝 Original color:', props.fills);
     
     // Create new text node
@@ -254,6 +257,30 @@ async function translateTextNode(textNode, translatedText) {
   }
 }
 
+// NEW: Get representative font from mixed-style text node
+function getRepresentativeFont(textNode) {
+  try {
+    // If single font, return it
+    if (textNode.fontName && textNode.fontName.family) {
+      return textNode.fontName;
+    }
+    
+    // For mixed fonts, sample the first character
+    if (textNode.characters.length > 0) {
+      var firstCharFont = textNode.getRangeFontName(0, 1);
+      console.log('🔍 Sampled first char font:', firstCharFont.family, firstCharFont.style);
+      return firstCharFont;
+    }
+    
+    // Fallback
+    return { family: "Inter", style: "Regular" };
+    
+  } catch (error) {
+    console.log('⚠️ Could not get font, using fallback:', error.message);
+    return { family: "Inter", style: "Regular" };
+  }
+}
+
 async function applyMarkdownText(textNode, markdownText, originalProps) {
   console.log('🎨 Applying markdown with original fonts:', markdownText);
   
@@ -289,28 +316,28 @@ async function applyMarkdownText(textNode, markdownText, originalProps) {
     fullText += segments[j].text;
   }
   
-  // Use original font as base
+  // Use original font as base (now guaranteed to have valid values)
   var regularFont = originalProps.fontName;
   var boldFont = getBoldVariantOfFont(regularFont);
   
-  console.log('🔤 Using original font:', regularFont.family, regularFont.style);
+  console.log('🔤 Using representative font:', regularFont.family, regularFont.style);
   console.log('🔤 Bold variant:', boldFont.family, boldFont.style);
   
   try {
     // Try to load original fonts
     await figma.loadFontAsync(regularFont);
-    console.log('✅ Loaded original regular font');
+    console.log('✅ Loaded representative regular font');
     
     try {
       await figma.loadFontAsync(boldFont);
-      console.log('✅ Loaded original bold font');
+      console.log('✅ Loaded representative bold font');
     } catch (e) {
       console.log('⚠️ Bold variant not available, using regular');
       boldFont = regularFont;
     }
     
   } catch (e) {
-    console.log('⚠️ Original font failed, using Inter fallback');
+    console.log('⚠️ Representative font failed, using Inter fallback');
     regularFont = { family: "Inter", style: "Regular" };
     boldFont = { family: "Inter", style: "Bold" };
     
@@ -325,7 +352,7 @@ async function applyMarkdownText(textNode, markdownText, originalProps) {
   // Set text FIRST with regular font
   textNode.fontName = regularFont;
   textNode.characters = fullText;
-  console.log('✅ Set base text with original font:', fullText);
+  console.log('✅ Set base text with representative font:', fullText);
   
   // Apply formatting
   var charIndex = 0;
@@ -333,13 +360,17 @@ async function applyMarkdownText(textNode, markdownText, originalProps) {
     var segment = segments[j];
     if (segment.text.length > 0) {
       var font = segment.bold ? boldFont : regularFont;
-      textNode.setRangeFontName(charIndex, charIndex + segment.text.length, font);
-      console.log('🎨 Applied', font.style, 'to "' + segment.text + '"');
+      try {
+        textNode.setRangeFontName(charIndex, charIndex + segment.text.length, font);
+        console.log('🎨 Applied', font.style, 'to "' + segment.text + '"');
+      } catch (e) {
+        console.log('⚠️ Could not apply font to segment:', e.message);
+      }
       charIndex += segment.text.length;
     }
   }
   
-  console.log('✅ Markdown applied with original fonts');
+  console.log('✅ Markdown applied with representative fonts');
 }
 
 function getBoldVariantOfFont(regularFont) {
