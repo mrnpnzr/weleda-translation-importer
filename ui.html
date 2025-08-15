@@ -15,14 +15,14 @@
       background: linear-gradient(135deg, #0b4535 0%, #1a5c47 100%);
       color: #ffffff;
       font-size: 14px;
-      height: 100vh;
+      min-height: 100vh;
       overflow-x: hidden;
     }
     
     .container {
       display: flex;
       flex-direction: column;
-      height: 100vh;
+      min-height: 100vh;
       max-width: 100%;
     }
     
@@ -87,7 +87,7 @@
       background: rgba(255,255,255,0.1);
     }
     
-    /* Main Content */
+    /* Main Content - Fixed scrolling */
     .main-content {
       flex: 1;
       padding: 20px;
@@ -95,6 +95,7 @@
       display: flex;
       flex-direction: column;
       gap: 20px;
+      max-height: calc(100vh - 140px); /* Account for header and footer */
     }
     
     /* Import Section */
@@ -105,6 +106,7 @@
       overflow: hidden;
       backdrop-filter: blur(8px);
       padding: 24px;
+      flex-shrink: 0;
     }
     
     .section-header {
@@ -285,6 +287,7 @@
       margin: 12px 0;
       font-size: 13px;
       line-height: 1.5;
+      word-wrap: break-word;
     }
     
     .message.success {
@@ -397,11 +400,11 @@
         </div>
         
         <div class="info-box">
-          <strong>🚀 So funktioniert der Import:</strong><br>
-          1. CSV-Datei mit Übersetzungen hochladen<br>
-          2. Plugin erkennt automatisch alle Sprachen<br>
-          3. Frames werden gefunden und dupliziert<br>
-          4. Texte werden automatisch übersetzt
+          <strong>🚀 Einfache CSV-Struktur:</strong><br>
+          <code>frame_name,node_id,source_text,target_language,translated_text</code><br><br>
+          1. "Frame-IDs anzeigen" für CSV-Template<br>
+          2. Übersetzungen in CSV ausfüllen<br>
+          3. CSV importieren - fertig!
         </div>
         
         <div class="file-input-wrapper">
@@ -466,6 +469,7 @@
             csvData = e.target.result;
             checkFormValidity();
             showMessage('✅ CSV-Datei geladen: ' + file.name, 'success');
+            console.log('CSV Data loaded:', csvData.substring(0, 200) + '...');
           };
           reader.readAsText(file);
         }
@@ -498,17 +502,21 @@
     // Import button
     if (elements.importBtn) {
       elements.importBtn.addEventListener('click', () => {
+        console.log('Import button clicked, CSV data available:', !!csvData);
         if (csvData) {
           elements.importBtn.disabled = true;
           elements.importBtn.innerHTML = '<span>⏳</span>Importiere...';
           showProgress(true);
           
+          console.log('Sending import message to plugin...');
           parent.postMessage({
             pluginMessage: {
               type: 'import-translations',
               csvData: csvData
             }
           }, '*');
+        } else {
+          showMessage('❌ Bitte erst eine CSV-Datei laden', 'error');
         }
       });
     }
@@ -516,6 +524,7 @@
     // Frame IDs button
     if (elements.showFrameIdsBtn) {
       elements.showFrameIdsBtn.addEventListener('click', () => {
+        console.log('Frame IDs button clicked');
         parent.postMessage({
           pluginMessage: {
             type: 'get-frame-ids'
@@ -600,7 +609,7 @@
       const msg = event.data.pluginMessage;
       if (!msg) return;
       
-      console.log('Received message:', msg.type);
+      console.log('Received message from plugin:', msg.type, msg);
       
       switch (msg.type) {
         case 'progress':
