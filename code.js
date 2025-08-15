@@ -271,25 +271,70 @@ async function applyTranslations(frame, translations) {
   console.log('🎯 Applying translations to frame:', frame.name);
   console.log('🎯 Translations available:', translations.length);
   
-  // Create translation map based on SOURCE TEXT instead of node IDs
+  // Create translation map based on SOURCE TEXT with smart handling of duplicates
   var translationMap = {};
-  var validTranslations = 0;
+  var processedEntries = 0;
+  var emptyTranslations = 0;
+  var nonEmptyTranslations = 0;
   
   for (var i = 0; i < translations.length; i++) {
     var t = translations[i];
-    if (t.sourceText && t.translatedText && t.translatedText.trim() !== '') {
-      // Use source text as key (normalize whitespace)
+    if (t.sourceText) {
       var normalizedSourceText = t.sourceText.trim().replace(/\s+/g, ' ');
-      translationMap[normalizedSourceText] = t;
-      validTranslations++;
+      var translatedText = t.translatedText ? t.translatedText.toString().trim() : '';
+      
+      // Check if we already have this source text
+      var existingTranslation = translationMap[normalizedSourceText];
+      
+      if (!existingTranslation) {
+        // First time seeing this source text
+        translationMap[normalizedSourceText] = {
+          sourceText: t.sourceText,
+          translatedText: translatedText,
+          isEmpty: translatedText === ''
+        };
+        if (translatedText === '') {
+          emptyTranslations++;
+        } else {
+          nonEmptyTranslations++;
+        }
+      } else {
+        // We've seen this source text before - apply priority logic
+        if (existingTranslation.isEmpty && translatedText !== '') {
+          // Replace empty translation with non-empty one
+          console.log('🔄 Replacing empty translation for "' + normalizedSourceText + '" with "' + translatedText + '"');
+          translationMap[normalizedSourceText] = {
+            sourceText: t.sourceText,
+            translatedText: translatedText,
+            isEmpty: false
+          };
+          emptyTranslations--;
+          nonEmptyTranslations++;
+        } else if (!existingTranslation.isEmpty && translatedText !== '') {
+          // Both are non-empty, keep the first one but log it
+          console.log('⚠️ Duplicate non-empty translation for "' + normalizedSourceText + '", keeping first one');
+        }
+        // If existing is non-empty and new is empty, keep existing (do nothing)
+      }
+      processedEntries++;
     }
   }
   
-  console.log('📊 Valid translations with text:', validTranslations);
-  console.log('📊 Translation map keys (first 10):');
+  console.log('📊 Translation processing:');
+  console.log('  - Total entries processed:', processedEntries);
+  console.log('  - Unique source texts found:', Object.keys(translationMap).length);
+  console.log('  - Non-empty translations:', nonEmptyTranslations);
+  console.log('  - Empty translations (keep original):', emptyTranslations);
+  
+  console.log('📊 Translation map examples (first 10):');
   var mapKeys = Object.keys(translationMap);
   for (var k = 0; k < Math.min(10, mapKeys.length); k++) {
-    console.log('  "' + mapKeys[k] + '" → "' + translationMap[mapKeys[k]].translatedText + '"');
+    var translation = translationMap[mapKeys[k]];
+    if (translation.isEmpty) {
+      console.log('  "' + mapKeys[k] + '" → (keep original)');
+    } else {
+      console.log('  "' + mapKeys[k] + '" → "' + translation.translatedText + '"');
+    }
   }
   
   // Find visible text nodes in frame
@@ -306,28 +351,34 @@ async function applyTranslations(frame, translations) {
     var translation = translationMap[currentText];
     
     if (translation) {
-      try {
-        console.log('🔄 Translating text: "' + currentText + '" → "' + translation.translatedText + '"');
-        
-        await figma.loadFontAsync(textNode.fontName);
-        textNode.characters = translation.translatedText;
-        translatedCount++;
-        
-        console.log('✅ Translation applied successfully');
-        
-      } catch (error) {
-        console.error('❌ Translation error:', error);
-        // Try without font loading
+      if (translation.isEmpty) {
+        // Empty translation = keep original text
+        console.log('ℹ️ Empty translation for "' + currentText + '" - keeping original');
+      } else {
+        // Apply translation
         try {
+          console.log('🔄 Translating text: "' + currentText + '" → "' + translation.translatedText + '"');
+          
+          await figma.loadFontAsync(textNode.fontName);
           textNode.characters = translation.translatedText;
           translatedCount++;
-          console.log('⚠️ Translation applied without font loading');
-        } catch (textError) {
-          console.error('❌ Failed to set text:', textError);
+          
+          console.log('✅ Translation applied successfully');
+          
+        } catch (error) {
+          console.error('❌ Translation error:', error);
+          // Try without font loading
+          try {
+            textNode.characters = translation.translatedText;
+            translatedCount++;
+            console.log('⚠️ Translation applied without font loading');
+          } catch (textError) {
+            console.error('❌ Failed to set text:', textError);
+          }
         }
       }
     } else {
-      console.log('ℹ️ No translation for text: "' + currentText + '" - keeping original');
+      console.log('ℹ️ No entry found for text: "' + currentText + '" - keeping original');
     }
   }
   
