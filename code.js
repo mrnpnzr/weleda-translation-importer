@@ -1,4 +1,4 @@
-// Weleda Translation Import Plugin - Fixed Version
+// Weleda Translation Import Plugin - Fixed for Visible Texts Only
 figma.showUI(__html__, { 
   width: 420, 
   height: 600,
@@ -30,14 +30,13 @@ figma.ui.onmessage = function(msg) {
 
 async function handleImportTranslations(csvData) {
   try {
-    console.log('Starting import with CSV data length:', csvData.length);
+    console.log('🚀 Starting import...');
     
     var parsedData = parseTranslations(csvData);
     var framesByLanguage = parsedData.framesByLanguage;
     var detectedLanguages = parsedData.detectedLanguages;
     
-    console.log('Parsed data:', framesByLanguage);
-    console.log('Detected languages:', detectedLanguages);
+    console.log('✅ Parsed data:', Object.keys(framesByLanguage).length, 'frame/language combinations');
     
     if (Object.keys(framesByLanguage).length === 0) {
       figma.ui.postMessage({
@@ -64,7 +63,7 @@ async function handleImportTranslations(csvData) {
       var frameName = parts[1];
       var translations = framesByLanguage[languageFrame];
       
-      console.log('Processing:', targetLanguage, frameName, 'with', translations.length, 'translations');
+      console.log('🔄 Processing frame:', frameName, 'Language:', targetLanguage);
       
       try {
         figma.ui.postMessage({
@@ -145,22 +144,33 @@ function handleGetFrameIds() {
       return node.type === 'FRAME' || node.type === 'COMPONENT';
     });
     
-    console.log('\n🔍 CSV-EXPORT-DATEN:');
+    console.log('\n🔍 CSV-EXPORT-DATEN (NUR SICHTBARE TEXTE):');
     console.log('=====================================');
     console.log('frame_name,node_id,source_text,target_language,translated_text');
+    
+    var totalVisibleTexts = 0;
+    var totalHiddenTexts = 0;
     
     for (var i = 0; i < allFrames.length; i++) {
       var frame = allFrames[i];
       
       // Find all text nodes in this frame
-      var textNodes = frame.findAll(function(node) {
+      var allTextNodes = frame.findAll(function(node) {
         return node.type === 'TEXT';
       });
       
-      if (textNodes.length > 0) {
-        console.log('\n// Frame: ' + frame.name);
-        for (var j = 0; j < textNodes.length; j++) {
-          var textNode = textNodes[j];
+      // Filter for visible text nodes only
+      var visibleTextNodes = allTextNodes.filter(function(node) {
+        return isNodeTrulyVisible(node);
+      });
+      
+      totalVisibleTexts += visibleTextNodes.length;
+      totalHiddenTexts += (allTextNodes.length - visibleTextNodes.length);
+      
+      if (visibleTextNodes.length > 0) {
+        console.log('\n// Frame: ' + frame.name + ' (Sichtbar: ' + visibleTextNodes.length + ', Versteckt: ' + (allTextNodes.length - visibleTextNodes.length) + ')');
+        for (var j = 0; j < visibleTextNodes.length; j++) {
+          var textNode = visibleTextNodes[j];
           var textContent = textNode.characters.replace(/"/g, '""'); // Escape quotes
           console.log('"' + frame.name + '","' + textNode.id + '","' + textContent + '","de",""');
         }
@@ -168,11 +178,15 @@ function handleGetFrameIds() {
     }
     
     console.log('\n=====================================');
-    console.log('📄 Kopiere die CSV-Zeilen oben und füge deine Übersetzungen hinzu!');
+    console.log('📊 STATISTIK:');
+    console.log('- Sichtbare Texte: ' + totalVisibleTexts);
+    console.log('- Versteckte Texte: ' + totalHiddenTexts);
+    console.log('- Gesamt: ' + (totalVisibleTexts + totalHiddenTexts));
+    console.log('📄 Nutze DIESE Node-IDs für sichtbare Texte!');
     
     figma.ui.postMessage({
       type: 'success',
-      message: 'CSV-Template in der Console ausgegeben. Öffne die Console (F12) um es zu kopieren.'
+      message: totalVisibleTexts + ' sichtbare Text-Node-IDs in der Console ausgegeben. ' + totalHiddenTexts + ' versteckte Texte ignoriert.'
     });
     
   } catch (error) {
@@ -184,17 +198,48 @@ function handleGetFrameIds() {
   }
 }
 
+// Verbesserte Sichtbarkeitsprüfung
+function isNodeTrulyVisible(node) {
+  // Direkte Sichtbarkeitsprüfung
+  if (node.visible === false) {
+    return false;
+  }
+  
+  // Opacity-Prüfung (sehr niedrige Opacity = effektiv unsichtbar)
+  if (node.opacity !== undefined && node.opacity < 0.01) {
+    return false;
+  }
+  
+  // Text-spezifische Prüfungen
+  if (node.type === "TEXT") {
+    // Prüfe Fills (Textfarben)
+    var hasFills = node.fills && node.fills.length > 0 && node.fills.some(function(fill) {
+      return fill.visible !== false && fill.opacity > 0;
+    });
+    
+    // Prüfe Strokes (Umrandungen)
+    var hasStrokes = node.strokes && node.strokes.length > 0 && node.strokes.some(function(stroke) {
+      return stroke.visible !== false && stroke.opacity > 0;
+    });
+    
+    // Text ohne sichtbare Fills oder Strokes ist effektiv unsichtbar
+    if (!hasFills && !hasStrokes) {
+      return false;
+    }
+  }
+  
+  return true;
+}
+
 function findFrameByName(frameName) {
   var allFrames = figma.currentPage.findAll(function(node) {
     return node.type === 'FRAME' || node.type === 'COMPONENT';
   });
   
-  console.log('Looking for frame:', frameName);
-  
   // Exact match first
   for (var i = 0; i < allFrames.length; i++) {
     if (allFrames[i].name === frameName) {
-      console.log('✅ Frame über Namen gefunden: "' + allFrames[i].name + '"');
+      console.log('✅ Frame gefunden: "' + allFrames[i].name + '"');
       return allFrames[i];
     }
   }
@@ -209,90 +254,105 @@ function findFrameByName(frameName) {
   }
   
   console.log('❌ Frame nicht gefunden: "' + frameName + '"');
-  console.log('Verfügbare Frames:', allFrames.map(function(f) { return f.name; }));
   return null;
 }
 
 async function applyTranslations(frame, translations) {
   var translatedCount = 0;
   
-  console.log('Starting translation for frame:', frame.name);
-  console.log('Available translations:', translations.length);
+  console.log('🎯 Starting translation for frame:', frame.name);
+  console.log('🎯 Available translations:', translations.length);
   
-  // Create a lookup map for faster node ID matching
+  // Create a lookup map for faster node ID matching - ONLY for non-empty translations
   var translationMap = {};
+  var emptyTranslations = 0;
+  
   for (var i = 0; i < translations.length; i++) {
     var t = translations[i];
     if (t.nodeId) {
-      translationMap[t.nodeId] = t;
-      console.log('Added translation for nodeId:', t.nodeId, '- Text:', t.translatedText);
+      if (t.translatedText && t.translatedText.trim() !== '') {
+        translationMap[t.nodeId] = t;
+        console.log('📝 Valid translation mapped:', t.nodeId, '→', t.translatedText.substring(0, 30) + '...');
+      } else {
+        emptyTranslations++;
+        console.log('⚠️ Empty translation ignored:', t.nodeId, '(probably hidden text)');
+      }
     }
   }
   
-  // Find all text nodes in the frame recursively
-  var textNodes = frame.findAll(function(node) {
+  console.log('📊 Translation map summary:');
+  console.log('  - Valid translations: ' + Object.keys(translationMap).length);
+  console.log('  - Empty translations (ignored): ' + emptyTranslations);
+  
+  // Find all text nodes in the frame recursively - ONLY VISIBLE ONES
+  var allTextNodes = frame.findAll(function(node) {
     return node.type === 'TEXT';
   });
   
-  console.log('Gefunden: ' + textNodes.length + ' Text-Nodes in Frame "' + frame.name + '"');
-  console.log('Verfügbare Übersetzungen:', Object.keys(translationMap).length);
+  var visibleTextNodes = allTextNodes.filter(function(node) {
+    return isNodeTrulyVisible(node);
+  });
   
-  // Process text nodes sequentially
-  for (var i = 0; i < textNodes.length; i++) {
-    var textNode = textNodes[i];
+  console.log('📊 Text nodes summary:');
+  console.log('  - Total text nodes: ' + allTextNodes.length);
+  console.log('  - Visible text nodes: ' + visibleTextNodes.length);
+  console.log('  - Hidden text nodes: ' + (allTextNodes.length - visibleTextNodes.length));
+  
+  // Process visible text nodes sequentially
+  for (var i = 0; i < visibleTextNodes.length; i++) {
+    var textNode = visibleTextNodes[i];
     
     try {
       var nodeId = textNode.id;
       var currentText = textNode.characters;
       
-      console.log('Processing Node ID:', nodeId, '| Text:', currentText.substring(0, 50) + '...');
+      console.log('🔄 Processing visible text node:', nodeId, '|', currentText.substring(0, 50) + '...');
       
       // Look for translation by node ID
       var translation = translationMap[nodeId];
       
       if (translation) {
-        console.log('✅ Übersetzung gefunden für Node ID:', nodeId);
+        console.log('✅ Translation found:', translation.translatedText.substring(0, 50) + '...');
         
-        // Apply translation if it's not empty
-        if (translation.translatedText && translation.translatedText.trim() !== '') {
+        try {
+          // Load font before changing text
+          await figma.loadFontAsync(textNode.fontName);
+          
+          // Apply the translation
+          textNode.characters = translation.translatedText;
+          translatedCount++;
+          
+          console.log('✅ Text successfully translated!');
+          
+        } catch (fontError) {
+          console.error('⚠️ Font loading error:', fontError);
+          // Try without font loading
           try {
-            // Load font before changing text
-            await figma.loadFontAsync(textNode.fontName);
-            
-            // Apply the translation
             textNode.characters = translation.translatedText;
             translatedCount++;
-            
-            console.log('✅ Text übersetzt:', currentText.substring(0, 30) + '...', '→', translation.translatedText.substring(0, 30) + '...');
-          } catch (fontError) {
-            console.error('Fehler beim Laden der Schriftart:', fontError);
-            // Try without font loading
-            try {
-              textNode.characters = translation.translatedText;
-              translatedCount++;
-              console.log('⚠️ Text übersetzt ohne Schriftart-Laden');
-            } catch (textError) {
-              console.error('Fehler beim Setzen des Textes:', textError);
-            }
+            console.log('✅ Text translated without font loading');
+          } catch (textError) {
+            console.error('❌ Text setting error:', textError);
           }
-        } else {
-          console.log('ℹ️ Leere Übersetzung für Node ID:', nodeId, '- Original beibehalten');
         }
       } else {
-        console.log('ℹ️ Keine Übersetzung für Node ID:', nodeId, '- Original beibehalten');
+        console.log('ℹ️ No translation for visible node:', nodeId, '- keeping original');
       }
     } catch (error) {
-      console.error('Fehler beim Übersetzen von Text-Node:', error);
+      console.error('❌ Error processing text node:', error);
     }
   }
   
-  console.log('🎯 Übersetzung abgeschlossen:', translatedCount, 'von', textNodes.length, 'Texten übersetzt');
+  console.log('🎯 Translation complete:');
+  console.log('  - Visible nodes processed: ' + visibleTextNodes.length);
+  console.log('  - Successfully translated: ' + translatedCount);
+  console.log('  - Success rate: ' + Math.round((translatedCount / visibleTextNodes.length) * 100) + '%');
+  
   return translatedCount;
 }
 
 function parseTranslations(csvData) {
-  console.log('📄 Parsing CSV with simple structure...');
-  console.log('CSV preview:', csvData.substring(0, 300));
+  console.log('📄 Parsing CSV...');
   
   var lines = csvData.split('\n');
   var expectedHeaders = ['frame_name', 'node_id', 'source_text', 'target_language', 'translated_text'];
@@ -306,31 +366,30 @@ function parseTranslations(csvData) {
     return h.replace(/"/g, '').trim().toLowerCase();
   });
   
-  console.log('📋 Gefundene Headers:', headers);
-  console.log('📋 Erwartete Headers:', expectedHeaders);
+  console.log('📄 Headers found:', headers);
   
   // Validate headers
   for (var h = 0; h < expectedHeaders.length; h++) {
     if (headers.indexOf(expectedHeaders[h]) === -1) {
-      throw new Error('Fehlender Header: ' + expectedHeaders[h] + '. Gefunden: ' + headers.join(', '));
+      throw new Error('Missing header: ' + expectedHeaders[h] + '. Found: ' + headers.join(', '));
     }
   }
   
   var framesByLanguage = {};
   var detectedLanguages = [];
+  var totalRows = 0;
+  var validRows = 0;
+  var emptyTranslationRows = 0;
   
   // Parse data rows
   for (var i = 1; i < lines.length; i++) {
     var line = lines[i].trim();
     if (!line) continue;
     
-    console.log('Processing line ' + i + ':', line);
+    totalRows++;
     
     var values = parseCSVLine(line);
-    if (values.length < headers.length) {
-      console.log('Skipping line due to insufficient values:', line);
-      continue;
-    }
+    if (values.length < headers.length) continue;
     
     // Create entry object
     var entry = {};
@@ -344,18 +403,15 @@ function parseTranslations(csvData) {
     var targetLanguage = entry.target_language;
     var translatedText = entry.translated_text;
     
-    console.log('Extracted:', {
-      frameName: frameName,
-      nodeId: nodeId,
-      sourceText: sourceText.substring(0, 30) + '...',
-      targetLanguage: targetLanguage,
-      translatedText: translatedText.substring(0, 30) + '...'
-    });
-    
     // Validate required fields
     if (!frameName || !nodeId || !sourceText || !targetLanguage) {
-      console.log('⚠️ Zeile', i, 'übersprungen - fehlende Pflichtfelder');
+      console.log('⚠️ Line', i, 'skipped - missing required fields');
       continue;
+    }
+    
+    // Track empty translations (probably hidden texts)
+    if (!translatedText || translatedText.trim() === '') {
+      emptyTranslationRows++;
     }
     
     // Track detected languages
@@ -376,12 +432,14 @@ function parseTranslations(csvData) {
       frameName: frameName
     });
     
-    console.log('✅ Translation entry added:', frameName, nodeId, targetLanguage);
+    validRows++;
   }
   
-  console.log('📊 Parse complete:');
-  console.log('  - Languages:', detectedLanguages);
-  console.log('  - Frame/Language combinations:', Object.keys(framesByLanguage).length);
+  console.log('📄 Parsing complete:');
+  console.log('  - Total rows: ' + totalRows);
+  console.log('  - Valid rows: ' + validRows);
+  console.log('  - Empty translations (hidden texts): ' + emptyTranslationRows);
+  console.log('  - Languages: ' + detectedLanguages.join(', '));
   
   return {
     framesByLanguage: framesByLanguage,
