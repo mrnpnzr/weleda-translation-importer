@@ -269,22 +269,29 @@ async function applyMarkdownText(textNode, markdownText) {
   
   try {
     await figma.loadFontAsync(regularFont);
+    console.log('✅ Loaded Inter Regular');
     await figma.loadFontAsync(boldFont);
+    console.log('✅ Loaded Inter Bold');
   } catch (e) {
+    console.log('⚠️ Inter failed, trying Arial...');
     // Fallback to Arial
     regularFont = { family: "Arial", style: "Regular" };
     boldFont = { family: "Arial", style: "Bold" };
     await figma.loadFontAsync(regularFont);
+    console.log('✅ Loaded Arial Regular');
     try {
       await figma.loadFontAsync(boldFont);
+      console.log('✅ Loaded Arial Bold');
     } catch (e2) {
       boldFont = regularFont;
+      console.log('⚠️ Using Regular for Bold too');
     }
   }
   
-  // Set text
+  // Set text FIRST with regular font
   textNode.fontName = regularFont;
   textNode.characters = fullText;
+  console.log('✅ Set base text:', fullText);
   
   // Apply formatting
   var charIndex = 0;
@@ -307,15 +314,17 @@ async function applyPlainText(textNode, text) {
   
   try {
     await figma.loadFontAsync(font);
+    console.log('✅ Loaded Inter Regular for plain text');
   } catch (e) {
     font = { family: "Arial", style: "Regular" };
     await figma.loadFontAsync(font);
+    console.log('✅ Loaded Arial Regular for plain text');
   }
   
   textNode.fontName = font;
   textNode.characters = text;
   
-  console.log('✅ Plain text applied');
+  console.log('✅ Plain text applied:', text);
 }
 
 function findFrame(frameId) {
