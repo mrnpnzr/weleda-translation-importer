@@ -1,3 +1,4 @@
+<!DOCTYPE html>
 <html>
 <head>
   <style>
@@ -360,12 +361,68 @@
       font-weight: 600;
     }
     
+    /* Download Items - Same styling as group items */
+    .download-item {
+      background: rgba(255,255,255,0.05);
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 8px;
+      padding: 12px 16px;
+      margin-bottom: 8px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      transition: all 0.2s ease;
+    }
+    
+    .download-item:hover {
+      background: rgba(255,255,255,0.08);
+      border-color: rgba(139,184,133,0.3);
+    }
+    
+    .download-info {
+      flex: 1;
+    }
+    
+    .download-name {
+      font-weight: 600;
+      color: #ffffff;
+      font-size: 13px;
+      margin-bottom: 2px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    
+    .download-meta {
+      font-size: 11px;
+      color: #b8c7ab;
+      display: flex;
+      gap: 12px;
+    }
+    
+    .download-btn {
+      background: #8ab885;
+      color: #0b4535;
+      border: none;
+      padding: 8px 12px;
+      border-radius: 6px;
+      font-size: 11px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      flex-shrink: 0;
+    }
+    
+    .download-btn:hover {
+      background: #a0c896;
+    }
+    
     /* Progress */
     .progress-container {
       background: rgba(0,0,0,0.2);
       border-radius: 8px;
       overflow: hidden;
-      margin: 16px 0;
+      margin: 8px 0 12px 0;
     }
     
     .progress-bar {
@@ -438,18 +495,6 @@
       margin-bottom: 8px;
     }
     
-    .download-link {
-      background: #8ab885;
-      color: #0b4535;
-      padding: 8px 16px;
-      border-radius: 6px;
-      text-decoration: none;
-      font-weight: 600;
-      font-size: 12px;
-      display: inline-block;
-      margin-top: 8px;
-    }
-    
     /* Messages */
     .message {
       padding: 16px;
@@ -476,6 +521,12 @@
       background: rgba(54,162,235,0.2);
       color: #36a2eb;
       border: 1px solid rgba(54,162,235,0.4);
+    }
+    
+    .message.warning {
+      background: rgba(255,193,7,0.2);
+      color: #ffc107;
+      border: 1px solid rgba(255,193,7,0.4);
     }
     
     /* Footer */
@@ -642,6 +693,7 @@
     
     let scanResults = null;
     let selectedAssets = new Set();
+    let exportedFiles = [];
     
     // DOM Elements
     const elements = {
@@ -668,11 +720,6 @@
       messageDiv: document.getElementById('messageDiv')
     };
     
-    // Store exported files and export instructions globally
-    let exportedFiles = [];
-    let currentExportInstructions = [];
-    let currentFileKey = '';
-    
     // Scan button
     if (elements.scanBtn) {
       elements.scanBtn.addEventListener('click', () => {
@@ -687,51 +734,6 @@
           }
         }, '*');
       });
-    
-    // Simple working download function - back to basics
-    window.downloadSingleFile = function(index) {
-      console.log('📥 Attempting download of file', index);
-      
-      if (!exportedFiles || !exportedFiles[index]) {
-        console.error('❌ No file found at index', index);
-        alert('Fehler: Datei nicht gefunden bei Index ' + index);
-        return;
-      }
-      
-      const file = exportedFiles[index];
-      console.log('📋 File details:', file.name, file.format, file.size + ' bytes');
-      
-      try {
-        // Convert back to Uint8Array
-        const uint8Array = new Uint8Array(file.data);
-        
-        // Create blob with correct MIME type
-        const mimeType = file.format === 'PNG' ? 'image/png' : 'image/jpeg';
-        const blob = new Blob([uint8Array], { type: mimeType });
-        
-        // Create temporary URL
-        const url = URL.createObjectURL(blob);
-        
-        // Create and trigger download
-        const link = document.createElement('a');
-        link.href = url;
-        link.download = file.name;
-        link.style.display = 'none';
-        
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-        
-        // Clean up URL
-        URL.revokeObjectURL(url);
-        
-        console.log('✅ Download triggered for:', file.name);
-        
-      } catch (error) {
-        console.error('❌ Download error:', error);
-        alert('Download-Fehler: ' + error.message);
-      }
-    };
     }
     
     // Selection controls
@@ -904,69 +906,11 @@
       }
     }
     
-    // Handle export ready - use browser-based download
-    function handleExportReady(stats, instructions, fileKey, nodeIds) {
-      console.log('🌐 Starting browser-based export...');
-      
-      // Hide progress, show success immediately
-      showProgress(false);
-      elements.exportBtn.disabled = false;
-      elements.exportBtn.innerHTML = `📤 Export starten (${selectedAssets.size} Assets)`;
-      
-      // Show success section
-      if (elements.exportSuccess) {
-        elements.exportSuccess.classList.remove('hidden');
+    function resetImportButton() {
+      if (elements.exportBtn) {
+        elements.exportBtn.disabled = false;
+        elements.exportBtn.innerHTML = `📤 Export starten (${selectedAssets.size} Assets)`;
       }
-      
-      // Update stats
-      if (elements.exportStats) {
-        elements.exportStats.innerHTML = `
-          <div>${stats.totalAssets} Assets bereit zum Download</div>
-          <div>${stats.pngCount} PNG • ${stats.jpegCount} JPEG</div>
-          <div style="font-size: 11px; color: #b8c7ab; margin-top: 8px;">
-            ⚡ Browser-basierter Export für bessere Performance
-          </div>
-        `;
-      }
-      
-      // Create download interface
-      if (elements.downloadLinks) {
-        let downloadHtml = '<div class="download-links">';
-        
-        instructions.forEach((instruction, index) => {
-          downloadHtml += `
-            <div class="download-item">
-              <div class="download-info">
-                <div class="download-name">${instruction.name}</div>
-                <div class="download-meta">${instruction.format} ${instruction.scale}x • ${instruction.width}×${instruction.height}px</div>
-              </div>
-              <button class="download-btn" onclick="downloadFromFigma('${instruction.id}', '${instruction.name}', '${instruction.format}', ${instruction.scale})">
-                🌐 Download
-              </button>
-            </div>
-          `;
-        });
-        
-        downloadHtml += `
-          <button class="download-all-btn" onclick="downloadAllFromFigma()">
-            🌐 Alle via Browser laden (${instructions.length})
-          </button>
-          <button class="control-btn" onclick="debugExportState()" style="margin-top: 8px;">
-            🔍 Debug Info
-          </button>
-          <div style="font-size: 11px; color: #b8c7ab; margin-top: 8px; text-align: center;">
-            💡 Tipp: Downloads öffnen sich in neuen Browser-Tabs
-          </div>
-        </div>`;
-        
-        elements.downloadLinks.innerHTML = downloadHtml;
-      }
-      
-      // Store instructions globally for download functions
-      currentExportInstructions = instructions;
-      currentFileKey = fileKey;
-      
-      console.log('📋 Stored', instructions.length, 'export instructions');
     }
     
     function showExportSuccess(stats, files) {
@@ -975,7 +919,7 @@
       
       // Reset export button
       elements.exportBtn.disabled = false;
-      elements.exportBtn.innerHTML = `📤 Export starten (<span id="selectedCount">${selectedAssets.size}</span> Assets)`;
+      elements.exportBtn.innerHTML = `📤 Export starten (${selectedAssets.size} Assets)`;
       
       // Hide progress
       showProgress(false);
@@ -987,15 +931,21 @@
       
       // Update stats
       if (elements.exportStats) {
-        elements.exportStats.innerHTML = `
-          <div>${stats.totalExported} Assets exportiert</div>
-          <div>${stats.pngCount} PNG • ${stats.jpegCount} JPEG</div>
+        let statsHtml = `
+          <div>✅ ${stats.totalExported} Assets erfolgreich exportiert</div>
+          <div>📊 ${stats.pngCount} PNG • ${stats.jpegCount} JPEG</div>
         `;
+        
+        if (stats.failed && stats.failed.length > 0) {
+          statsHtml += `<div style="color: #ff6b7a; font-size: 11px; margin-top: 8px;">⚠️ ${stats.failed.length} fehlgeschlagen</div>`;
+        }
+        
+        elements.exportStats.innerHTML = statsHtml;
       }
       
-      // Create download links
+      // Create download links for successfully exported files
       if (elements.downloadLinks && exportedFiles.length > 0) {
-        let downloadHtml = '<div class="download-links">';
+        let downloadHtml = '';
         
         exportedFiles.forEach((file, index) => {
           const fileSizeKB = Math.round(file.size / 1024);
@@ -1003,26 +953,36 @@
             <div class="download-item">
               <div class="download-info">
                 <div class="download-name">${file.name}</div>
-                <div class="download-meta">${file.format} • ${fileSizeKB} KB</div>
+                <div class="download-meta">
+                  <span>${file.format}</span>
+                  <span>${fileSizeKB} KB</span>
+                </div>
               </div>
-              <button class="download-btn" onclick="downloadFile(${index})">📥 Download</button>
+              <button class="download-btn" onclick="downloadSingleFile(${index})">📥 Download</button>
             </div>
           `;
         });
         
-        downloadHtml += `
-          <button class="download-all-btn" onclick="startInteractiveDownload()">
-            📦 Alle Dateien laden (interaktiv)
-          </button>
-          <button class="btn-secondary" onclick="createZipDownload()" style="margin-top: 8px; width: 100%;">
-            📦 Als ZIP herunterladen
-          </button>
-          <button class="control-btn" onclick="testDownloadFunction()" style="margin-top: 8px; width: 100%;">
-            🔍 Test erste Datei
-          </button>
-        </div>`;
-        
         elements.downloadLinks.innerHTML = downloadHtml;
+      }
+      
+      // Show failed exports if any
+      if (stats.failed && stats.failed.length > 0) {
+        let failedHtml = `
+          <div style="background: rgba(220,53,69,0.1); border: 1px solid rgba(220,53,69,0.3); border-radius: 8px; padding: 16px; margin-top: 16px;">
+            <h3 style="color: #ff6b7a; margin: 0 0 12px 0;">⚠️ Fehlgeschlagene Exports</h3>
+            <div style="font-size: 12px; color: #ff6b7a;">
+              ${stats.failed.map(f => `• ${f}`).join('<br>')}
+            </div>
+            <div style="font-size: 11px; color: #b8c7ab; margin-top: 8px;">
+              💡 Tipp: Große oder komplexe Assets können fehlschlagen. Versuchen Sie kleinere Varianten.
+            </div>
+          </div>
+        `;
+        
+        if (elements.downloadLinks) {
+          elements.downloadLinks.innerHTML += failedHtml;
+        }
       }
     }
     
@@ -1033,6 +993,7 @@
       if (type === 'success') className += ' success';
       else if (type === 'error') className += ' error';
       else if (type === 'info') className += ' info';
+      else if (type === 'warning') className += ' warning';
       
       elements.messageDiv.innerHTML = `<div class="${className}">${text}</div>`;
       
@@ -1080,160 +1041,49 @@
       }
     });
     
-    // Copy-to-clipboard approach to avoid pop-up issues
-    window.downloadFromFigma = function(nodeId, fileName, format, scale) {
-      console.log('📋 Creating copy-to-clipboard solution for:', fileName);
+    // Simple working download function
+    window.downloadSingleFile = function(index) {
+      console.log('📥 Attempting download of file', index);
       
-      const fileKey = currentFileKey;
-      const figmaUrl = `https://www.figma.com/file/${fileKey}?node-id=${encodeURIComponent(nodeId)}`;
-      
-      // Create copy-paste solution
-      const linkHtml = `
-        <div style="background: rgba(139,184,133,0.1); border: 1px solid #8ab885; border-radius: 6px; padding: 15px; margin: 8px 0;">
-          <div style="display: flex; justify-content: space-between; align-items: center;">
-            <div style="flex: 1;">
-              <div style="color: #8ab885; font-weight: 600; font-size: 13px;">${fileName}</div>
-              <div style="color: #b8c7ab; font-size: 11px;">${format} ${scale}x</div>
-            </div>
-            <div style="display: flex; gap: 8px;">
-              <button onclick="copyFigmaUrl('${figmaUrl}', '${fileName}')" style="background: #8ab885; color: #0b4535; border: none; padding: 8px 12px; border-radius: 4px; font-size: 11px; font-weight: 600; cursor: pointer;">
-                📋 URL kopieren
-              </button>
-              <button onclick="showInstructions('${fileName}', '${format}', ${scale})" style="background: rgba(255,255,255,0.1); color: #ffffff; border: 1px solid rgba(255,255,255,0.2); padding: 8px 12px; border-radius: 4px; font-size: 11px; font-weight: 600; cursor: pointer;">
-                ℹ️ Anleitung
-              </button>
-            </div>
-          </div>
-        </div>
-      `;
-      
-      if (elements.messageDiv) {
-        const existingContent = elements.messageDiv.innerHTML;
-        elements.messageDiv.innerHTML = existingContent + linkHtml;
-      }
-    };
-    
-    // Copy URL to clipboard
-    window.copyFigmaUrl = function(url, fileName) {
-      navigator.clipboard.writeText(url).then(() => {
-        showMessage(`📋 URL für "${fileName}" kopiert! In neuem Tab einfügen (Strg+V).`, 'success');
-      }).catch(() => {
-        // Fallback for older browsers
-        const textArea = document.createElement('textarea');
-        textArea.value = url;
-        document.body.appendChild(textArea);
-        textArea.select();
-        document.execCommand('copy');
-        document.body.removeChild(textArea);
-        showMessage(`📋 URL für "${fileName}" kopiert! In neuem Tab einfügen (Strg+V).`, 'success');
-      });
-    };
-    
-    // Show detailed instructions
-    window.showInstructions = function(fileName, format, scale) {
-      const instructionsHtml = `
-        <div style="background: rgba(54,162,235,0.1); border: 1px solid #36a2eb; border-radius: 8px; padding: 20px; margin: 12px 0;">
-          <h3 style="color: #36a2eb; margin: 0 0 15px 0;">📖 Export-Anleitung: ${fileName}</h3>
-          <div style="background: rgba(255,255,255,0.05); padding: 15px; border-radius: 6px;">
-            <ol style="margin: 0; padding-left: 20px; color: #e8f1e6; line-height: 1.6;">
-              <li><strong>URL kopieren</strong> → "📋 URL kopieren" Button klicken</li>
-              <li><strong>Neuer Tab</strong> → Strg+T drücken, URL einfügen (Strg+V)</li>
-              <li><strong>Asset auswählen</strong> → "${fileName}" wird automatisch fokussiert</li>
-              <li><strong>Export Panel</strong> → Rechtes Panel → "Export" Section</li>
-              <li><strong>Format wählen</strong> → ${format} + ${scale}x Skalierung</li>
-              <li><strong>Download</strong> → "Export ${fileName}" Button klicken</li>
-            </ol>
-          </div>
-          <button onclick="this.parentElement.remove()" style="background: #36a2eb; color: white; border: none; padding: 8px 16px; border-radius: 4px; font-size: 12px; cursor: pointer; margin-top: 15px;">
-            ✅ Verstanden
-          </button>
-        </div>
-      `;
-      
-      if (elements.messageDiv) {
-        const existingContent = elements.messageDiv.innerHTML;
-        elements.messageDiv.innerHTML = existingContent + instructionsHtml;
-      }
-    };
-    
-    window.downloadAllFromFigma = function() {
-      console.log('🌐 Creating all Figma navigation links...');
-      
-      if (!currentExportInstructions || currentExportInstructions.length === 0) {
-        showMessage('❌ Keine Export-Anweisungen verfügbar. Bitte erst Assets scannen und exportieren.', 'error');
+      if (!exportedFiles || !exportedFiles[index]) {
+        console.error('❌ No file found at index', index);
+        alert('Fehler: Datei nicht gefunden bei Index ' + index);
         return;
       }
       
-      // Clear previous instructions
-      if (elements.messageDiv) {
-        elements.messageDiv.innerHTML = '';
-      }
+      const file = exportedFiles[index];
+      console.log('📋 File details:', file.name, file.format, file.size + ' bytes');
       
-      // Add header
-      const headerHtml = `
-        <div style="background: rgba(139,184,133,0.15); border: 1px solid #8ab885; border-radius: 8px; padding: 16px; margin-bottom: 16px; text-align: center;">
-          <h3 style="color: #8ab885; margin: 0 0 8px 0;">🎯 Figma Export Links</h3>
-          <p style="margin: 0; color: #b8c7ab; font-size: 12px;">
-            Klicke auf "In Figma öffnen" → Element wird ausgewählt → Export im rechten Panel
-          </p>
-        </div>
-      `;
-      
-      if (elements.messageDiv) {
-        elements.messageDiv.innerHTML = headerHtml;
-      }
-      
-      // Add each link
-      currentExportInstructions.forEach((instruction, index) => {
-        setTimeout(() => {
-          window.downloadFromFigma(instruction.id, instruction.name, instruction.format, instruction.scale);
-        }, index * 50); // Fast rendering
-      });
-      
-      showMessage(`🎯 ${currentExportInstructions.length} Figma-Links erstellt!`, 'success');
-    };
-    
-    // Debug function
-    window.debugExportState = function() {
-      console.log('🔍 Debug Export State:');
-      console.log('currentExportInstructions:', currentExportInstructions);
-      console.log('currentFileKey:', currentFileKey);
-      console.log('Instructions length:', currentExportInstructions.length);
-      
-      alert(`Debug Info:
-- Export Instructions: ${currentExportInstructions.length}
-- File Key: ${currentFileKey ? 'Set' : 'Not Set'}
-- First instruction: ${currentExportInstructions[0] ? currentExportInstructions[0].name : 'None'}
-      `);
-    };
-    
-    // Original download functions (fallback)
-    window.downloadFile = function(index) {
-      if (exportedFiles[index]) {
-        const file = exportedFiles[index];
+      try {
+        // Convert back to Uint8Array
         const uint8Array = new Uint8Array(file.data);
-        const blob = new Blob([uint8Array], { 
-          type: file.format === 'PNG' ? 'image/png' : 'image/jpeg' 
-        });
+        
+        // Create blob with correct MIME type
+        const mimeType = file.format === 'PNG' ? 'image/png' : 'image/jpeg';
+        const blob = new Blob([uint8Array], { type: mimeType });
+        
+        // Create temporary URL
         const url = URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = file.name;
-        a.click();
+        
+        // Create and trigger download
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = file.name;
+        link.style.display = 'none';
+        
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        
+        // Clean up URL
         URL.revokeObjectURL(url);
         
-        console.log('📥 Downloaded:', file.name);
+        console.log('✅ Download triggered for:', file.name);
+        
+      } catch (error) {
+        console.error('❌ Download error:', error);
+        alert('Download-Fehler: ' + error.message);
       }
-    };
-    
-    window.downloadAllFiles = function() {
-      console.log('📦 Starting batch download...');
-      exportedFiles.forEach((file, index) => {
-        setTimeout(() => {
-          window.downloadFile(index);
-        }, index * 200);
-      });
-      showMessage('📥 Download aller Dateien gestartet...', 'info');
     };
     
     console.log('🌿 Weleda Asset Export Plugin ready!');
