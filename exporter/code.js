@@ -192,6 +192,7 @@ async function handleExportAssets(selectedAssetIds) {
           exportInfo.format = 'JPEG';
           exportInfo.scale = 1;
           jpegCount++;
+          console.log('✅ JPEG candidate found:', group.name, width + 'x' + height);
         } else {
           // Skip assets that don't match our criteria
           console.log('⏭️ Skipping asset (wrong dimensions):', group.name, width + 'x' + height);
@@ -237,28 +238,37 @@ async function handleExportAssets(selectedAssetIds) {
           }
         };
         
-        // Special settings for JPEG
+        // Special settings for different formats
         if (assetInfo.format === 'JPEG') {
           exportSettings = {
-            format: 'JPG', // Use JPG instead of JPEG
+            format: 'JPG',
             constraint: {
               type: 'SCALE', 
               value: 1
-            },
-            jpegQuality: 0.9 // Higher quality for JPEG
+            }
           };
+          // Remove jpegQuality - let Figma use default
+          console.log('🎯 JPEG Export settings (no quality specified)');
+        } else {
+          // PNG settings
+          exportSettings = {
+            format: 'PNG',
+            constraint: {
+              type: 'SCALE',
+              value: assetInfo.scale
+            }
+          };
+          console.log('🎯 PNG Export settings, scale:', assetInfo.scale);
         }
         
         console.log('🎯 Export settings:', JSON.stringify(exportSettings));
-        console.log('🎯 Exporting:', assetInfo.name, 'Size:', assetInfo.width + 'x' + assetInfo.height);
+        console.log('🎯 Exporting:', assetInfo.name, 'Size:', assetInfo.width + 'x' + assetInfo.height, 'Format:', assetInfo.format);
+        console.log('🎯 Node type:', assetInfo.node.type, 'Visible:', assetInfo.node.visible);
         
-        // Export with longer timeout for complex assets
-        var uint8Array = await Promise.race([
-          assetInfo.node.exportAsync(exportSettings),
-          new Promise((_, reject) => 
-            setTimeout(() => reject(new Error('Export timeout after 15s')), 15000)
-          )
-        ]);
+        // Simple export without timeout for testing
+        console.log('⏳ Starting export...');
+        var uint8Array = await assetInfo.node.exportAsync(exportSettings);
+        console.log('✅ Export completed, size:', uint8Array.length, 'bytes');
         
         // More generous file size limit
         var fileSizeMB = uint8Array.length / (1024 * 1024);
@@ -270,11 +280,13 @@ async function handleExportAssets(selectedAssetIds) {
           continue;
         }
         
-        var fileName = sanitizeFileName(assetInfo.name) + '.' + (assetInfo.format === 'PNG' ? 'png' : 'jpg');
+        // Add sequential numbering to filenames
+        var fileNumber = String(i + 1).padStart(3, '0'); // 001, 002, 003...
+        var fileName = fileNumber + '_' + sanitizeFileName(assetInfo.name) + '.' + (assetInfo.format === 'PNG' ? 'png' : 'jpg');
         
         exportedFiles.push({
           name: fileName,
-          data: uint8Array,
+          data: Array.from(uint8Array), // Convert to array for UI transmission
           format: assetInfo.format,
           originalName: assetInfo.name,
           size: uint8Array.length
