@@ -350,6 +350,9 @@ downloadHtml += `
       color: #ffffff;
       font-size: 13px;
       margin-bottom: 2px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
     }
     
     .group-details {
@@ -695,6 +698,51 @@ downloadHtml += `
           }
         }, '*');
       });
+    
+    // Simple working download function - back to basics
+    window.downloadSingleFile = function(index) {
+      console.log('📥 Attempting download of file', index);
+      
+      if (!exportedFiles || !exportedFiles[index]) {
+        console.error('❌ No file found at index', index);
+        alert('Fehler: Datei nicht gefunden bei Index ' + index);
+        return;
+      }
+      
+      const file = exportedFiles[index];
+      console.log('📋 File details:', file.name, file.format, file.size + ' bytes');
+      
+      try {
+        // Convert back to Uint8Array
+        const uint8Array = new Uint8Array(file.data);
+        
+        // Create blob with correct MIME type
+        const mimeType = file.format === 'PNG' ? 'image/png' : 'image/jpeg';
+        const blob = new Blob([uint8Array], { type: mimeType });
+        
+        // Create temporary URL
+        const url = URL.createObjectURL(blob);
+        
+        // Create and trigger download
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = file.name;
+        link.style.display = 'none';
+        
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        
+        // Clean up URL
+        URL.revokeObjectURL(url);
+        
+        console.log('✅ Download triggered for:', file.name);
+        
+      } catch (error) {
+        console.error('❌ Download error:', error);
+        alert('Download-Fehler: ' + error.message);
+      }
+    };
     }
     
     // Selection controls
@@ -729,6 +777,11 @@ downloadHtml += `
             selectedAssets: selectedList
           }
         }, '*');
+        
+        // Hide results section to show progress
+        if (elements.resultsSection) {
+          elements.resultsSection.classList.add('hidden');
+        }
       });
     }
     
@@ -1026,18 +1079,14 @@ downloadHtml += `
           showExportSuccess(msg.stats, msg.files);
           break;
           
-        case 'export-error':
-          showMessage(`❌ Export-Fehler: ${msg.message}`, 'error');
-          elements.exportBtn.disabled = false;
-          elements.exportBtn.innerHTML = `📤 Export starten (${selectedAssets.size} Assets)`;
-          showProgress(false);
-          break;
-          
         case 'error':
           showMessage(`⚠ ${msg.message}`, 'error');
-          elements.scanBtn.disabled = false;
-          elements.scanBtn.innerHTML = '🔍 Gruppen scannen';
+          resetImportButton();
           showProgress(false);
+          // Show results section again on error
+          if (elements.resultsSection) {
+            elements.resultsSection.classList.remove('hidden');
+          }
           break;
       }
     });
