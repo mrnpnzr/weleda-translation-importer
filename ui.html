@@ -551,6 +551,10 @@
           🔍 Frame-IDs in Console anzeigen
         </button>
         
+        <button class="btn btn-secondary" id="exportLogBtn" disabled>
+          📄 Log als PDF exportieren
+        </button>
+        
         <div id="progressContainer" class="hidden">
           <div class="progress-header">
             <div class="progress-title" id="progressTitle">Import wird vorbereitet...</div>
@@ -613,6 +617,7 @@
       csvFile: document.getElementById('csvFile'),
       importBtn: document.getElementById('importBtn'),
       showFrameIdsBtn: document.getElementById('showFrameIdsBtn'),
+      exportLogBtn: document.getElementById('exportLogBtn'),
       closeBtn: document.getElementById('closeBtn'),
       messageDiv: document.getElementById('messageDiv'),
       progressContainer: document.getElementById('progressContainer'),
@@ -629,6 +634,9 @@
       totalLanguages: document.getElementById('totalLanguages'),
       resultsDetails: document.getElementById('resultsDetails')
     };
+    
+    // Store import results for log export
+    let lastImportResults = null;
     
     // File input handling
     if (elements.csvFile) {
@@ -707,6 +715,17 @@
       });
     }
     
+    // Export Log button
+    if (elements.exportLogBtn) {
+      elements.exportLogBtn.addEventListener('click', () => {
+        if (lastImportResults) {
+          generateTranslationLog(lastImportResults);
+        } else {
+          showMessage('⚠ Keine Import-Daten verfügbar. Bitte erst eine Übersetzung durchführen.', 'warning');
+        }
+      });
+    }
+    
     // Close button
     if (elements.closeBtn) {
       elements.closeBtn.addEventListener('click', () => {
@@ -744,6 +763,10 @@
       if (elements.messageDiv) {
         elements.messageDiv.innerHTML = '';
       }
+      if (elements.exportLogBtn) {
+        elements.exportLogBtn.disabled = true;
+      }
+      lastImportResults = null;
     }
     
     function showProgress(show, progress = 0) {
@@ -785,12 +808,20 @@
     }
     
     function showResults(data) {
+      // Store results for log export
+      lastImportResults = data;
+      
       // Hide progress and show results
       if (elements.progressContainer) {
         elements.progressContainer.classList.add('hidden');
       }
       if (elements.resultsContainer) {
         elements.resultsContainer.classList.remove('hidden');
+      }
+      
+      // Enable export button
+      if (elements.exportLogBtn) {
+        elements.exportLogBtn.disabled = false;
       }
       
       // Update summary stats
@@ -884,6 +915,14 @@
           resetImportButton();
           break;
           
+        case 'translation-log-data':
+          // Receive detailed translation data for log
+          if (lastImportResults && msg.logData) {
+            lastImportResults.detailedTranslations = msg.logData;
+            console.log('📋 Received detailed translation data for log');
+          }
+          break;
+          
         case 'error':
           showMessage(`⚠ ${msg.message}`, 'error');
           resetImportButton();
@@ -891,6 +930,260 @@
           break;
       }
     });
+    
+    // Generate translation log as PDF-ready HTML
+    function generateTranslationLog(results) {
+      console.log('📄 Generating translation log...');
+      
+      // Request detailed translation data if not available
+      if (!results.detailedTranslations) {
+        parent.postMessage({
+          pluginMessage: {
+            type: 'get-translation-log-data'
+          }
+        }, '*');
+        
+        showMessage('📋 Log wird vorbereitet...', 'info');
+        return;
+      }
+      
+      const timestamp = new Date().toLocaleString('de-DE');
+      const logHtml = `
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Weleda Translation Log - ${timestamp}</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            line-height: 1.6;
+            color: #333;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background: #fff;
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+            padding-bottom: 20px;
+            border-bottom: 3px solid #0b4535;
+        }
+        
+        .logo {
+            color: #0b4535;
+            font-size: 24px;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+        
+        .title {
+            color: #0b4535;
+            font-size: 28px;
+            font-weight: bold;
+            margin: 10px 0;
+        }
+        
+        .subtitle {
+            color: #666;
+            font-size: 14px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        
+        .summary {
+            display: flex;
+            justify-content: space-around;
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 30px;
+        }
+        
+        .summary-item {
+            text-align: center;
+        }
+        
+        .summary-number {
+            font-size: 32px;
+            font-weight: bold;
+            color: #0b4535;
+            display: block;
+        }
+        
+        .summary-label {
+            font-size: 12px;
+            color: #666;
+            text-transform: uppercase;
+        }
+        
+        .frame-section {
+            margin-bottom: 40px;
+            break-inside: avoid;
+        }
+        
+        .frame-header {
+            background: #0b4535;
+            color: white;
+            padding: 15px 20px;
+            border-radius: 8px 8px 0 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .frame-name {
+            font-size: 18px;
+            font-weight: bold;
+        }
+        
+        .frame-meta {
+            font-size: 12px;
+            opacity: 0.9;
+        }
+        
+        .translations {
+            border: 1px solid #ddd;
+            border-top: none;
+            border-radius: 0 0 8px 8px;
+        }
+        
+        .translation-item {
+            padding: 15px 20px;
+            border-bottom: 1px solid #eee;
+            display: flex;
+            align-items: flex-start;
+            gap: 20px;
+        }
+        
+        .translation-item:last-child {
+            border-bottom: none;
+        }
+        
+        .translation-source {
+            flex: 1;
+            background: #f8f9fa;
+            padding: 10px;
+            border-radius: 4px;
+            border-left: 3px solid #ddd;
+        }
+        
+        .translation-target {
+            flex: 1;
+            background: #e8f5e3;
+            padding: 10px;
+            border-radius: 4px;
+            border-left: 3px solid #8ab885;
+        }
+        
+        .translation-label {
+            font-size: 10px;
+            text-transform: uppercase;
+            color: #666;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        
+        .translation-text {
+            font-size: 14px;
+            line-height: 1.4;
+        }
+        
+        .arrow {
+            color: #8ab885;
+            font-size: 18px;
+            align-self: center;
+            flex-shrink: 0;
+        }
+        
+        .footer {
+            margin-top: 50px;
+            text-align: center;
+            font-size: 12px;
+            color: #666;
+            border-top: 1px solid #ddd;
+            padding-top: 20px;
+        }
+        
+        .timestamp {
+            color: #999;
+            font-style: italic;
+        }
+        
+        @media print {
+            body { margin: 0; padding: 15px; }
+            .frame-section { page-break-inside: avoid; }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div class="logo">WELEDA</div>
+        <div class="title">Translation Import Log</div>
+        <div class="subtitle">Digital Lab • Translation Report</div>
+    </div>
+    
+    <div class="summary">
+        <div class="summary-item">
+            <span class="summary-number">${results.totalFrames || 0}</span>
+            <span class="summary-label">Frames</span>
+        </div>
+        <div class="summary-item">
+            <span class="summary-number">${results.totalTexts || 0}</span>
+            <span class="summary-label">Texte</span>
+        </div>
+        <div class="summary-item">
+            <span class="summary-number">${results.totalLanguages || 0}</span>
+            <span class="summary-label">Sprachen</span>
+        </div>
+    </div>
+    
+    ${results.detailedTranslations.map(frame => `
+        <div class="frame-section">
+            <div class="frame-header">
+                <div class="frame-name">${frame.frameName}</div>
+                <div class="frame-meta">
+                    ${frame.language.toUpperCase()} • ${frame.translations.length} Übersetzungen
+                </div>
+            </div>
+            <div class="translations">
+                ${frame.translations.map(trans => `
+                    <div class="translation-item">
+                        <div class="translation-source">
+                            <div class="translation-label">Original Text</div>
+                            <div class="translation-text">${trans.sourceText}</div>
+                        </div>
+                        <div class="arrow">→</div>
+                        <div class="translation-target">
+                            <div class="translation-label">Übersetzung (${frame.language.toUpperCase()})</div>
+                            <div class="translation-text">${trans.translatedText}</div>
+                        </div>
+                    </div>
+                `).join('')}
+            </div>
+        </div>
+    `).join('')}
+    
+    <div class="footer">
+        <div>Generiert von <strong>Weleda Translation Import Plugin</strong></div>
+        <div class="timestamp">Erstellt am: ${timestamp}</div>
+    </div>
+</body>
+</html>`;
+      
+      // Create and download the HTML file
+      const blob = new Blob([logHtml], { type: 'text/html' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `weleda-translation-log-${new Date().toISOString().slice(0,10)}.html`;
+      a.click();
+      URL.revokeObjectURL(url);
+      
+      showMessage('✅ Translation Log wurde heruntergeladen! Öffnen Sie die HTML-Datei und drucken Sie sie als PDF.', 'success');
+    }
     
     // Initialize form state
     checkFormValidity();
