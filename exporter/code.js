@@ -186,16 +186,16 @@ async function handleExportAssets(selectedAssetIds) {
         // Determine export settings
         if (width === height) {
           exportInfo.format = 'PNG';
-          exportInfo.scale = 2; // Reduce scale if too large
-          if (width * 2 > MAX_SIZE) {
-            exportInfo.scale = 1;
-            console.log('⚠️ Reduced scale for large PNG:', group.name);
-          }
+          exportInfo.scale = Math.min(2, Math.floor(MAX_SIZE / width)); // Smart scaling
           pngCount++;
         } else if (width === 768 && height === 1344) {
           exportInfo.format = 'JPEG';
           exportInfo.scale = 1;
           jpegCount++;
+        } else {
+          // Skip assets that don't match our criteria
+          console.log('⏭️ Skipping asset (wrong dimensions):', group.name, width + 'x' + height);
+          continue;
         }
         
         selectedGroups.push(exportInfo);
@@ -237,24 +237,36 @@ async function handleExportAssets(selectedAssetIds) {
           }
         };
         
+        // Special settings for JPEG
         if (assetInfo.format === 'JPEG') {
-          exportSettings.jpegQuality = 0.8; // Reduce quality to save memory
+          exportSettings = {
+            format: 'JPG', // Use JPG instead of JPEG
+            constraint: {
+              type: 'SCALE', 
+              value: 1
+            },
+            jpegQuality: 0.9 // Higher quality for JPEG
+          };
         }
         
-        console.log('🎯 Exporting:', assetInfo.name, assetInfo.format, assetInfo.scale + 'x');
+        console.log('🎯 Export settings:', JSON.stringify(exportSettings));
+        console.log('🎯 Exporting:', assetInfo.name, 'Size:', assetInfo.width + 'x' + assetInfo.height);
         
-        // Export with timeout protection
+        // Export with longer timeout for complex assets
         var uint8Array = await Promise.race([
           assetInfo.node.exportAsync(exportSettings),
           new Promise((_, reject) => 
-            setTimeout(() => reject(new Error('Export timeout')), 10000)
+            setTimeout(() => reject(new Error('Export timeout after 15s')), 15000)
           )
         ]);
         
-        // Check file size (skip if too large)
-        if (uint8Array.length > 5 * 1024 * 1024) { // 5MB limit
+        // More generous file size limit
+        var fileSizeMB = uint8Array.length / (1024 * 1024);
+        console.log('📏 File size:', fileSizeMB.toFixed(2) + ' MB');
+        
+        if (uint8Array.length > 10 * 1024 * 1024) { // 10MB limit instead of 5MB
           console.log('⚠️ File too large, skipping:', assetInfo.name);
-          failedExports.push(assetInfo.name + ' (too large)');
+          failedExports.push(assetInfo.name + ' (file too large: ' + fileSizeMB.toFixed(1) + 'MB)');
           continue;
         }
         
@@ -268,14 +280,16 @@ async function handleExportAssets(selectedAssetIds) {
           size: uint8Array.length
         });
         
-        console.log('✅ Exported:', fileName, Math.round(uint8Array.length / 1024) + ' KB');
+        console.log('✅ Exported successfully:', fileName, fileSizeMB.toFixed(2) + ' MB');
         
-        // Small delay to prevent memory buildup
-        await new Promise(resolve => setTimeout(resolve, 100));
+        // Longer pause for memory cleanup, especially after large exports
+        var pauseDuration = fileSizeMB > 2 ? 500 : 200;
+        await new Promise(resolve => setTimeout(resolve, pauseDuration));
         
       } catch (exportError) {
         console.error('❌ Export failed for', assetInfo.name, ':', exportError.message);
-        failedExports.push(assetInfo.name + ' (' + exportError.message + ')');
+        console.error('Asset details:', assetInfo.width + 'x' + assetInfo.height, assetInfo.format, assetInfo.scale + 'x');
+        failedExports.push(assetInfo.name + ' (error: ' + exportError.message + ')');
       }
     }
     
