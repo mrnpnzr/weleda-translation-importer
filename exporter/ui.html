@@ -1016,10 +1016,6 @@ downloadHtml += `
           showResults(msg.results);
           break;
           
-        case 'export-ready':
-          handleExportReady(msg.stats, msg.exportInstructions, msg.fileKey, msg.nodeIds);
-          break;
-          
         case 'export-complete':
           showExportSuccess(msg.stats, msg.files);
           break;
