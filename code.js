@@ -21,11 +21,18 @@ figma.ui.onmessage = function(msg) {
     handleGetFrameIds();
   }
   
+  if (msg.type === 'get-translation-log-data') {
+    handleGetTranslationLogData();
+  }
+  
   if (msg.type === 'close') {
     clearInterval(keepAliveInterval);
     figma.closePlugin();
   }
 };
+
+// Store last import data for log generation
+var lastImportData = null;
 
 async function handleImportTranslations(csvData) {
   try {
@@ -89,6 +96,14 @@ async function handleImportTranslations(csvData) {
     var processedFrames = 0;
     var processedTexts = 0;
     var results = [];
+    var detailedTranslations = []; // Store for log generation
+    
+    // Store import data for log
+    lastImportData = {
+      csvData: csvData,
+      translations: translations,
+      frameGroups: frameGroups
+    };
     
     // Process each frame group
     for (var groupKey in frameGroups) {
@@ -118,6 +133,15 @@ async function handleImportTranslations(csvData) {
           translatedTexts: result.translatedCount
         });
         
+        // Store detailed translations for log
+        if (result.detailedTranslations) {
+          detailedTranslations.push({
+            frameName: result.frameName,
+            language: language,
+            translations: result.detailedTranslations
+          });
+        }
+        
         // Update progress after each frame
         figma.ui.postMessage({
           type: 'progress-update',
@@ -137,6 +161,12 @@ async function handleImportTranslations(csvData) {
       totalTexts: processedTexts,
       totalLanguages: totalLanguages,
       details: results
+    });
+    
+    // Send detailed translation data for log
+    figma.ui.postMessage({
+      type: 'translation-log-data',
+      logData: detailedTranslations
     });
     
   } catch (error) {
@@ -168,24 +198,28 @@ async function processFrame(frameId, language, translations) {
     console.log('✅ Created duplicate:', newFrame.name);
     
     // Apply translations
-    var translatedCount = await applyTranslationsToFrame(newFrame, translations);
+    var result = await applyTranslationsToFrame(newFrame, translations);
+    var translatedCount = result.translatedCount;
+    var detailedTranslations = result.detailedTranslations;
     
     console.log('✅ Applied', translatedCount, 'translations to', newFrame.name);
     
     return {
       success: true, 
       translatedCount: translatedCount,
-      frameName: originalFrame.name
+      frameName: originalFrame.name,
+      detailedTranslations: detailedTranslations
     };
     
   } catch (error) {
     console.error('❌ Frame processing failed:', error);
-    return {success: false, translatedCount: 0};
+    return {success: false, translatedCount: 0, detailedTranslations: []};
   }
 }
 
 async function applyTranslationsToFrame(frame, translations) {
   var translatedCount = 0;
+  var detailedTranslations = [];
   
   // Create lookup map
   var translationMap = {};
@@ -218,11 +252,18 @@ async function applyTranslationsToFrame(frame, translations) {
       var success = await translateTextNode(textNode, translation);
       if (success) {
         translatedCount++;
+        detailedTranslations.push({
+          sourceText: currentText,
+          translatedText: translation
+        });
       }
     }
   }
   
-  return translatedCount;
+  return {
+    translatedCount: translatedCount,
+    detailedTranslations: detailedTranslations
+  };
 }
 
 async function translateTextNode(textNode, translatedText) {
@@ -669,4 +710,70 @@ function handleGetFrameIds() {
   }
 }
 
-console.log('🌿 Weleda Translation Plugin loaded - WITH PROGRESS TRACKING!');
+function handleGetTranslationLogData() {
+  try {
+    if (!lastImportData) {
+      figma.ui.postMessage({
+        type: 'error',
+        message: 'Keine Import-Daten für Log verfügbar.'
+      });
+      return;
+    }
+    
+    console.log('📋 Preparing translation log data...');
+    
+    // Generate detailed log data from last import
+    var logData = [];
+    var frameGroups = lastImportData.frameGroups;
+    
+    for (var groupKey in frameGroups) {
+      var parts = groupKey.split('|');
+      var language = parts[0];
+      var frameId = parts[1];
+      var frameTranslations = frameGroups[groupKey];
+      
+      // Find frame name
+      var frameName = frameId;
+      var frame = findFrame(frameId);
+      if (frame) {
+        frameName = frame.name;
+      }
+      
+      // Collect translations for this frame
+      var translations = [];
+      for (var i = 0; i < frameTranslations.length; i++) {
+        var t = frameTranslations[i];
+        if (t.sourceText && t.translatedText) {
+          translations.push({
+            sourceText: t.sourceText,
+            translatedText: t.translatedText
+          });
+        }
+      }
+      
+      if (translations.length > 0) {
+        logData.push({
+          frameName: frameName,
+          language: language,
+          translations: translations
+        });
+      }
+    }
+    
+    figma.ui.postMessage({
+      type: 'translation-log-data',
+      logData: logData
+    });
+    
+    console.log('✅ Translation log data sent:', logData.length, 'frame groups');
+    
+  } catch (error) {
+    console.error('❌ Error generating log data:', error);
+    figma.ui.postMessage({
+      type: 'error',
+      message: 'Fehler beim Erstellen der Log-Daten: ' + error.message
+    });
+  }
+}
+
+console.log('🌿 Weleda Translation Plugin loaded - WITH LOG EXPORT!');
