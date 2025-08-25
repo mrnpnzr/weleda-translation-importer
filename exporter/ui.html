@@ -1,12 +1,12 @@
 downloadHtml += `
           <button class="download-all-btn" onclick="downloadAllFromFigma()">
-            🎯 Figma Links erstellen (${instructions.length})
+            📋 Alle URLs kopieren (${instructions.length})
           </button>
           <button class="control-btn" onclick="debugExportState()" style="margin-top: 8px;">
             🔍 Debug Info
           </button>
           <div style="font-size: 11px; color: #b8c7ab; margin-top: 8px; text-align: center;">
-            💡 Direkt zu den Assets in Figma navigieren
+            💡 Kein Pop-up! URLs werden kopiert für manuelles Einfügen
           </div>
         </div>`;<!DOCTYPE html>
 <html>
@@ -1040,33 +1040,79 @@ downloadHtml += `
       }
     });
     
-    // Browser-based download using direct Figma navigation
+    // Copy-to-clipboard approach to avoid pop-up issues
     window.downloadFromFigma = function(nodeId, fileName, format, scale) {
-      console.log('🌐 Creating Figma navigation link for:', fileName);
+      console.log('📋 Creating copy-to-clipboard solution for:', fileName);
       
-      // Create Figma direct link (this navigates to the element)
       const fileKey = currentFileKey;
       const figmaUrl = `https://www.figma.com/file/${fileKey}?node-id=${encodeURIComponent(nodeId)}`;
       
-      // Create clickable link in the UI
+      // Create copy-paste solution
       const linkHtml = `
         <div style="background: rgba(139,184,133,0.1); border: 1px solid #8ab885; border-radius: 6px; padding: 15px; margin: 8px 0;">
           <div style="display: flex; justify-content: space-between; align-items: center;">
-            <div>
+            <div style="flex: 1;">
               <div style="color: #8ab885; font-weight: 600; font-size: 13px;">${fileName}</div>
-              <div style="color: #b8c7ab; font-size: 11px;">${format} ${scale}x • Click → Select → Export</div>
+              <div style="color: #b8c7ab; font-size: 11px;">${format} ${scale}x</div>
             </div>
-            <a href="${figmaUrl}" target="_blank" style="background: #8ab885; color: #0b4535; padding: 8px 12px; border-radius: 4px; text-decoration: none; font-size: 11px; font-weight: 600;">
-              🎯 In Figma öffnen
-            </a>
+            <div style="display: flex; gap: 8px;">
+              <button onclick="copyFigmaUrl('${figmaUrl}', '${fileName}')" style="background: #8ab885; color: #0b4535; border: none; padding: 8px 12px; border-radius: 4px; font-size: 11px; font-weight: 600; cursor: pointer;">
+                📋 URL kopieren
+              </button>
+              <button onclick="showInstructions('${fileName}', '${format}', ${scale})" style="background: rgba(255,255,255,0.1); color: #ffffff; border: 1px solid rgba(255,255,255,0.2); padding: 8px 12px; border-radius: 4px; font-size: 11px; font-weight: 600; cursor: pointer;">
+                ℹ️ Anleitung
+              </button>
+            </div>
           </div>
         </div>
       `;
       
-      // Add to message div
       if (elements.messageDiv) {
         const existingContent = elements.messageDiv.innerHTML;
         elements.messageDiv.innerHTML = existingContent + linkHtml;
+      }
+    };
+    
+    // Copy URL to clipboard
+    window.copyFigmaUrl = function(url, fileName) {
+      navigator.clipboard.writeText(url).then(() => {
+        showMessage(`📋 URL für "${fileName}" kopiert! In neuem Tab einfügen (Strg+V).`, 'success');
+      }).catch(() => {
+        // Fallback for older browsers
+        const textArea = document.createElement('textarea');
+        textArea.value = url;
+        document.body.appendChild(textArea);
+        textArea.select();
+        document.execCommand('copy');
+        document.body.removeChild(textArea);
+        showMessage(`📋 URL für "${fileName}" kopiert! In neuem Tab einfügen (Strg+V).`, 'success');
+      });
+    };
+    
+    // Show detailed instructions
+    window.showInstructions = function(fileName, format, scale) {
+      const instructionsHtml = `
+        <div style="background: rgba(54,162,235,0.1); border: 1px solid #36a2eb; border-radius: 8px; padding: 20px; margin: 12px 0;">
+          <h3 style="color: #36a2eb; margin: 0 0 15px 0;">📖 Export-Anleitung: ${fileName}</h3>
+          <div style="background: rgba(255,255,255,0.05); padding: 15px; border-radius: 6px;">
+            <ol style="margin: 0; padding-left: 20px; color: #e8f1e6; line-height: 1.6;">
+              <li><strong>URL kopieren</strong> → "📋 URL kopieren" Button klicken</li>
+              <li><strong>Neuer Tab</strong> → Strg+T drücken, URL einfügen (Strg+V)</li>
+              <li><strong>Asset auswählen</strong> → "${fileName}" wird automatisch fokussiert</li>
+              <li><strong>Export Panel</strong> → Rechtes Panel → "Export" Section</li>
+              <li><strong>Format wählen</strong> → ${format} + ${scale}x Skalierung</li>
+              <li><strong>Download</strong> → "Export ${fileName}" Button klicken</li>
+            </ol>
+          </div>
+          <button onclick="this.parentElement.remove()" style="background: #36a2eb; color: white; border: none; padding: 8px 16px; border-radius: 4px; font-size: 12px; cursor: pointer; margin-top: 15px;">
+            ✅ Verstanden
+          </button>
+        </div>
+      `;
+      
+      if (elements.messageDiv) {
+        const existingContent = elements.messageDiv.innerHTML;
+        elements.messageDiv.innerHTML = existingContent + instructionsHtml;
       }
     };
     
