@@ -337,7 +337,9 @@
     
     .group-info {
       flex: 1;
-      min-width: 0; /* Important for text-overflow to work in flex containers */
+      min-width: 0;
+      max-width: calc(100% - 50px); /* Reserve space for checkbox + gap */
+      overflow: hidden;
     }
     
     .group-name {
@@ -348,7 +350,7 @@
       white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
-      max-width: 100%;
+      display: block;
       width: 100%;
     }
     
@@ -388,7 +390,9 @@
     
     .download-info {
       flex: 1;
-      min-width: 0; /* Important for text-overflow to work in flex containers */
+      min-width: 0;
+      max-width: calc(100% - 100px); /* Reserve space for download button + gap */
+      overflow: hidden;
     }
     
     .download-name {
@@ -399,7 +403,7 @@
       white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
-      max-width: 100%;
+      display: block;
       width: 100%;
     }
     
