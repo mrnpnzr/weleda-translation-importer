@@ -666,8 +666,10 @@
       messageDiv: document.getElementById('messageDiv')
     };
     
-    // Store exported files for download
+    // Store exported files and export instructions globally
     let exportedFiles = [];
+    let currentExportInstructions = [];
+    let currentFileKey = '';
     
     // Scan button
     if (elements.scanBtn) {
@@ -897,6 +899,9 @@
           <button class="download-all-btn" onclick="downloadAllFromFigma()">
             🌐 Alle via Browser laden (${instructions.length})
           </button>
+          <button class="control-btn" onclick="debugExportState()" style="margin-top: 8px;">
+            🔍 Debug Info
+          </button>
           <div style="font-size: 11px; color: #b8c7ab; margin-top: 8px; text-align: center;">
             💡 Tipp: Downloads öffnen sich in neuen Browser-Tabs
           </div>
@@ -905,9 +910,11 @@
         elements.downloadLinks.innerHTML = downloadHtml;
       }
       
-      // Store instructions globally
-      window.currentExportInstructions = instructions;
-      window.currentFileKey = fileKey;
+      // Store instructions globally for download functions
+      currentExportInstructions = instructions;
+      currentFileKey = fileKey;
+      
+      console.log('📋 Stored', instructions.length, 'export instructions');
     }
     
     function showExportSuccess(stats, files) {
@@ -1028,16 +1035,12 @@
       console.log('🌐 Opening Figma export URL for:', fileName);
       
       // Construct Figma export URL
-      const baseUrl = 'https://www.figma.com/api/v1/images/';
-      const fileKey = window.currentFileKey || figma.fileKey;
-      const exportFormat = format.toLowerCase();
-      const exportScale = scale || 1;
+      const fileKey = currentFileKey;
       
-      // Create export URL (this would normally require authentication)
-      const exportUrl = `${baseUrl}${fileKey}?ids=${nodeId}&format=${exportFormat}&scale=${exportScale}`;
+      console.log('Using fileKey:', fileKey);
+      console.log('NodeId:', nodeId);
       
       // For demo purposes, we'll open a new tab with instructions
-      // In production, you'd need proper Figma API authentication
       const instructionsUrl = `data:text/html,
         <html>
           <head><title>Figma Export - ${fileName}</title></head>
@@ -1068,19 +1071,43 @@
         </html>
       `;
       
-      window.open(instructionsUrl, '_blank');
+      const newWindow = window.open(instructionsUrl, '_blank');
+      if (!newWindow) {
+        alert('Pop-up wurde blockiert! Bitte Pop-ups für diese Seite erlauben.');
+      }
     };
     
     window.downloadAllFromFigma = function() {
-      console.log('🌐 Opening all Figma export instructions...');
+      console.log('🌐 Starting batch export...');
+      console.log('Available instructions:', currentExportInstructions.length);
       
-      if (window.currentExportInstructions) {
-        window.currentExportInstructions.forEach((instruction, index) => {
-          setTimeout(() => {
-            window.downloadFromFigma(instruction.id, instruction.name, instruction.format, instruction.scale);
-          }, index * 500); // Stagger by 500ms to avoid browser blocking
-        });
+      if (!currentExportInstructions || currentExportInstructions.length === 0) {
+        alert('❌ Keine Export-Anweisungen verfügbar. Bitte erst Assets scannen und exportieren.');
+        return;
       }
+      
+      currentExportInstructions.forEach((instruction, index) => {
+        console.log('Opening tab', index + 1, 'for:', instruction.name);
+        setTimeout(() => {
+          window.downloadFromFigma(instruction.id, instruction.name, instruction.format, instruction.scale);
+        }, index * 1000); // Stagger by 1 second to avoid browser blocking
+      });
+      
+      showMessage(`🌐 Öffne ${currentExportInstructions.length} Export-Tabs...`, 'info');
+    };
+    
+    // Debug function
+    window.debugExportState = function() {
+      console.log('🔍 Debug Export State:');
+      console.log('currentExportInstructions:', currentExportInstructions);
+      console.log('currentFileKey:', currentFileKey);
+      console.log('Instructions length:', currentExportInstructions.length);
+      
+      alert(`Debug Info:
+- Export Instructions: ${currentExportInstructions.length}
+- File Key: ${currentFileKey ? 'Set' : 'Not Set'}
+- First instruction: ${currentExportInstructions[0] ? currentExportInstructions[0].name : 'None'}
+      `);
     };
     
     // Original download functions (fallback)
