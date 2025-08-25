@@ -293,6 +293,8 @@
       gap: 12px;
       transition: all 0.2s ease;
       cursor: pointer;
+      width: 100%;
+      box-sizing: border-box;
     }
     
     .group-item:hover {
@@ -314,6 +316,8 @@
       cursor: pointer;
       position: relative;
       margin: 0;
+      flex-shrink: 0;
+      min-width: 18px;
     }
     
     .group-checkbox:checked {
@@ -344,6 +348,8 @@
       white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
+      max-width: 100%;
+      width: 100%;
     }
     
     .group-details {
@@ -393,6 +399,8 @@
       white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
+      max-width: 100%;
+      width: 100%;
     }
     
     .download-meta {
