@@ -622,7 +622,7 @@
         <div class="success-icon">✅</div>
         <div class="success-text">Export erfolgreich abgeschlossen!</div>
         <div id="exportStats"></div>
-        <a href="#" id="downloadLink" class="download-link">📦 ZIP Download</a>
+        <div id="downloadLinks"></div>
       </div>
 
       <!-- Messages -->
@@ -662,9 +662,12 @@
       selectedCount: document.getElementById('selectedCount'),
       exportSuccess: document.getElementById('exportSuccess'),
       exportStats: document.getElementById('exportStats'),
-      downloadLink: document.getElementById('downloadLink'),
+      downloadLinks: document.getElementById('downloadLinks'),
       messageDiv: document.getElementById('messageDiv')
     };
+    
+    // Store exported files for download
+    let exportedFiles = [];
     
     // Scan button
     if (elements.scanBtn) {
@@ -847,7 +850,10 @@
       }
     }
     
-    function showExportSuccess(stats, downloadUrl) {
+    function showExportSuccess(stats, files) {
+      // Store files for download
+      exportedFiles = files || [];
+      
       // Reset export button
       elements.exportBtn.disabled = false;
       elements.exportBtn.innerHTML = `📤 Export starten (<span id="selectedCount">${selectedAssets.size}</span> Assets)`;
@@ -868,10 +874,30 @@
         `;
       }
       
-      // Update download link
-      if (elements.downloadLink && downloadUrl) {
-        elements.downloadLink.href = downloadUrl;
-        elements.downloadLink.style.display = 'inline-block';
+      // Create download links
+      if (elements.downloadLinks && exportedFiles.length > 0) {
+        let downloadHtml = '<div class="download-links">';
+        
+        exportedFiles.forEach((file, index) => {
+          const fileSizeKB = Math.round(file.size / 1024);
+          downloadHtml += `
+            <div class="download-item">
+              <div class="download-info">
+                <div class="download-name">${file.name}</div>
+                <div class="download-meta">${file.format} • ${fileSizeKB} KB</div>
+              </div>
+              <button class="download-btn" onclick="downloadFile(${index})">📥 Download</button>
+            </div>
+          `;
+        });
+        
+        downloadHtml += `
+          <button class="download-all-btn" onclick="downloadAllFiles()">
+            📦 Alle Dateien herunterladen (${exportedFiles.length})
+          </button>
+        </div>`;
+        
+        elements.downloadLinks.innerHTML = downloadHtml;
       }
     }
     
@@ -914,7 +940,7 @@
           break;
           
         case 'export-complete':
-          showExportSuccess(msg.stats, msg.downloadUrl);
+          showExportSuccess(msg.stats, msg.files);
           break;
           
         case 'export-error':
@@ -932,6 +958,35 @@
           break;
       }
     });
+    
+    // Download functions - made global so buttons can access them
+    window.downloadFile = function(index) {
+      if (exportedFiles[index]) {
+        const file = exportedFiles[index];
+        const uint8Array = new Uint8Array(file.data); // Convert back to Uint8Array
+        const blob = new Blob([uint8Array], { 
+          type: file.format === 'PNG' ? 'image/png' : 'image/jpeg' 
+        });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = file.name;
+        a.click();
+        URL.revokeObjectURL(url);
+        
+        console.log('📥 Downloaded:', file.name);
+      }
+    };
+    
+    window.downloadAllFiles = function() {
+      console.log('📦 Starting batch download...');
+      exportedFiles.forEach((file, index) => {
+        setTimeout(() => {
+          window.downloadFile(index);
+        }, index * 200); // Stagger downloads by 200ms
+      });
+      showMessage('📥 Download aller Dateien gestartet...', 'info');
+    };
     
     console.log('🌿 Weleda Asset Export Plugin ready!');
   </script>
