@@ -1,4 +1,4 @@
-// Weleda Translation Import Plugin - KOMPLETT NEU GESCHRIEBEN
+// Weleda Translation Import Plugin - UPDATED WITH PROGRESS TRACKING
 figma.showUI(__html__, { 
   width: 420, 
   height: 600,
@@ -31,7 +31,20 @@ async function handleImportTranslations(csvData) {
   try {
     console.log('🚀 Starting fresh import...');
     
+    // Send progress start
+    figma.ui.postMessage({
+      type: 'progress-start'
+    });
+    
     // Parse CSV
+    figma.ui.postMessage({
+      type: 'progress-update',
+      title: 'CSV wird analysiert...',
+      current: 'Übersetzungen werden geparst',
+      progress: 10,
+      stats: {frames: 0, texts: 0, languages: 0}
+    });
+    
     var translations = parseCSV(csvData);
     console.log('✅ Parsed', translations.length, 'translations');
     
@@ -43,8 +56,10 @@ async function handleImportTranslations(csvData) {
       return;
     }
     
-    // Group by frame
+    // Group by frame and analyze
     var frameGroups = {};
+    var languageSet = new Set();
+    
     for (var i = 0; i < translations.length; i++) {
       var t = translations[i];
       var key = t.targetLanguage + '|' + t.frameName;
@@ -52,11 +67,28 @@ async function handleImportTranslations(csvData) {
         frameGroups[key] = [];
       }
       frameGroups[key].push(t);
+      languageSet.add(t.targetLanguage);
     }
     
-    console.log('📋 Frame groups:', Object.keys(frameGroups));
+    var totalFrameGroups = Object.keys(frameGroups).length;
+    var totalTexts = translations.length;
+    var totalLanguages = languageSet.size;
     
-    var successCount = 0;
+    console.log('📋 Frame groups:', totalFrameGroups);
+    console.log('📝 Total texts:', totalTexts);
+    console.log('🌍 Languages:', totalLanguages);
+    
+    figma.ui.postMessage({
+      type: 'progress-update',
+      title: 'Import vorbereitet',
+      current: totalFrameGroups + ' Frame-Gruppen erkannt',
+      progress: 20,
+      stats: {frames: 0, texts: totalTexts, languages: totalLanguages}
+    });
+    
+    var processedFrames = 0;
+    var processedTexts = 0;
+    var results = [];
     
     // Process each frame group
     for (var groupKey in frameGroups) {
@@ -67,16 +99,44 @@ async function handleImportTranslations(csvData) {
       
       console.log('🔄 Processing frame:', frameId, 'for language:', language);
       
-      var success = await processFrame(frameId, language, frameTranslations);
-      if (success) {
-        successCount++;
+      figma.ui.postMessage({
+        type: 'progress-update',
+        title: 'Frames werden verarbeitet...',
+        current: 'Frame "' + frameId.substring(0, 20) + '..." (' + language + ')',
+        progress: 20 + (processedFrames / totalFrameGroups) * 70,
+        stats: {frames: processedFrames, texts: processedTexts, languages: totalLanguages}
+      });
+      
+      var result = await processFrame(frameId, language, frameTranslations);
+      if (result.success) {
+        processedFrames++;
+        processedTexts += result.translatedCount;
+        
+        results.push({
+          frameName: result.frameName || frameId.substring(0, 20) + '...',
+          language: language,
+          translatedTexts: result.translatedCount
+        });
+        
+        // Update progress after each frame
+        figma.ui.postMessage({
+          type: 'progress-update',
+          title: 'Frame erfolgreich verarbeitet',
+          current: result.frameName + ' (' + language + ') - ' + result.translatedCount + ' Texte',
+          progress: 20 + (processedFrames / totalFrameGroups) * 70,
+          stats: {frames: processedFrames, texts: processedTexts, languages: totalLanguages}
+        });
       }
     }
     
+    // Final success message with detailed results
     figma.ui.postMessage({
       type: 'success',
-      message: successCount + ' Frame(s) erfolgreich übersetzt!',
-      progress: 100
+      message: processedFrames + ' Frame(s) erfolgreich übersetzt!',
+      totalFrames: processedFrames,
+      totalTexts: processedTexts,
+      totalLanguages: totalLanguages,
+      details: results
     });
     
   } catch (error) {
@@ -94,7 +154,7 @@ async function processFrame(frameId, language, translations) {
     var originalFrame = findFrame(frameId);
     if (!originalFrame) {
       console.log('❌ Frame not found:', frameId);
-      return false;
+      return {success: false, translatedCount: 0};
     }
     
     console.log('✅ Found frame:', originalFrame.name);
@@ -112,11 +172,15 @@ async function processFrame(frameId, language, translations) {
     
     console.log('✅ Applied', translatedCount, 'translations to', newFrame.name);
     
-    return true;
+    return {
+      success: true, 
+      translatedCount: translatedCount,
+      frameName: originalFrame.name
+    };
     
   } catch (error) {
     console.error('❌ Frame processing failed:', error);
-    return false;
+    return {success: false, translatedCount: 0};
   }
 }
 
@@ -133,14 +197,14 @@ async function applyTranslationsToFrame(frame, translations) {
     }
   }
   
-  console.log('📝 Translation map has', Object.keys(translationMap).length, 'entries');
+  console.log('🔍 Translation map has', Object.keys(translationMap).length, 'entries');
   
   // Find all text nodes
   var textNodes = frame.findAll(function(node) {
     return node.type === 'TEXT' && node.visible;
   });
   
-  console.log('📝 Found', textNodes.length, 'text nodes');
+  console.log('🔍 Found', textNodes.length, 'text nodes');
   
   // Apply translations
   for (var i = 0; i < textNodes.length; i++) {
@@ -193,8 +257,8 @@ async function translateTextNode(textNode, translatedText) {
       strokeWeight: textNode.strokeWeight
     };
     
-    console.log('📝 Representative font:', props.fontName.family, props.fontName.style);
-    console.log('📝 Original color:', props.fills);
+    console.log('🔤 Representative font:', props.fontName.family, props.fontName.style);
+    console.log('🎨 Original color:', props.fills);
     
     // Create new text node
     var newTextNode = figma.createText();
@@ -446,7 +510,7 @@ function getBoldVariantOfFont(regularFont) {
 }
 
 async function applyPlainText(textNode, text, originalProps) {
-  console.log('📝 Applying plain text with original font:', text);
+  console.log('🔤 Applying plain text with original font:', text);
   
   var font = originalProps.fontName;
   
@@ -605,4 +669,4 @@ function handleGetFrameIds() {
   }
 }
 
-console.log('🌿 Weleda Translation Plugin loaded - CLEAN VERSION!');
+console.log('🌿 Weleda Translation Plugin loaded - WITH PROGRESS TRACKING!');
