@@ -238,9 +238,10 @@ async function handleExportAssets(selectedAssetIds) {
         
         exportedFiles.push({
           name: fileName,
-          data: uint8Array,
+          data: Array.from(uint8Array), // Convert to regular array for transmission
           format: assetInfo.format,
-          originalName: assetInfo.name
+          originalName: assetInfo.name,
+          size: uint8Array.length
         });
         
         console.log('✅ Exported:', fileName, '(' + uint8Array.length + ' bytes)');
@@ -261,8 +262,7 @@ async function handleExportAssets(selectedAssetIds) {
     // Create download (in real implementation, you'd create a ZIP or send files to UI)
     console.log('📦 Creating download package...');
     
-    // For now, we'll send the completion message
-    // In a real implementation, you'd create a ZIP file here
+    // Send completion with actual file data
     figma.ui.postMessage({
       type: 'export-complete',
       stats: {
@@ -270,15 +270,7 @@ async function handleExportAssets(selectedAssetIds) {
         pngCount: pngCount,
         jpegCount: jpegCount
       },
-      files: exportedFiles.map(function(f) {
-        return {
-          name: f.name,
-          format: f.format,
-          originalName: f.originalName,
-          size: f.data.length
-        };
-      })
-      // downloadUrl would be generated here in real implementation
+      files: exportedFiles // Send the actual file data
     });
     
   } catch (error) {
