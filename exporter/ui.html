@@ -1,4 +1,14 @@
-<!DOCTYPE html>
+downloadHtml += `
+          <button class="download-all-btn" onclick="downloadAllFromFigma()">
+            🎯 Figma Links erstellen (${instructions.length})
+          </button>
+          <button class="control-btn" onclick="debugExportState()" style="margin-top: 8px;">
+            🔍 Debug Info
+          </button>
+          <div style="font-size: 11px; color: #b8c7ab; margin-top: 8px; text-align: center;">
+            💡 Direkt zu den Assets in Figma navigieren
+          </div>
+        </div>`;<!DOCTYPE html>
 <html>
 <head>
   <style>
@@ -1030,70 +1040,71 @@
       }
     });
     
-    // Browser-based download functions using Figma URLs
+    // Browser-based download using direct Figma navigation
     window.downloadFromFigma = function(nodeId, fileName, format, scale) {
-      console.log('🌐 Opening Figma export URL for:', fileName);
+      console.log('🌐 Creating Figma navigation link for:', fileName);
       
-      // Construct Figma export URL
+      // Create Figma direct link (this navigates to the element)
       const fileKey = currentFileKey;
+      const figmaUrl = `https://www.figma.com/file/${fileKey}?node-id=${encodeURIComponent(nodeId)}`;
       
-      console.log('Using fileKey:', fileKey);
-      console.log('NodeId:', nodeId);
-      
-      // For demo purposes, we'll open a new tab with instructions
-      const instructionsUrl = `data:text/html,
-        <html>
-          <head><title>Figma Export - ${fileName}</title></head>
-          <body style="font-family: Arial; padding: 40px; background: #f5f5f5;">
-            <div style="max-width: 600px; margin: 0 auto; background: white; padding: 40px; border-radius: 8px; box-shadow: 0 4px 20px rgba(0,0,0,0.1);">
-              <h1 style="color: #0b4535; margin-bottom: 20px;">🌐 Figma Asset Export</h1>
-              <h2>${fileName}</h2>
-              <p><strong>Format:</strong> ${format} (${scale}x)</p>
-              <p><strong>Node ID:</strong> ${nodeId}</p>
-              <div style="background: #f8f9fa; padding: 20px; border-radius: 6px; margin: 20px 0;">
-                <h3>📋 Export Anweisungen:</h3>
-                <ol>
-                  <li>Öffnen Sie <a href="https://www.figma.com" target="_blank">figma.com</a> in einem neuen Tab</li>
-                  <li>Navigieren Sie zu Ihrem Projekt</li>
-                  <li>Wählen Sie das Element "${fileName}" aus</li>
-                  <li>Klicken Sie auf "Export" im rechten Panel</li>
-                  <li>Wählen Sie "${format}" Format mit ${scale}x Skalierung</li>
-                  <li>Klicken Sie "Export ${fileName}"</li>
-                </ol>
-              </div>
-              <div style="background: #e8f5e3; padding: 15px; border-radius: 6px; border-left: 4px solid #8ab885;">
-                <strong>💡 Automatischer Export:</strong><br>
-                Für vollautomatischen Export wäre ein Figma API Token erforderlich.
-                Diese Demo zeigt den Workflow ohne Token.
-              </div>
+      // Create clickable link in the UI
+      const linkHtml = `
+        <div style="background: rgba(139,184,133,0.1); border: 1px solid #8ab885; border-radius: 6px; padding: 15px; margin: 8px 0;">
+          <div style="display: flex; justify-content: space-between; align-items: center;">
+            <div>
+              <div style="color: #8ab885; font-weight: 600; font-size: 13px;">${fileName}</div>
+              <div style="color: #b8c7ab; font-size: 11px;">${format} ${scale}x • Click → Select → Export</div>
             </div>
-          </body>
-        </html>
+            <a href="${figmaUrl}" target="_blank" style="background: #8ab885; color: #0b4535; padding: 8px 12px; border-radius: 4px; text-decoration: none; font-size: 11px; font-weight: 600;">
+              🎯 In Figma öffnen
+            </a>
+          </div>
+        </div>
       `;
       
-      const newWindow = window.open(instructionsUrl, '_blank');
-      if (!newWindow) {
-        alert('Pop-up wurde blockiert! Bitte Pop-ups für diese Seite erlauben.');
+      // Add to message div
+      if (elements.messageDiv) {
+        const existingContent = elements.messageDiv.innerHTML;
+        elements.messageDiv.innerHTML = existingContent + linkHtml;
       }
     };
     
     window.downloadAllFromFigma = function() {
-      console.log('🌐 Starting batch export...');
-      console.log('Available instructions:', currentExportInstructions.length);
+      console.log('🌐 Creating all Figma navigation links...');
       
       if (!currentExportInstructions || currentExportInstructions.length === 0) {
-        alert('❌ Keine Export-Anweisungen verfügbar. Bitte erst Assets scannen und exportieren.');
+        showMessage('❌ Keine Export-Anweisungen verfügbar. Bitte erst Assets scannen und exportieren.', 'error');
         return;
       }
       
+      // Clear previous instructions
+      if (elements.messageDiv) {
+        elements.messageDiv.innerHTML = '';
+      }
+      
+      // Add header
+      const headerHtml = `
+        <div style="background: rgba(139,184,133,0.15); border: 1px solid #8ab885; border-radius: 8px; padding: 16px; margin-bottom: 16px; text-align: center;">
+          <h3 style="color: #8ab885; margin: 0 0 8px 0;">🎯 Figma Export Links</h3>
+          <p style="margin: 0; color: #b8c7ab; font-size: 12px;">
+            Klicke auf "In Figma öffnen" → Element wird ausgewählt → Export im rechten Panel
+          </p>
+        </div>
+      `;
+      
+      if (elements.messageDiv) {
+        elements.messageDiv.innerHTML = headerHtml;
+      }
+      
+      // Add each link
       currentExportInstructions.forEach((instruction, index) => {
-        console.log('Opening tab', index + 1, 'for:', instruction.name);
         setTimeout(() => {
           window.downloadFromFigma(instruction.id, instruction.name, instruction.format, instruction.scale);
-        }, index * 1000); // Stagger by 1 second to avoid browser blocking
+        }, index * 50); // Fast rendering
       });
       
-      showMessage(`🌐 Öffne ${currentExportInstructions.length} Export-Tabs...`, 'info');
+      showMessage(`🎯 ${currentExportInstructions.length} Figma-Links erstellt!`, 'success');
     };
     
     // Debug function
