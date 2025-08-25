@@ -45,8 +45,8 @@
     }
     
     .weleda-logo {
-      width: 32px;
-      height: 32px;
+      height: 19px;
+      width: auto;
       filter: brightness(0) invert(1);
     }
     
@@ -159,12 +159,12 @@
       position: relative;
       background: rgba(255,255,255,0.08);
       border: 2px dashed rgba(139,184,133,0.4);
-      border-radius: 12px;
-      padding: 30px 20px;
+      border-radius: 8px;
+      padding: 20px 16px;
       text-align: center;
       cursor: pointer;
       transition: all 0.2s ease;
-      margin-bottom: 20px;
+      margin-bottom: 16px;
     }
     
     .file-input-wrapper:hover {
@@ -192,7 +192,7 @@
     }
     
     .file-icon {
-      font-size: 32px;
+      font-size: 24px;
       color: #8ab885;
     }
     
@@ -246,7 +246,7 @@
       background: rgba(0,0,0,0.2);
       border-radius: 8px;
       overflow: hidden;
-      margin: 16px 0;
+      margin: 8px 0 12px 0;
     }
     
     .progress-bar {
@@ -271,6 +271,138 @@
     @keyframes shimmer {
       0% { transform: translateX(-100%); }
       100% { transform: translateX(100%); }
+    }
+    
+    .progress-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 8px;
+    }
+    
+    .progress-title {
+      font-size: 14px;
+      font-weight: 600;
+      color: #ffffff;
+    }
+    
+    .progress-percentage {
+      font-size: 14px;
+      font-weight: 700;
+      color: #8ab885;
+    }
+    
+    .progress-details {
+      margin-top: 12px;
+    }
+    
+    .progress-stats {
+      display: flex;
+      gap: 16px;
+      margin-bottom: 8px;
+    }
+    
+    .stat-item {
+      font-size: 12px;
+      color: #b8c7ab;
+    }
+    
+    .stat-item span {
+      font-weight: 600;
+      color: #8ab885;
+    }
+    
+    .progress-current {
+      font-size: 11px;
+      color: #b8c7ab;
+      opacity: 0.8;
+      font-style: italic;
+    }
+    
+    /* Results */
+    #resultsContainer {
+      background: rgba(139,184,133,0.1);
+      border: 1px solid rgba(139,184,133,0.3);
+      border-radius: 12px;
+      padding: 20px;
+      margin: 16px 0;
+    }
+    
+    .results-header {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+    
+    .results-icon {
+      font-size: 24px;
+    }
+    
+    .results-title {
+      font-size: 16px;
+      font-weight: 700;
+      color: #8ab885;
+    }
+    
+    .results-summary {
+      margin-bottom: 16px;
+    }
+    
+    .summary-stats {
+      display: flex;
+      gap: 20px;
+      justify-content: center;
+    }
+    
+    .summary-item {
+      text-align: center;
+      padding: 12px;
+      background: rgba(139,184,133,0.15);
+      border-radius: 8px;
+      min-width: 80px;
+    }
+    
+    .summary-number {
+      display: block;
+      font-size: 24px;
+      font-weight: 700;
+      color: #8ab885;
+      line-height: 1;
+    }
+    
+    .summary-label {
+      display: block;
+      font-size: 11px;
+      color: #b8c7ab;
+      margin-top: 4px;
+    }
+    
+    .results-details {
+      max-height: 200px;
+      overflow-y: auto;
+    }
+    
+    .frame-result {
+      background: rgba(255,255,255,0.05);
+      border-radius: 6px;
+      padding: 12px;
+      margin-bottom: 8px;
+      border-left: 3px solid #8ab885;
+    }
+    
+    .frame-name {
+      font-weight: 600;
+      color: #ffffff;
+      font-size: 13px;
+      margin-bottom: 4px;
+    }
+    
+    .frame-info {
+      font-size: 11px;
+      color: #b8c7ab;
+      display: flex;
+      gap: 12px;
     }
     
     .progress-text {
@@ -378,7 +510,9 @@
     <!-- Header -->
     <div class="header">
       <div class="logo-section">
-        <img src="logo.svg" alt="Weleda" class="weleda-logo">
+        <svg class="weleda-logo" xmlns="http://www.w3.org/2000/svg" width="130" height="24" viewBox="0 0 130 24">
+          <path d="M119.264,10.967A90.4,90.4,0,0,0,116.753.554,0.345,0.345,0,0,0,116.42.31h-10.7a0.35,0.35,0,0,0-.338.255,108.025,108.025,0,0,0-3.52,23.123,0.179,0.179,0,0,0,.176.189h2.972a0.115,0.115,0,0,0,.116-0.1,51.664,51.664,0,0,1,.792-5.208A36.373,36.373,0,0,1,116.491,17.3q1.123,5.607,1.251,6.481a0.114,0.114,0,0,0,.115.1h2.971a0.178,0.178,0,0,0,.177-0.191,123.864,123.864,0,0,0-1.741-12.72m-6.9-7.286c0.342,0.773.662,1.553,0.937,2.351,0.7,2.038,1.654,5.133,2.38,7.87h-8.77q1.17-4.911,2.681-9.575Zm-15.818-2.4a0.366,0.366,0,0,0-.185-0.107A31.773,31.773,0,0,0,90.366.368Q89.2,0.308,83.377.306a0.356,0.356,0,0,0-.356.372l1.225,22.865a0.354,0.354,0,0,0,.352.335H95.49a0.357,0.357,0,0,0,.328-0.222Q99.8,13.9,100.691,7.713a0.727,0.727,0,0,0-.059-0.4,22.434,22.434,0,0,0-4.088-6.026m-2.7,17.774a15.251,15.251,0,0,1-6.348,1.3L87.9,3.673q5.886,0.186,8.074,3.893a35.024,35.024,0,0,1-2.126,11.492M80.5,0.517L79.595,3.387a0.176,0.176,0,0,1-.163.122A36.043,36.043,0,0,0,70.9,4.676a25.242,25.242,0,0,0-1.167,5.508h9.3a0.177,0.177,0,0,1,.168.231l-0.842,2.643a0.177,0.177,0,0,1-.154.122,42.147,42.147,0,0,0-8.691,1.437,14.917,14.917,0,0,0,.43,4.185,10.924,10.924,0,0,0,4.128,1.523,30.628,30.628,0,0,0,5.883.569,0.175,0.175,0,0,1,.168.228l-0.842,2.643a0.176,0.176,0,0,1-.155.123Q77.493,24,75.6,24a31.519,31.519,0,0,1-7.592-.718,0.686,0.686,0,0,1-.439-0.355q-2.314-4.564-2.313-12.9a41.665,41.665,0,0,1,.778-8.455,0.692,0.692,0,0,1,.441-0.513A24.04,24.04,0,0,1,74.4,0q2.787,0,5.948.288A0.179,0.179,0,0,1,80.5.517M52.05,0.31H55.5a0.176,0.176,0,0,1,.17.129l1.561,5.61a0.713,0.713,0,0,1,.023.256L56,19.583l8.022,1.005a0.177,0.177,0,0,1,.147.123l0.911,2.937a0.176,0.176,0,0,1-.168.229H52.748a0.176,0.176,0,0,1-.176-0.172l-0.7-23.214A0.176,0.176,0,0,1,52.05.31M49.7,0.517L48.794,3.387a0.175,0.175,0,0,1-.163.122A36.043,36.043,0,0,0,40.1,4.676a25.248,25.248,0,0,0-1.167,5.508h9.3a0.177,0.177,0,0,1,.168.231l-0.842,2.643a0.177,0.177,0,0,1-.154.122,42.147,42.147,0,0,0-8.691,1.437,14.917,14.917,0,0,0,.43,4.185,10.924,10.924,0,0,0,4.128,1.523,30.628,30.628,0,0,0,5.883.569,0.175,0.175,0,0,1,.168.228l-0.842,2.643a0.176,0.176,0,0,1-.155.123Q46.692,24,44.8,24a31.53,31.53,0,0,1-7.589-.718,0.692,0.692,0,0,1-.443-0.357q-2.312-4.564-2.312-12.895a41.676,41.676,0,0,1,.778-8.453,0.7,0.7,0,0,1,.444-0.516A24.043,24.043,0,0,1,43.6,0q2.788,0,5.949.288A0.179,0.179,0,0,1,49.7.517m-16.565.358a0.176,0.176,0,0,1,.143.225L26.7,23.371a0.706,0.706,0,0,1-.676.506H19.57a0.706,0.706,0,0,1-.7-0.631l-1.841-17A9.286,9.286,0,0,0,15.889,5.8l-3.084,17.5a0.706,0.706,0,0,1-.694.584H6.666a0.71,0.71,0,0,1-.674-0.494A209.966,209.966,0,0,1,0,.522,0.177,0.177,0,0,1,.17.31H5.023A0.174,0.174,0,0,1,5.2.467a142.969,142.969,0,0,0,3.41,19.16A11.581,11.581,0,0,0,10.255,19L11.649,2.228a0.353,0.353,0,0,1,.313-0.322l8.078-.877a0.353,0.353,0,0,1,.389.317L22.267,20.1a11.625,11.625,0,0,0,1.88.236L26.3,6.089a0.714,0.714,0,0,1,.076-0.228L29.281,0.42A0.176,0.176,0,0,1,29.462.329l3.676,0.545" fill="#575756" fill-rule="evenodd"/>
+        </svg>
         <div class="brand-text">
           <h1 class="brand-title">Translation Import</h1>
           <p class="brand-subtitle">WELEDA DIGITAL LAB</p>
@@ -397,14 +531,6 @@
             <h2 class="section-title">CSV Translation Import</h2>
             <p class="section-subtitle">Importiere und wende Übersetzungen auf Figma Frames an</p>
           </div>
-        </div>
-        
-        <div class="info-box">
-          <strong>🚀 Einfache CSV-Struktur:</strong><br>
-          <code>frame_name,node_id,source_text,target_language,translated_text</code><br><br>
-          1. "Frame-IDs anzeigen" für CSV-Template<br>
-          2. Übersetzungen in CSV ausfüllen<br>
-          3. CSV importieren - fertig!
         </div>
         
         <div class="file-input-wrapper">
@@ -426,10 +552,45 @@
         </button>
         
         <div id="progressContainer" class="hidden">
+          <div class="progress-header">
+            <div class="progress-title" id="progressTitle">Import wird vorbereitet...</div>
+            <div class="progress-percentage" id="progressPercentage">0%</div>
+          </div>
           <div class="progress-container">
             <div class="progress-bar" id="progressBar" style="width: 0%"></div>
           </div>
-          <div class="progress-text" id="progressText">Wird geladen...</div>
+          <div class="progress-details" id="progressDetails">
+            <div class="progress-stats">
+              <span class="stat-item"><span id="processedFrames">0</span> Frames</span>
+              <span class="stat-item"><span id="processedTexts">0</span> Texte</span>
+              <span class="stat-item"><span id="processedLanguages">0</span> Sprachen</span>
+            </div>
+            <div class="progress-current" id="progressCurrent">Initialisierung...</div>
+          </div>
+        </div>
+        
+        <div id="resultsContainer" class="hidden">
+          <div class="results-header">
+            <div class="results-icon">✅</div>
+            <div class="results-title">Import erfolgreich abgeschlossen</div>
+          </div>
+          <div class="results-summary" id="resultsSummary">
+            <div class="summary-stats">
+              <div class="summary-item">
+                <span class="summary-number" id="totalFrames">0</span>
+                <span class="summary-label">Frames aktualisiert</span>
+              </div>
+              <div class="summary-item">
+                <span class="summary-number" id="totalTexts">0</span>
+                <span class="summary-label">Texte übersetzt</span>
+              </div>
+              <div class="summary-item">
+                <span class="summary-number" id="totalLanguages">0</span>
+                <span class="summary-label">Sprachen</span>
+              </div>
+            </div>
+          </div>
+          <div class="results-details" id="resultsDetails"></div>
         </div>
         
         <div id="messageDiv"></div>
@@ -456,7 +617,17 @@
       messageDiv: document.getElementById('messageDiv'),
       progressContainer: document.getElementById('progressContainer'),
       progressBar: document.getElementById('progressBar'),
-      progressText: document.getElementById('progressText')
+      progressTitle: document.getElementById('progressTitle'),
+      progressPercentage: document.getElementById('progressPercentage'),
+      progressCurrent: document.getElementById('progressCurrent'),
+      processedFrames: document.getElementById('processedFrames'),
+      processedTexts: document.getElementById('processedTexts'),
+      processedLanguages: document.getElementById('processedLanguages'),
+      resultsContainer: document.getElementById('resultsContainer'),
+      totalFrames: document.getElementById('totalFrames'),
+      totalTexts: document.getElementById('totalTexts'),
+      totalLanguages: document.getElementById('totalLanguages'),
+      resultsDetails: document.getElementById('resultsDetails')
     };
     
     // File input handling
@@ -464,6 +635,9 @@
       elements.csvFile.addEventListener('change', (e) => {
         const file = e.target.files[0];
         if (file) {
+          // Reset previous results when new file is loaded
+          resetResults();
+          
           const reader = new FileReader();
           reader.onload = (e) => {
             csvData = e.target.result;
@@ -516,7 +690,7 @@
             }
           }, '*');
         } else {
-          showMessage('❌ Bitte erst eine CSV-Datei laden', 'error');
+          showMessage('⚠ Bitte erst eine CSV-Datei laden', 'error');
         }
       });
     }
@@ -559,21 +733,87 @@
       }
     }
     
+    function resetResults() {
+      // Hide previous results when new file is loaded
+      if (elements.resultsContainer) {
+        elements.resultsContainer.classList.add('hidden');
+      }
+      if (elements.progressContainer) {
+        elements.progressContainer.classList.add('hidden');
+      }
+      if (elements.messageDiv) {
+        elements.messageDiv.innerHTML = '';
+      }
+    }
+    
     function showProgress(show, progress = 0) {
       if (elements.progressContainer) {
         elements.progressContainer.classList.toggle('hidden', !show);
-        if (show) {
+        if (show && elements.progressBar) {
           elements.progressBar.style.width = progress + '%';
+          if (elements.progressPercentage) {
+            elements.progressPercentage.textContent = Math.round(progress) + '%';
+          }
         }
       }
     }
     
-    function updateProgress(message, progress = 0) {
-      if (elements.progressText) {
-        elements.progressText.textContent = message;
+    function updateProgress(title, current, progress = 0, stats = {}) {
+      if (elements.progressTitle) {
+        elements.progressTitle.textContent = title;
+      }
+      if (elements.progressCurrent) {
+        elements.progressCurrent.textContent = current;
       }
       if (elements.progressBar) {
         elements.progressBar.style.width = progress + '%';
+      }
+      if (elements.progressPercentage) {
+        elements.progressPercentage.textContent = Math.round(progress) + '%';
+      }
+      
+      // Update stats
+      if (elements.processedFrames && stats.frames !== undefined) {
+        elements.processedFrames.textContent = stats.frames;
+      }
+      if (elements.processedTexts && stats.texts !== undefined) {
+        elements.processedTexts.textContent = stats.texts;
+      }
+      if (elements.processedLanguages && stats.languages !== undefined) {
+        elements.processedLanguages.textContent = stats.languages;
+      }
+    }
+    
+    function showResults(data) {
+      // Hide progress and show results
+      if (elements.progressContainer) {
+        elements.progressContainer.classList.add('hidden');
+      }
+      if (elements.resultsContainer) {
+        elements.resultsContainer.classList.remove('hidden');
+      }
+      
+      // Update summary stats
+      if (elements.totalFrames) elements.totalFrames.textContent = data.totalFrames || 0;
+      if (elements.totalTexts) elements.totalTexts.textContent = data.totalTexts || 0;
+      if (elements.totalLanguages) elements.totalLanguages.textContent = data.totalLanguages || 0;
+      
+      // Show detailed results
+      if (elements.resultsDetails && data.details && Array.isArray(data.details)) {
+        let detailsHtml = '';
+        data.details.forEach(frame => {
+          detailsHtml += `
+            <div class="frame-result">
+              <div class="frame-name">${frame.frameName}</div>
+              <div class="frame-info">
+                <span>Sprache: ${frame.language}</span>
+                <span>Texte: ${frame.translatedTexts}</span>
+                <span>Status: Erfolgreich</span>
+              </div>
+            </div>
+          `;
+        });
+        elements.resultsDetails.innerHTML = detailsHtml;
       }
     }
     
@@ -586,22 +826,17 @@
       else if (type === 'warning') className += ' warning';
       
       let html = text;
-      if (details && Array.isArray(details)) {
-        html += '<div class="message-details">';
-        details.forEach(item => {
-          html += `<div>• <strong>${item.frameName}</strong> (${item.language}) - ${item.translatedTexts} Texte übersetzt</div>`;
-        });
-        html += '</div>';
-      }
       
       elements.messageDiv.innerHTML = `<div class="${className}">${html}</div>`;
       
-      // Auto-hide after 8 seconds
-      setTimeout(() => {
-        if (elements.messageDiv) {
-          elements.messageDiv.innerHTML = '';
-        }
-      }, 8000);
+      // Auto-hide after 8 seconds for non-success messages
+      if (type !== 'success') {
+        setTimeout(() => {
+          if (elements.messageDiv) {
+            elements.messageDiv.innerHTML = '';
+          }
+        }, 8000);
+      }
     }
     
     // Message handling from plugin
@@ -612,18 +847,45 @@
       console.log('Received message from plugin:', msg.type, msg);
       
       switch (msg.type) {
+        case 'progress-start':
+          showProgress(true, 0);
+          updateProgress('Import wird gestartet...', 'Initialisierung...', 0, {frames: 0, texts: 0, languages: 0});
+          break;
+          
+        case 'progress-update':
+          updateProgress(
+            msg.title || 'Import läuft...',
+            msg.current || 'Verarbeitung...',
+            msg.progress || 0,
+            {
+              frames: msg.stats?.frames || 0,
+              texts: msg.stats?.texts || 0,
+              languages: msg.stats?.languages || 0
+            }
+          );
+          break;
+          
         case 'progress':
-          updateProgress(msg.message, msg.progress);
+          updateProgress(
+            'Import läuft...',
+            msg.message,
+            msg.progress || 0
+          );
           break;
           
         case 'success':
-          showMessage(`✅ ${msg.message}`, 'success', msg.details);
+          // Show results instead of just message
+          showResults({
+            totalFrames: msg.totalFrames || (msg.details ? msg.details.length : 0),
+            totalTexts: msg.totalTexts || (msg.details ? msg.details.reduce((sum, d) => sum + (d.translatedTexts || 0), 0) : 0),
+            totalLanguages: msg.totalLanguages || (msg.details ? new Set(msg.details.map(d => d.language)).size : 0),
+            details: msg.details || []
+          });
           resetImportButton();
-          showProgress(false);
           break;
           
         case 'error':
-          showMessage(`❌ ${msg.message}`, 'error');
+          showMessage(`⚠ ${msg.message}`, 'error');
           resetImportButton();
           showProgress(false);
           break;
