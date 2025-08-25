@@ -87,7 +87,7 @@
       background: rgba(255,255,255,0.1);
     }
     
-    /* Main Content */
+    /* Main Content - Fixed scrolling */
     .main-content {
       flex: 1;
       padding: 20px;
@@ -95,11 +95,11 @@
       display: flex;
       flex-direction: column;
       gap: 20px;
-      max-height: calc(100vh - 140px);
+      max-height: calc(100vh - 140px); /* Account for header and footer */
     }
     
-    /* Scan Section */
-    .scan-section {
+    /* Import Section */
+    .import-section {
       background: rgba(255,255,255,0.08);
       border-radius: 12px;
       border: 1px solid rgba(255,255,255,0.12);
@@ -155,6 +155,47 @@
       color: #8ab885;
     }
     
+    .file-input-wrapper {
+      position: relative;
+      background: rgba(255,255,255,0.08);
+      border: 2px dashed rgba(139,184,133,0.4);
+      border-radius: 8px;
+      padding: 20px 16px;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      margin-bottom: 16px;
+    }
+    
+    .file-input-wrapper:hover {
+      background: rgba(255,255,255,0.12);
+      border-color: rgba(139,184,133,0.6);
+      transform: translateY(-2px);
+    }
+    
+    .file-input {
+      position: absolute;
+      opacity: 0;
+      width: 100%;
+      height: 100%;
+      cursor: pointer;
+    }
+    
+    .file-input-label {
+      color: #b8c7ab;
+      font-size: 14px;
+      pointer-events: none;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 8px;
+    }
+    
+    .file-icon {
+      font-size: 24px;
+      color: #8ab885;
+    }
+    
     /* Buttons */
     .btn {
       background: #8ab885;
@@ -200,170 +241,12 @@
       box-shadow: 0 4px 12px rgba(255,255,255,0.1);
     }
     
-    /* Results Section */
-    .results-section {
-      background: rgba(255,255,255,0.08);
-      border-radius: 12px;
-      border: 1px solid rgba(255,255,255,0.12);
-      padding: 24px;
-      margin-top: 20px;
-    }
-    
-    .results-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 20px;
-    }
-    
-    .results-title {
-      font-size: 16px;
-      font-weight: 700;
-      color: #ffffff;
-    }
-    
-    .selection-controls {
-      display: flex;
-      gap: 8px;
-    }
-    
-    .control-btn {
-      background: rgba(255,255,255,0.1);
-      border: none;
-      color: #b8c7ab;
-      padding: 6px 12px;
-      border-radius: 6px;
-      font-size: 12px;
-      cursor: pointer;
-      transition: all 0.2s ease;
-    }
-    
-    .control-btn:hover {
-      background: rgba(255,255,255,0.15);
-      color: #ffffff;
-    }
-    
-    /* Export Format Categories */
-    .format-category {
-      margin-bottom: 24px;
-    }
-    
-    .category-header {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      margin-bottom: 12px;
-      padding-bottom: 8px;
-      border-bottom: 1px solid rgba(255,255,255,0.1);
-    }
-    
-    .format-icon {
-      width: 24px;
-      height: 24px;
-      background: rgba(139,184,133,0.3);
-      border-radius: 4px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 12px;
-      font-weight: bold;
-      color: #0b4535;
-    }
-    
-    .category-title {
-      font-weight: 600;
-      color: #8ab885;
-      font-size: 14px;
-    }
-    
-    .category-info {
-      font-size: 11px;
-      color: #b8c7ab;
-    }
-    
-    /* Group Items */
-    .group-item {
-      background: rgba(255,255,255,0.05);
-      border: 1px solid rgba(255,255,255,0.1);
-      border-radius: 8px;
-      padding: 12px 16px;
-      margin-bottom: 8px;
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      transition: all 0.2s ease;
-      cursor: pointer;
-    }
-    
-    .group-item:hover {
-      background: rgba(255,255,255,0.08);
-      border-color: rgba(139,184,133,0.3);
-    }
-    
-    .group-item.selected {
-      background: rgba(139,184,133,0.15);
-      border-color: rgba(139,184,133,0.5);
-    }
-    
-    .group-checkbox {
-      appearance: none;
-      width: 18px;
-      height: 18px;
-      border: 2px solid rgba(255,255,255,0.3);
-      border-radius: 4px;
-      cursor: pointer;
-      position: relative;
-      margin: 0;
-    }
-    
-    .group-checkbox:checked {
-      background: #8ab885;
-      border-color: #8ab885;
-    }
-    
-    .group-checkbox:checked::after {
-      content: '✓';
-      position: absolute;
-      top: -1px;
-      left: 2px;
-      color: #0b4535;
-      font-size: 12px;
-      font-weight: bold;
-    }
-    
-    .group-info {
-      flex: 1;
-    }
-    
-    .group-name {
-      font-weight: 600;
-      color: #ffffff;
-      font-size: 13px;
-      margin-bottom: 2px;
-    }
-    
-    .group-details {
-      font-size: 11px;
-      color: #b8c7ab;
-      display: flex;
-      gap: 12px;
-    }
-    
-    .group-badge {
-      background: rgba(139,184,133,0.2);
-      color: #8ab885;
-      padding: 2px 6px;
-      border-radius: 3px;
-      font-size: 10px;
-      font-weight: 600;
-    }
-    
     /* Progress */
     .progress-container {
       background: rgba(0,0,0,0.2);
       border-radius: 8px;
       overflow: hidden;
-      margin: 16px 0;
+      margin: 8px 0 12px 0;
     }
     
     .progress-bar {
@@ -409,43 +292,124 @@
       color: #8ab885;
     }
     
+    .progress-details {
+      margin-top: 12px;
+    }
+    
+    .progress-stats {
+      display: flex;
+      gap: 16px;
+      margin-bottom: 8px;
+    }
+    
+    .stat-item {
+      font-size: 12px;
+      color: #b8c7ab;
+    }
+    
+    .stat-item span {
+      font-weight: 600;
+      color: #8ab885;
+    }
+    
     .progress-current {
       font-size: 11px;
       color: #b8c7ab;
-      margin-top: 8px;
+      opacity: 0.8;
+      font-style: italic;
     }
     
-    /* Export Success */
-    .export-success {
-      background: rgba(139,184,133,0.2);
-      border: 1px solid rgba(139,184,133,0.4);
-      border-radius: 8px;
-      padding: 16px;
-      margin-top: 16px;
-      text-align: center;
+    /* Results */
+    #resultsContainer {
+      background: rgba(139,184,133,0.1);
+      border: 1px solid rgba(139,184,133,0.3);
+      border-radius: 12px;
+      padding: 20px;
+      margin: 16px 0;
     }
     
-    .success-icon {
-      font-size: 32px;
-      margin-bottom: 8px;
+    .results-header {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 16px;
     }
     
-    .success-text {
-      font-weight: 600;
+    .results-icon {
+      font-size: 24px;
+    }
+    
+    .results-title {
+      font-size: 16px;
+      font-weight: 700;
       color: #8ab885;
-      margin-bottom: 8px;
     }
     
-    .download-link {
-      background: #8ab885;
-      color: #0b4535;
-      padding: 8px 16px;
+    .results-summary {
+      margin-bottom: 16px;
+    }
+    
+    .summary-stats {
+      display: flex;
+      gap: 20px;
+      justify-content: center;
+    }
+    
+    .summary-item {
+      text-align: center;
+      padding: 12px;
+      background: rgba(139,184,133,0.15);
+      border-radius: 8px;
+      min-width: 80px;
+    }
+    
+    .summary-number {
+      display: block;
+      font-size: 24px;
+      font-weight: 700;
+      color: #8ab885;
+      line-height: 1;
+    }
+    
+    .summary-label {
+      display: block;
+      font-size: 11px;
+      color: #b8c7ab;
+      margin-top: 4px;
+    }
+    
+    .results-details {
+      max-height: 200px;
+      overflow-y: auto;
+    }
+    
+    .frame-result {
+      background: rgba(255,255,255,0.05);
       border-radius: 6px;
-      text-decoration: none;
+      padding: 12px;
+      margin-bottom: 8px;
+      border-left: 3px solid #8ab885;
+    }
+    
+    .frame-name {
       font-weight: 600;
+      color: #ffffff;
+      font-size: 13px;
+      margin-bottom: 4px;
+    }
+    
+    .frame-info {
+      font-size: 11px;
+      color: #b8c7ab;
+      display: flex;
+      gap: 12px;
+    }
+    
+    .progress-text {
       font-size: 12px;
-      display: inline-block;
+      color: #b8c7ab;
       margin-top: 8px;
+      text-align: center;
     }
     
     /* Messages */
@@ -470,10 +434,20 @@
       border: 1px solid rgba(220,53,69,0.4);
     }
     
-    .message.info {
-      background: rgba(54,162,235,0.2);
-      color: #36a2eb;
-      border: 1px solid rgba(54,162,235,0.4);
+    .message.warning {
+      background: rgba(255,193,7,0.2);
+      color: #ffc107;
+      border: 1px solid rgba(255,193,7,0.4);
+    }
+    
+    .message-details {
+      margin-top: 12px;
+      font-size: 12px;
+      opacity: 0.9;
+    }
+    
+    .message-details div {
+      margin-bottom: 4px;
     }
     
     /* Footer */
@@ -506,6 +480,11 @@
       display: none !important;
     }
     
+    .loading {
+      opacity: 0.6;
+      pointer-events: none;
+    }
+    
     /* Scrollbar */
     ::-webkit-scrollbar {
       width: 6px;
@@ -535,7 +514,7 @@
           <path d="M119.264,10.967A90.4,90.4,0,0,0,116.753.554,0.345,0.345,0,0,0,116.42.31h-10.7a0.35,0.35,0,0,0-.338.255,108.025,108.025,0,0,0-3.52,23.123,0.179,0.179,0,0,0,.176.189h2.972a0.115,0.115,0,0,0,.116-0.1,51.664,51.664,0,0,1,.792-5.208A36.373,36.373,0,0,1,116.491,17.3q1.123,5.607,1.251,6.481a0.114,0.114,0,0,0,.115.1h2.971a0.178,0.178,0,0,0,.177-0.191,123.864,123.864,0,0,0-1.741-12.72m-6.9-7.286c0.342,0.773.662,1.553,0.937,2.351,0.7,2.038,1.654,5.133,2.38,7.87h-8.77q1.17-4.911,2.681-9.575Zm-15.818-2.4a0.366,0.366,0,0,0-.185-0.107A31.773,31.773,0,0,0,90.366.368Q89.2,0.308,83.377.306a0.356,0.356,0,0,0-.356.372l1.225,22.865a0.354,0.354,0,0,0,.352.335H95.49a0.357,0.357,0,0,0,.328-0.222Q99.8,13.9,100.691,7.713a0.727,0.727,0,0,0-.059-0.4,22.434,22.434,0,0,0-4.088-6.026m-2.7,17.774a15.251,15.251,0,0,1-6.348,1.3L87.9,3.673q5.886,0.186,8.074,3.893a35.024,35.024,0,0,1-2.126,11.492M80.5,0.517L79.595,3.387a0.176,0.176,0,0,1-.163.122A36.043,36.043,0,0,0,70.9,4.676a25.242,25.242,0,0,0-1.167,5.508h9.3a0.177,0.177,0,0,1,.168.231l-0.842,2.643a0.177,0.177,0,0,1-.154.122,42.147,42.147,0,0,0-8.691,1.437,14.917,14.917,0,0,0,.43,4.185,10.924,10.924,0,0,0,4.128,1.523,30.628,30.628,0,0,0,5.883.569,0.175,0.175,0,0,1,.168.228l-0.842,2.643a0.176,0.176,0,0,1-.155.123Q77.493,24,75.6,24a31.519,31.519,0,0,1-7.592-.718,0.686,0.686,0,0,1-.439-0.355q-2.314-4.564-2.313-12.9a41.665,41.665,0,0,1,.778-8.455,0.692,0.692,0,0,1,.441-0.513A24.04,24.04,0,0,1,74.4,0q2.787,0,5.948.288A0.179,0.179,0,0,1,80.5.517M52.05,0.31H55.5a0.176,0.176,0,0,1,.17.129l1.561,5.61a0.713,0.713,0,0,1,.023.256L56,19.583l8.022,1.005a0.177,0.177,0,0,1,.147.123l0.911,2.937a0.176,0.176,0,0,1-.168.229H52.748a0.176,0.176,0,0,1-.176-0.172l-0.7-23.214A0.176,0.176,0,0,1,52.05.31M49.7,0.517L48.794,3.387a0.175,0.175,0,0,1-.163.122A36.043,36.043,0,0,0,40.1,4.676a25.248,25.248,0,0,0-1.167,5.508h9.3a0.177,0.177,0,0,1,.168.231l-0.842,2.643a0.177,0.177,0,0,1-.154.122,42.147,42.147,0,0,0-8.691,1.437,14.917,14.917,0,0,0,.43,4.185,10.924,10.924,0,0,0,4.128,1.523,30.628,30.628,0,0,0,5.883.569,0.175,0.175,0,0,1,.168.228l-0.842,2.643a0.176,0.176,0,0,1-.155.123Q46.692,24,44.8,24a31.53,31.53,0,0,1-7.589-.718,0.692,0.692,0,0,1-.443-0.357q-2.312-4.564-2.312-12.895a41.676,41.676,0,0,1,.778-8.453,0.7,0.7,0,0,1,.444-0.516A24.043,24.043,0,0,1,43.6,0q2.788,0,5.949.288A0.179,0.179,0,0,1,49.7.517m-16.565.358a0.176,0.176,0,0,1,.143.225L26.7,23.371a0.706,0.706,0,0,1-.676.506H19.57a0.706,0.706,0,0,1-.7-0.631l-1.841-17A9.286,9.286,0,0,0,15.889,5.8l-3.084,17.5a0.706,0.706,0,0,1-.694.584H6.666a0.71,0.71,0,0,1-.674-0.494A209.966,209.966,0,0,1,0,.522,0.177,0.177,0,0,1,.17.31H5.023A0.174,0.174,0,0,1,5.2.467a142.969,142.969,0,0,0,3.41,19.16A11.581,11.581,0,0,0,10.255,19L11.649,2.228a0.353,0.353,0,0,1,.313-0.322l8.078-.877a0.353,0.353,0,0,1,.389.317L22.267,20.1a11.625,11.625,0,0,0,1.88.236L26.3,6.089a0.714,0.714,0,0,1,.076-0.228L29.281,0.42A0.176,0.176,0,0,1,29.462.329l3.676,0.545" fill="#575756" fill-rule="evenodd"/>
         </svg>
         <div class="brand-text">
-          <h1 class="brand-title">Asset Export</h1>
+          <h1 class="brand-title">Translation Import</h1>
           <p class="brand-subtitle">WELEDA DIGITAL LAB</p>
         </div>
       </div>
@@ -544,89 +523,82 @@
 
     <!-- Main Content -->
     <div class="main-content">
-      <!-- Scan Section -->
-      <div class="scan-section">
+      <!-- Import Section -->
+      <div class="import-section">
         <div class="section-header">
-          <div class="section-icon">🔍</div>
+          <div class="section-icon">📥</div>
           <div>
-            <h2 class="section-title">Asset Scan & Export</h2>
-            <p class="section-subtitle">Scanne Gruppen und exportiere als PNG/JPEG</p>
+            <h2 class="section-title">CSV Translation Import</h2>
+            <p class="section-subtitle">Importiere und wende Übersetzungen auf Figma Frames an</p>
           </div>
         </div>
         
-        <div class="info-box">
-          <strong>📐 Export Regeln:</strong><br>
-          • <strong>1:1 Ratio</strong> → PNG (2x Auflösung)<br>
-          • <strong>768×1344</strong> → JPEG (1x Auflösung)<br>
-          • Nur sichtbare Gruppen werden berücksichtigt
+        <div class="file-input-wrapper">
+          <input type="file" id="csvFile" class="file-input" accept=".csv">
+          <div class="file-input-label">
+            <div class="file-icon">📄</div>
+            <div>CSV-Datei auswählen oder hier ablegen</div>
+            <div style="font-size: 11px; opacity: 0.7;">Nur .csv Dateien werden unterstützt</div>
+          </div>
         </div>
         
-        <button class="btn" id="scanBtn">
-          🔍 Gruppen scannen
+        <button class="btn" id="importBtn" disabled>
+          <span>⏳</span>
+          Übersetzungen importieren
         </button>
         
-        <!-- Progress (hidden initially) -->
+        <button class="btn btn-secondary" id="showFrameIdsBtn">
+          🔍 Frame-IDs in Console anzeigen
+        </button>
+        
+        <button class="btn btn-secondary" id="exportLogBtn" disabled>
+          📄 Log als PDF exportieren
+        </button>
+        
         <div id="progressContainer" class="hidden">
           <div class="progress-header">
-            <div class="progress-title" id="progressTitle">Scanning...</div>
+            <div class="progress-title" id="progressTitle">Import wird vorbereitet...</div>
             <div class="progress-percentage" id="progressPercentage">0%</div>
           </div>
           <div class="progress-container">
             <div class="progress-bar" id="progressBar" style="width: 0%"></div>
           </div>
-          <div class="progress-current" id="progressCurrent">Initialisierung...</div>
-        </div>
-      </div>
-
-      <!-- Results Section (hidden initially) -->
-      <div id="resultsSection" class="results-section hidden">
-        <div class="results-header">
-          <div class="results-title" id="resultsTitle">Gefundene Assets (0)</div>
-          <div class="selection-controls">
-            <button class="control-btn" id="selectAllBtn">Alle auswählen</button>
-            <button class="control-btn" id="deselectAllBtn">Alle abwählen</button>
+          <div class="progress-details" id="progressDetails">
+            <div class="progress-stats">
+              <span class="stat-item"><span id="processedFrames">0</span> Frames</span>
+              <span class="stat-item"><span id="processedTexts">0</span> Texte</span>
+              <span class="stat-item"><span id="processedLanguages">0</span> Sprachen</span>
+            </div>
+            <div class="progress-current" id="progressCurrent">Initialisierung...</div>
           </div>
         </div>
         
-        <!-- PNG Groups -->
-        <div class="format-category" id="pngCategory">
-          <div class="category-header">
-            <div class="format-icon">PNG</div>
-            <div>
-              <div class="category-title">PNG Export (2x)</div>
-              <div class="category-info">Quadratische/1:1 Ratio Gruppen</div>
+        <div id="resultsContainer" class="hidden">
+          <div class="results-header">
+            <div class="results-icon">✅</div>
+            <div class="results-title">Import erfolgreich abgeschlossen</div>
+          </div>
+          <div class="results-summary" id="resultsSummary">
+            <div class="summary-stats">
+              <div class="summary-item">
+                <span class="summary-number" id="totalFrames">0</span>
+                <span class="summary-label">Frames aktualisiert</span>
+              </div>
+              <div class="summary-item">
+                <span class="summary-number" id="totalTexts">0</span>
+                <span class="summary-label">Texte übersetzt</span>
+              </div>
+              <div class="summary-item">
+                <span class="summary-number" id="totalLanguages">0</span>
+                <span class="summary-label">Sprachen</span>
+              </div>
             </div>
           </div>
-          <div id="pngGroups"></div>
+          <div class="results-details" id="resultsDetails"></div>
         </div>
         
-        <!-- JPEG Groups -->
-        <div class="format-category" id="jpegCategory">
-          <div class="category-header">
-            <div class="format-icon">JPG</div>
-            <div>
-              <div class="category-title">JPEG Export (1x)</div>
-              <div class="category-info">768×1344 Pixel Gruppen</div>
-            </div>
-          </div>
-          <div id="jpegGroups"></div>
-        </div>
-        
-        <button class="btn" id="exportBtn" disabled>
-          📤 Export starten (<span id="selectedCount">0</span> Assets)
-        </button>
+        <div id="messageDiv"></div>
       </div>
-      
-      <!-- Export Success (hidden initially) -->
-      <div id="exportSuccess" class="export-success hidden">
-        <div class="success-icon">✅</div>
-        <div class="success-text">Export erfolgreich abgeschlossen!</div>
-        <div id="exportStats"></div>
-        <div id="downloadLinks"></div>
-      </div>
-
-      <!-- Messages -->
-      <div id="messageDiv"></div>
     </div>
 
     <!-- Footer -->
@@ -636,89 +608,121 @@
   </div>
 
   <script>
-    console.log('Weleda Asset Export Plugin initialized! 📤');
+    console.log('DOM loaded, initializing Weleda Translation Import...');
     
-    let scanResults = null;
-    let selectedAssets = new Set();
+    let csvData = null;
     
     // DOM Elements
     const elements = {
-      scanBtn: document.getElementById('scanBtn'),
-      exportBtn: document.getElementById('exportBtn'),
+      csvFile: document.getElementById('csvFile'),
+      importBtn: document.getElementById('importBtn'),
+      showFrameIdsBtn: document.getElementById('showFrameIdsBtn'),
+      exportLogBtn: document.getElementById('exportLogBtn'),
       closeBtn: document.getElementById('closeBtn'),
-      selectAllBtn: document.getElementById('selectAllBtn'),
-      deselectAllBtn: document.getElementById('deselectAllBtn'),
+      messageDiv: document.getElementById('messageDiv'),
       progressContainer: document.getElementById('progressContainer'),
       progressBar: document.getElementById('progressBar'),
       progressTitle: document.getElementById('progressTitle'),
       progressPercentage: document.getElementById('progressPercentage'),
       progressCurrent: document.getElementById('progressCurrent'),
-      resultsSection: document.getElementById('resultsSection'),
-      resultsTitle: document.getElementById('resultsTitle'),
-      pngGroups: document.getElementById('pngGroups'),
-      jpegGroups: document.getElementById('jpegGroups'),
-      pngCategory: document.getElementById('pngCategory'),
-      jpegCategory: document.getElementById('jpegCategory'),
-      selectedCount: document.getElementById('selectedCount'),
-      exportSuccess: document.getElementById('exportSuccess'),
-      exportStats: document.getElementById('exportStats'),
-      downloadLinks: document.getElementById('downloadLinks'),
-      messageDiv: document.getElementById('messageDiv')
+      processedFrames: document.getElementById('processedFrames'),
+      processedTexts: document.getElementById('processedTexts'),
+      processedLanguages: document.getElementById('processedLanguages'),
+      resultsContainer: document.getElementById('resultsContainer'),
+      totalFrames: document.getElementById('totalFrames'),
+      totalTexts: document.getElementById('totalTexts'),
+      totalLanguages: document.getElementById('totalLanguages'),
+      resultsDetails: document.getElementById('resultsDetails')
     };
     
-    // Store exported files and export instructions globally
-    let exportedFiles = [];
-    let currentExportInstructions = [];
-    let currentFileKey = '';
+    // Store import results for log export
+    let lastImportResults = null;
     
-    // Scan button
-    if (elements.scanBtn) {
-      elements.scanBtn.addEventListener('click', () => {
-        console.log('Scan button clicked');
-        elements.scanBtn.disabled = true;
-        elements.scanBtn.innerHTML = '🔍 Scanne...';
-        showProgress(true);
-        
-        parent.postMessage({
-          pluginMessage: {
-            type: 'scan-groups'
-          }
-        }, '*');
-      });
-    }
-    
-    // Selection controls
-    if (elements.selectAllBtn) {
-      elements.selectAllBtn.addEventListener('click', () => {
-        selectAllAssets(true);
-      });
-    }
-    
-    if (elements.deselectAllBtn) {
-      elements.deselectAllBtn.addEventListener('click', () => {
-        selectAllAssets(false);
-      });
-    }
-    
-    // Export button
-    if (elements.exportBtn) {
-      elements.exportBtn.addEventListener('click', () => {
-        if (selectedAssets.size === 0) {
-          showMessage('⚠ Bitte wählen Sie mindestens ein Asset aus.', 'error');
-          return;
+    // File input handling
+    if (elements.csvFile) {
+      elements.csvFile.addEventListener('change', (e) => {
+        const file = e.target.files[0];
+        if (file) {
+          // Reset previous results when new file is loaded
+          resetResults();
+          
+          const reader = new FileReader();
+          reader.onload = (e) => {
+            csvData = e.target.result;
+            checkFormValidity();
+            showMessage('✅ CSV-Datei geladen: ' + file.name, 'success');
+            console.log('CSV Data loaded:', csvData.substring(0, 200) + '...');
+          };
+          reader.readAsText(file);
         }
+      });
+      
+      // Drag and drop support
+      elements.csvFile.parentElement.addEventListener('dragover', (e) => {
+        e.preventDefault();
+        e.currentTarget.style.borderColor = 'rgba(139,184,133,0.8)';
+      });
+      
+      elements.csvFile.parentElement.addEventListener('dragleave', (e) => {
+        e.preventDefault();
+        e.currentTarget.style.borderColor = 'rgba(139,184,133,0.4)';
+      });
+      
+      elements.csvFile.parentElement.addEventListener('drop', (e) => {
+        e.preventDefault();
+        e.currentTarget.style.borderColor = 'rgba(139,184,133,0.4)';
         
-        elements.exportBtn.disabled = true;
-        elements.exportBtn.innerHTML = '📤 Exportiere...';
-        showProgress(true);
-        
-        const selectedList = Array.from(selectedAssets);
+        const files = e.dataTransfer.files;
+        if (files.length > 0 && files[0].name.endsWith('.csv')) {
+          elements.csvFile.files = files;
+          const event = new Event('change', { bubbles: true });
+          elements.csvFile.dispatchEvent(event);
+        }
+      });
+    }
+    
+    // Import button
+    if (elements.importBtn) {
+      elements.importBtn.addEventListener('click', () => {
+        console.log('Import button clicked, CSV data available:', !!csvData);
+        if (csvData) {
+          elements.importBtn.disabled = true;
+          elements.importBtn.innerHTML = '<span>⏳</span>Importiere...';
+          showProgress(true);
+          
+          console.log('Sending import message to plugin...');
+          parent.postMessage({
+            pluginMessage: {
+              type: 'import-translations',
+              csvData: csvData
+            }
+          }, '*');
+        } else {
+          showMessage('⚠ Bitte erst eine CSV-Datei laden', 'error');
+        }
+      });
+    }
+    
+    // Frame IDs button
+    if (elements.showFrameIdsBtn) {
+      elements.showFrameIdsBtn.addEventListener('click', () => {
+        console.log('Frame IDs button clicked');
         parent.postMessage({
           pluginMessage: {
-            type: 'export-assets',
-            selectedAssets: selectedList
+            type: 'get-frame-ids'
           }
         }, '*');
+      });
+    }
+    
+    // Export Log button
+    if (elements.exportLogBtn) {
+      elements.exportLogBtn.addEventListener('click', () => {
+        if (lastImportResults) {
+          generateTranslationLog(lastImportResults);
+        } else {
+          showMessage('⚠ Keine Import-Daten verfügbar. Bitte erst eine Übersetzung durchführen.', 'warning');
+        }
       });
     }
     
@@ -732,6 +736,39 @@
     }
     
     // Helper functions
+    function checkFormValidity() {
+      if (elements.importBtn) {
+        elements.importBtn.disabled = !csvData;
+        elements.importBtn.innerHTML = csvData ? 
+          '<span>🚀</span>Übersetzungen importieren' : 
+          '<span>⏳</span>Übersetzungen importieren';
+      }
+    }
+    
+    function resetImportButton() {
+      if (elements.importBtn) {
+        elements.importBtn.disabled = false;
+        elements.importBtn.innerHTML = '<span>🚀</span>Übersetzungen importieren';
+      }
+    }
+    
+    function resetResults() {
+      // Hide previous results when new file is loaded
+      if (elements.resultsContainer) {
+        elements.resultsContainer.classList.add('hidden');
+      }
+      if (elements.progressContainer) {
+        elements.progressContainer.classList.add('hidden');
+      }
+      if (elements.messageDiv) {
+        elements.messageDiv.innerHTML = '';
+      }
+      if (elements.exportLogBtn) {
+        elements.exportLogBtn.disabled = true;
+      }
+      lastImportResults = null;
+    }
+    
     function showProgress(show, progress = 0) {
       if (elements.progressContainer) {
         elements.progressContainer.classList.toggle('hidden', !show);
@@ -744,7 +781,7 @@
       }
     }
     
-    function updateProgress(title, current, progress = 0) {
+    function updateProgress(title, current, progress = 0, stats = {}) {
       if (elements.progressTitle) {
         elements.progressTitle.textContent = title;
       }
@@ -757,233 +794,80 @@
       if (elements.progressPercentage) {
         elements.progressPercentage.textContent = Math.round(progress) + '%';
       }
-    }
-    
-    function showResults(results) {
-      scanResults = results;
-      selectedAssets.clear();
-      
-      // Reset scan button
-      elements.scanBtn.disabled = false;
-      elements.scanBtn.innerHTML = '🔍 Gruppen scannen';
-      
-      // Hide progress
-      showProgress(false);
-      
-      // Show results section
-      if (elements.resultsSection) {
-        elements.resultsSection.classList.remove('hidden');
-      }
-      
-      // Update title
-      const totalAssets = results.png.length + results.jpeg.length;
-      if (elements.resultsTitle) {
-        elements.resultsTitle.textContent = `Gefundene Assets (${totalAssets})`;
-      }
-      
-      // Render PNG groups
-      renderAssetGroups(results.png, elements.pngGroups, 'PNG');
-      elements.pngCategory.style.display = results.png.length > 0 ? 'block' : 'none';
-      
-      // Render JPEG groups  
-      renderAssetGroups(results.jpeg, elements.jpegGroups, 'JPEG');
-      elements.jpegCategory.style.display = results.jpeg.length > 0 ? 'block' : 'none';
-      
-      updateSelectedCount();
-    }
-    
-    function renderAssetGroups(groups, container, format) {
-      if (!container) return;
-      
-      container.innerHTML = '';
-      
-      groups.forEach(group => {
-        const groupElement = document.createElement('div');
-        groupElement.className = 'group-item';
-        groupElement.innerHTML = `
-          <input type="checkbox" class="group-checkbox" data-id="${group.id}" data-format="${format}">
-          <div class="group-info">
-            <div class="group-name">${group.name}</div>
-            <div class="group-details">
-              <span>${group.width}×${group.height}px</span>
-              <span class="group-badge">${format} ${format === 'PNG' ? '2x' : '1x'}</span>
-            </div>
-          </div>
-        `;
-        
-        const checkbox = groupElement.querySelector('.group-checkbox');
-        checkbox.addEventListener('change', (e) => {
-          const assetId = e.target.dataset.id;
-          if (e.target.checked) {
-            selectedAssets.add(assetId);
-            groupElement.classList.add('selected');
-          } else {
-            selectedAssets.delete(assetId);
-            groupElement.classList.remove('selected');
-          }
-          updateSelectedCount();
-        });
-        
-        groupElement.addEventListener('click', (e) => {
-          if (e.target !== checkbox) {
-            checkbox.click();
-          }
-        });
-        
-        container.appendChild(groupElement);
-      });
-    }
-    
-    function selectAllAssets(select) {
-      const checkboxes = document.querySelectorAll('.group-checkbox');
-      checkboxes.forEach(checkbox => {
-        checkbox.checked = select;
-        const event = new Event('change');
-        checkbox.dispatchEvent(event);
-      });
-    }
-    
-    function updateSelectedCount() {
-      if (elements.selectedCount) {
-        elements.selectedCount.textContent = selectedAssets.size;
-      }
-      if (elements.exportBtn) {
-        elements.exportBtn.disabled = selectedAssets.size === 0;
-      }
-    }
-    
-    // Handle export ready - use browser-based download
-    function handleExportReady(stats, instructions, fileKey, nodeIds) {
-      console.log('🌐 Starting browser-based export...');
-      
-      // Hide progress, show success immediately
-      showProgress(false);
-      elements.exportBtn.disabled = false;
-      elements.exportBtn.innerHTML = `📤 Export starten (${selectedAssets.size} Assets)`;
-      
-      // Show success section
-      if (elements.exportSuccess) {
-        elements.exportSuccess.classList.remove('hidden');
-      }
       
       // Update stats
-      if (elements.exportStats) {
-        elements.exportStats.innerHTML = `
-          <div>${stats.totalAssets} Assets bereit zum Download</div>
-          <div>${stats.pngCount} PNG • ${stats.jpegCount} JPEG</div>
-          <div style="font-size: 11px; color: #b8c7ab; margin-top: 8px;">
-            ⚡ Browser-basierter Export für bessere Performance
-          </div>
-        `;
+      if (elements.processedFrames && stats.frames !== undefined) {
+        elements.processedFrames.textContent = stats.frames;
+      }
+      if (elements.processedTexts && stats.texts !== undefined) {
+        elements.processedTexts.textContent = stats.texts;
+      }
+      if (elements.processedLanguages && stats.languages !== undefined) {
+        elements.processedLanguages.textContent = stats.languages;
+      }
+    }
+    
+    function showResults(data) {
+      // Store results for log export
+      lastImportResults = data;
+      
+      // Hide progress and show results
+      if (elements.progressContainer) {
+        elements.progressContainer.classList.add('hidden');
+      }
+      if (elements.resultsContainer) {
+        elements.resultsContainer.classList.remove('hidden');
       }
       
-      // Create download interface
-      if (elements.downloadLinks) {
-        let downloadHtml = '<div class="download-links">';
-        
-        instructions.forEach((instruction, index) => {
-          downloadHtml += `
-            <div class="download-item">
-              <div class="download-info">
-                <div class="download-name">${instruction.name}</div>
-                <div class="download-meta">${instruction.format} ${instruction.scale}x • ${instruction.width}×${instruction.height}px</div>
+      // Enable export button
+      if (elements.exportLogBtn) {
+        elements.exportLogBtn.disabled = false;
+      }
+      
+      // Update summary stats
+      if (elements.totalFrames) elements.totalFrames.textContent = data.totalFrames || 0;
+      if (elements.totalTexts) elements.totalTexts.textContent = data.totalTexts || 0;
+      if (elements.totalLanguages) elements.totalLanguages.textContent = data.totalLanguages || 0;
+      
+      // Show detailed results
+      if (elements.resultsDetails && data.details && Array.isArray(data.details)) {
+        let detailsHtml = '';
+        data.details.forEach(frame => {
+          detailsHtml += `
+            <div class="frame-result">
+              <div class="frame-name">${frame.frameName}</div>
+              <div class="frame-info">
+                <span>Sprache: ${frame.language}</span>
+                <span>Texte: ${frame.translatedTexts}</span>
+                <span>Status: Erfolgreich</span>
               </div>
-              <button class="download-btn" onclick="downloadFromFigma('${instruction.id}', '${instruction.name}', '${instruction.format}', ${instruction.scale})">
-                🌐 Download
-              </button>
             </div>
           `;
         });
-        
-        downloadHtml += `
-          <button class="download-all-btn" onclick="downloadAllFromFigma()">
-            🌐 Alle via Browser laden (${instructions.length})
-          </button>
-          <button class="control-btn" onclick="debugExportState()" style="margin-top: 8px;">
-            🔍 Debug Info
-          </button>
-          <div style="font-size: 11px; color: #b8c7ab; margin-top: 8px; text-align: center;">
-            💡 Tipp: Downloads öffnen sich in neuen Browser-Tabs
-          </div>
-        </div>`;
-        
-        elements.downloadLinks.innerHTML = downloadHtml;
-      }
-      
-      // Store instructions globally for download functions
-      currentExportInstructions = instructions;
-      currentFileKey = fileKey;
-      
-      console.log('📋 Stored', instructions.length, 'export instructions');
-    }
-    
-    function showExportSuccess(stats, files) {
-      // Store files for download
-      exportedFiles = files || [];
-      
-      // Reset export button
-      elements.exportBtn.disabled = false;
-      elements.exportBtn.innerHTML = `📤 Export starten (<span id="selectedCount">${selectedAssets.size}</span> Assets)`;
-      
-      // Hide progress
-      showProgress(false);
-      
-      // Show success
-      if (elements.exportSuccess) {
-        elements.exportSuccess.classList.remove('hidden');
-      }
-      
-      // Update stats
-      if (elements.exportStats) {
-        elements.exportStats.innerHTML = `
-          <div>${stats.totalExported} Assets exportiert</div>
-          <div>${stats.pngCount} PNG • ${stats.jpegCount} JPEG</div>
-        `;
-      }
-      
-      // Create download links
-      if (elements.downloadLinks && exportedFiles.length > 0) {
-        let downloadHtml = '<div class="download-links">';
-        
-        exportedFiles.forEach((file, index) => {
-          const fileSizeKB = Math.round(file.size / 1024);
-          downloadHtml += `
-            <div class="download-item">
-              <div class="download-info">
-                <div class="download-name">${file.name}</div>
-                <div class="download-meta">${file.format} • ${fileSizeKB} KB</div>
-              </div>
-              <button class="download-btn" onclick="downloadFile(${index})">📥 Download</button>
-            </div>
-          `;
-        });
-        
-        downloadHtml += `
-          <button class="download-all-btn" onclick="downloadAllFiles()">
-            📦 Alle Dateien herunterladen (${exportedFiles.length})
-          </button>
-        </div>`;
-        
-        elements.downloadLinks.innerHTML = downloadHtml;
+        elements.resultsDetails.innerHTML = detailsHtml;
       }
     }
     
-    function showMessage(text, type) {
+    function showMessage(text, type, details = null) {
       if (!elements.messageDiv) return;
       
       let className = 'message';
       if (type === 'success') className += ' success';
       else if (type === 'error') className += ' error';
-      else if (type === 'info') className += ' info';
+      else if (type === 'warning') className += ' warning';
       
-      elements.messageDiv.innerHTML = `<div class="${className}">${text}</div>`;
+      let html = text;
       
-      // Auto-hide after 5 seconds
-      setTimeout(() => {
-        if (elements.messageDiv) {
-          elements.messageDiv.innerHTML = '';
-        }
-      }, 5000);
+      elements.messageDiv.innerHTML = `<div class="${className}">${html}</div>`;
+      
+      // Auto-hide after 8 seconds for non-success messages
+      if (type !== 'success') {
+        setTimeout(() => {
+          if (elements.messageDiv) {
+            elements.messageDiv.innerHTML = '';
+          }
+        }, 8000);
+      }
     }
     
     // Message handling from plugin
@@ -994,152 +878,317 @@
       console.log('Received message from plugin:', msg.type, msg);
       
       switch (msg.type) {
+        case 'progress-start':
+          showProgress(true, 0);
+          updateProgress('Import wird gestartet...', 'Initialisierung...', 0, {frames: 0, texts: 0, languages: 0});
+          break;
+          
         case 'progress-update':
           updateProgress(
-            msg.title || 'Processing...',
-            msg.current || 'Working...',
+            msg.title || 'Import läuft...',
+            msg.current || 'Verarbeitung...',
+            msg.progress || 0,
+            {
+              frames: msg.stats?.frames || 0,
+              texts: msg.stats?.texts || 0,
+              languages: msg.stats?.languages || 0
+            }
+          );
+          break;
+          
+        case 'progress':
+          updateProgress(
+            'Import läuft...',
+            msg.message,
             msg.progress || 0
           );
           break;
           
-        case 'scan-results':
-          showResults(msg.results);
+        case 'success':
+          // Show results instead of just message
+          showResults({
+            totalFrames: msg.totalFrames || (msg.details ? msg.details.length : 0),
+            totalTexts: msg.totalTexts || (msg.details ? msg.details.reduce((sum, d) => sum + (d.translatedTexts || 0), 0) : 0),
+            totalLanguages: msg.totalLanguages || (msg.details ? new Set(msg.details.map(d => d.language)).size : 0),
+            details: msg.details || []
+          });
+          resetImportButton();
           break;
           
-        case 'export-ready':
-          handleExportReady(msg.stats, msg.exportInstructions, msg.fileKey, msg.nodeIds);
-          break;
-          
-        case 'export-complete':
-          showExportSuccess(msg.stats, msg.files);
-          break;
-          
-        case 'export-error':
-          showMessage(`❌ Export-Fehler: ${msg.message}`, 'error');
-          elements.exportBtn.disabled = false;
-          elements.exportBtn.innerHTML = `📤 Export starten (${selectedAssets.size} Assets)`;
-          showProgress(false);
+        case 'translation-log-data':
+          // Receive detailed translation data for log
+          if (lastImportResults && msg.logData) {
+            lastImportResults.detailedTranslations = msg.logData;
+            console.log('📋 Received detailed translation data for log');
+          }
           break;
           
         case 'error':
           showMessage(`⚠ ${msg.message}`, 'error');
-          elements.scanBtn.disabled = false;
-          elements.scanBtn.innerHTML = '🔍 Gruppen scannen';
+          resetImportButton();
           showProgress(false);
           break;
       }
     });
     
-    // Browser-based download functions using Figma URLs
-    window.downloadFromFigma = function(nodeId, fileName, format, scale) {
-      console.log('🌐 Opening Figma export URL for:', fileName);
+    // Generate translation log as PDF-ready HTML
+    function generateTranslationLog(results) {
+      console.log('📄 Generating translation log...');
       
-      // Construct Figma export URL
-      const fileKey = currentFileKey;
-      
-      console.log('Using fileKey:', fileKey);
-      console.log('NodeId:', nodeId);
-      
-      // For demo purposes, we'll open a new tab with instructions
-      const instructionsUrl = `data:text/html,
-        <html>
-          <head><title>Figma Export - ${fileName}</title></head>
-          <body style="font-family: Arial; padding: 40px; background: #f5f5f5;">
-            <div style="max-width: 600px; margin: 0 auto; background: white; padding: 40px; border-radius: 8px; box-shadow: 0 4px 20px rgba(0,0,0,0.1);">
-              <h1 style="color: #0b4535; margin-bottom: 20px;">🌐 Figma Asset Export</h1>
-              <h2>${fileName}</h2>
-              <p><strong>Format:</strong> ${format} (${scale}x)</p>
-              <p><strong>Node ID:</strong> ${nodeId}</p>
-              <div style="background: #f8f9fa; padding: 20px; border-radius: 6px; margin: 20px 0;">
-                <h3>📋 Export Anweisungen:</h3>
-                <ol>
-                  <li>Öffnen Sie <a href="https://www.figma.com" target="_blank">figma.com</a> in einem neuen Tab</li>
-                  <li>Navigieren Sie zu Ihrem Projekt</li>
-                  <li>Wählen Sie das Element "${fileName}" aus</li>
-                  <li>Klicken Sie auf "Export" im rechten Panel</li>
-                  <li>Wählen Sie "${format}" Format mit ${scale}x Skalierung</li>
-                  <li>Klicken Sie "Export ${fileName}"</li>
-                </ol>
-              </div>
-              <div style="background: #e8f5e3; padding: 15px; border-radius: 6px; border-left: 4px solid #8ab885;">
-                <strong>💡 Automatischer Export:</strong><br>
-                Für vollautomatischen Export wäre ein Figma API Token erforderlich.
-                Diese Demo zeigt den Workflow ohne Token.
-              </div>
-            </div>
-          </body>
-        </html>
-      `;
-      
-      const newWindow = window.open(instructionsUrl, '_blank');
-      if (!newWindow) {
-        alert('Pop-up wurde blockiert! Bitte Pop-ups für diese Seite erlauben.');
-      }
-    };
-    
-    window.downloadAllFromFigma = function() {
-      console.log('🌐 Starting batch export...');
-      console.log('Available instructions:', currentExportInstructions.length);
-      
-      if (!currentExportInstructions || currentExportInstructions.length === 0) {
-        alert('❌ Keine Export-Anweisungen verfügbar. Bitte erst Assets scannen und exportieren.');
+      // Request detailed translation data if not available
+      if (!results.detailedTranslations) {
+        parent.postMessage({
+          pluginMessage: {
+            type: 'get-translation-log-data'
+          }
+        }, '*');
+        
+        showMessage('📋 Log wird vorbereitet...', 'info');
         return;
       }
       
-      currentExportInstructions.forEach((instruction, index) => {
-        console.log('Opening tab', index + 1, 'for:', instruction.name);
-        setTimeout(() => {
-          window.downloadFromFigma(instruction.id, instruction.name, instruction.format, instruction.scale);
-        }, index * 1000); // Stagger by 1 second to avoid browser blocking
-      });
-      
-      showMessage(`🌐 Öffne ${currentExportInstructions.length} Export-Tabs...`, 'info');
-    };
-    
-    // Debug function
-    window.debugExportState = function() {
-      console.log('🔍 Debug Export State:');
-      console.log('currentExportInstructions:', currentExportInstructions);
-      console.log('currentFileKey:', currentFileKey);
-      console.log('Instructions length:', currentExportInstructions.length);
-      
-      alert(`Debug Info:
-- Export Instructions: ${currentExportInstructions.length}
-- File Key: ${currentFileKey ? 'Set' : 'Not Set'}
-- First instruction: ${currentExportInstructions[0] ? currentExportInstructions[0].name : 'None'}
-      `);
-    };
-    
-    // Original download functions (fallback)
-    window.downloadFile = function(index) {
-      if (exportedFiles[index]) {
-        const file = exportedFiles[index];
-        const uint8Array = new Uint8Array(file.data);
-        const blob = new Blob([uint8Array], { 
-          type: file.format === 'PNG' ? 'image/png' : 'image/jpeg' 
-        });
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = file.name;
-        a.click();
-        URL.revokeObjectURL(url);
+      const timestamp = new Date().toLocaleString('de-DE');
+      const logHtml = `
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Weleda Translation Log - ${timestamp}</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            line-height: 1.6;
+            color: #333;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background: #fff;
+        }
         
-        console.log('📥 Downloaded:', file.name);
-      }
-    };
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+            padding-bottom: 20px;
+            border-bottom: 3px solid #0b4535;
+        }
+        
+        .logo {
+            color: #0b4535;
+            font-size: 24px;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+        
+        .title {
+            color: #0b4535;
+            font-size: 28px;
+            font-weight: bold;
+            margin: 10px 0;
+        }
+        
+        .subtitle {
+            color: #666;
+            font-size: 14px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        
+        .summary {
+            display: flex;
+            justify-content: space-around;
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 30px;
+        }
+        
+        .summary-item {
+            text-align: center;
+        }
+        
+        .summary-number {
+            font-size: 32px;
+            font-weight: bold;
+            color: #0b4535;
+            display: block;
+        }
+        
+        .summary-label {
+            font-size: 12px;
+            color: #666;
+            text-transform: uppercase;
+        }
+        
+        .frame-section {
+            margin-bottom: 40px;
+            break-inside: avoid;
+        }
+        
+        .frame-header {
+            background: #0b4535;
+            color: white;
+            padding: 15px 20px;
+            border-radius: 8px 8px 0 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .frame-name {
+            font-size: 18px;
+            font-weight: bold;
+        }
+        
+        .frame-meta {
+            font-size: 12px;
+            opacity: 0.9;
+        }
+        
+        .translations {
+            border: 1px solid #ddd;
+            border-top: none;
+            border-radius: 0 0 8px 8px;
+        }
+        
+        .translation-item {
+            padding: 15px 20px;
+            border-bottom: 1px solid #eee;
+            display: flex;
+            align-items: flex-start;
+            gap: 20px;
+        }
+        
+        .translation-item:last-child {
+            border-bottom: none;
+        }
+        
+        .translation-source {
+            flex: 1;
+            background: #f8f9fa;
+            padding: 10px;
+            border-radius: 4px;
+            border-left: 3px solid #ddd;
+        }
+        
+        .translation-target {
+            flex: 1;
+            background: #e8f5e3;
+            padding: 10px;
+            border-radius: 4px;
+            border-left: 3px solid #8ab885;
+        }
+        
+        .translation-label {
+            font-size: 10px;
+            text-transform: uppercase;
+            color: #666;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        
+        .translation-text {
+            font-size: 14px;
+            line-height: 1.4;
+        }
+        
+        .arrow {
+            color: #8ab885;
+            font-size: 18px;
+            align-self: center;
+            flex-shrink: 0;
+        }
+        
+        .footer {
+            margin-top: 50px;
+            text-align: center;
+            font-size: 12px;
+            color: #666;
+            border-top: 1px solid #ddd;
+            padding-top: 20px;
+        }
+        
+        .timestamp {
+            color: #999;
+            font-style: italic;
+        }
+        
+        @media print {
+            body { margin: 0; padding: 15px; }
+            .frame-section { page-break-inside: avoid; }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div class="logo">WELEDA</div>
+        <div class="title">Translation Import Log</div>
+        <div class="subtitle">Digital Lab • Translation Report</div>
+    </div>
     
-    window.downloadAllFiles = function() {
-      console.log('📦 Starting batch download...');
-      exportedFiles.forEach((file, index) => {
-        setTimeout(() => {
-          window.downloadFile(index);
-        }, index * 200);
-      });
-      showMessage('📥 Download aller Dateien gestartet...', 'info');
-    };
+    <div class="summary">
+        <div class="summary-item">
+            <span class="summary-number">${results.totalFrames || 0}</span>
+            <span class="summary-label">Frames</span>
+        </div>
+        <div class="summary-item">
+            <span class="summary-number">${results.totalTexts || 0}</span>
+            <span class="summary-label">Texte</span>
+        </div>
+        <div class="summary-item">
+            <span class="summary-number">${results.totalLanguages || 0}</span>
+            <span class="summary-label">Sprachen</span>
+        </div>
+    </div>
     
-    console.log('🌿 Weleda Asset Export Plugin ready!');
+    ${results.detailedTranslations.map(frame => `
+        <div class="frame-section">
+            <div class="frame-header">
+                <div class="frame-name">${frame.frameName}</div>
+                <div class="frame-meta">
+                    ${frame.language.toUpperCase()} • ${frame.translations.length} Übersetzungen
+                </div>
+            </div>
+            <div class="translations">
+                ${frame.translations.map(trans => `
+                    <div class="translation-item">
+                        <div class="translation-source">
+                            <div class="translation-label">Original Text</div>
+                            <div class="translation-text">${trans.sourceText}</div>
+                        </div>
+                        <div class="arrow">→</div>
+                        <div class="translation-target">
+                            <div class="translation-label">Übersetzung (${frame.language.toUpperCase()})</div>
+                            <div class="translation-text">${trans.translatedText}</div>
+                        </div>
+                    </div>
+                `).join('')}
+            </div>
+        </div>
+    `).join('')}
+    
+    <div class="footer">
+        <div>Generiert von <strong>Weleda Translation Import Plugin</strong></div>
+        <div class="timestamp">Erstellt am: ${timestamp}</div>
+    </div>
+</body>
+</html>`;
+      
+      // Create and download the HTML file
+      const blob = new Blob([logHtml], { type: 'text/html' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `weleda-translation-log-${new Date().toISOString().slice(0,10)}.html`;
+      a.click();
+      URL.revokeObjectURL(url);
+      
+      showMessage('✅ Translation Log wurde heruntergeladen! Öffnen Sie die HTML-Datei und drucken Sie sie als PDF.', 'success');
+    }
+    
+    // Initialize form state
+    checkFormValidity();
+    
+    console.log('Weleda Translation Import Plugin initialized! 🌿');
   </script>
 </body>
 </html>
