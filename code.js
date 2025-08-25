@@ -257,7 +257,7 @@ async function translateTextNode(textNode, translatedText) {
   }
 }
 
-// NEW: Get representative font from mixed-style text node
+// NEW: Get representative font from mixed-style text node - SMART VERSION
 function getRepresentativeFont(textNode) {
   try {
     // If single font, return it
@@ -265,18 +265,61 @@ function getRepresentativeFont(textNode) {
       return textNode.fontName;
     }
     
-    // For mixed fonts, sample the first character
+    // For mixed fonts, sample MULTIPLE characters to find the REGULAR font
     if (textNode.characters.length > 0) {
-      var firstCharFont = textNode.getRangeFontName(0, 1);
-      console.log('🔍 Sampled first char font:', firstCharFont.family, firstCharFont.style);
-      return firstCharFont;
+      var fontSamples = [];
+      var sampleCount = Math.min(5, textNode.characters.length);
+      
+      for (var i = 0; i < sampleCount; i++) {
+        var pos = Math.floor((i / sampleCount) * textNode.characters.length);
+        if (pos >= textNode.characters.length) pos = textNode.characters.length - 1;
+        
+        try {
+          var font = textNode.getRangeFontName(pos, pos + 1);
+          fontSamples.push(font);
+          console.log('🔍 Sample', i + 1, ':', font.family, font.style);
+        } catch (e) {
+          // Skip this sample
+        }
+      }
+      
+      // Find the most "regular" font (not bold)
+      var regularFont = null;
+      var boldFont = null;
+      
+      for (var i = 0; i < fontSamples.length; i++) {
+        var font = fontSamples[i];
+        var style = font.style.toLowerCase();
+        
+        if (style.includes('regular') || style.includes('normal') || 
+            style.includes('book') || style.includes('light')) {
+          regularFont = font;
+          console.log('🎯 Found regular font:', font.family, font.style);
+          break;
+        } else if (style.includes('bold') || style.includes('medium') || 
+                   style.includes('heavy') || style.includes('black')) {
+          if (!boldFont) boldFont = font;
+        }
+      }
+      
+      // Prefer regular, but if only bold exists, derive regular from it
+      if (regularFont) {
+        return regularFont;
+      } else if (boldFont) {
+        console.log('⚠️ Only found bold, deriving regular from:', boldFont.family, boldFont.style);
+        return { family: boldFont.family, style: "Regular" };
+      } else if (fontSamples.length > 0) {
+        // Use first sample as fallback
+        return fontSamples[0];
+      }
     }
     
     // Fallback
+    console.log('⚠️ Could not determine font, using Inter fallback');
     return { family: "Inter", style: "Regular" };
     
   } catch (error) {
-    console.log('⚠️ Could not get font, using fallback:', error.message);
+    console.log('⚠️ Font detection error, using fallback:', error.message);
     return { family: "Inter", style: "Regular" };
   }
 }
@@ -375,16 +418,30 @@ async function applyMarkdownText(textNode, markdownText, originalProps) {
 
 function getBoldVariantOfFont(regularFont) {
   var family = regularFont.family;
-  var style = regularFont.style;
+  var style = regularFont.style.toLowerCase();
   
-  // Try to create bold variant
-  if (style.toLowerCase().includes('regular') || style.toLowerCase().includes('normal')) {
-    return { family: family, style: "Bold" };
-  } else if (style.toLowerCase().includes('light')) {
-    return { family: family, style: "Regular" };
-  } else {
-    // Already bold or other style, return as is
+  console.log('🔍 Creating bold variant for:', family, style);
+  
+  // If already bold, return as-is
+  if (style.includes('bold') || style.includes('heavy') || style.includes('black')) {
+    console.log('✅ Already bold, keeping as-is');
     return regularFont;
+  }
+  
+  // Try to create bold variant from regular/light styles
+  if (style.includes('regular') || style.includes('normal') || style.includes('book')) {
+    console.log('✅ Converting Regular to Bold');
+    return { family: family, style: "Bold" };
+  } else if (style.includes('light') || style.includes('thin')) {
+    console.log('✅ Converting Light to Regular (as bold)');
+    return { family: family, style: "Regular" };
+  } else if (style.includes('medium')) {
+    console.log('✅ Converting Medium to Bold');
+    return { family: family, style: "Bold" };
+  } else {
+    // Unknown style, try Bold
+    console.log('⚠️ Unknown style, trying Bold variant');
+    return { family: family, style: "Bold" };
   }
 }
 
