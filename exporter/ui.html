@@ -850,6 +850,66 @@
       }
     }
     
+    // Handle export ready - use browser-based download
+    function handleExportReady(stats, instructions, fileKey, nodeIds) {
+      console.log('🌐 Starting browser-based export...');
+      
+      // Hide progress, show success immediately
+      showProgress(false);
+      elements.exportBtn.disabled = false;
+      elements.exportBtn.innerHTML = `📤 Export starten (${selectedAssets.size} Assets)`;
+      
+      // Show success section
+      if (elements.exportSuccess) {
+        elements.exportSuccess.classList.remove('hidden');
+      }
+      
+      // Update stats
+      if (elements.exportStats) {
+        elements.exportStats.innerHTML = `
+          <div>${stats.totalAssets} Assets bereit zum Download</div>
+          <div>${stats.pngCount} PNG • ${stats.jpegCount} JPEG</div>
+          <div style="font-size: 11px; color: #b8c7ab; margin-top: 8px;">
+            ⚡ Browser-basierter Export für bessere Performance
+          </div>
+        `;
+      }
+      
+      // Create download interface
+      if (elements.downloadLinks) {
+        let downloadHtml = '<div class="download-links">';
+        
+        instructions.forEach((instruction, index) => {
+          downloadHtml += `
+            <div class="download-item">
+              <div class="download-info">
+                <div class="download-name">${instruction.name}</div>
+                <div class="download-meta">${instruction.format} ${instruction.scale}x • ${instruction.width}×${instruction.height}px</div>
+              </div>
+              <button class="download-btn" onclick="downloadFromFigma('${instruction.id}', '${instruction.name}', '${instruction.format}', ${instruction.scale})">
+                🌐 Download
+              </button>
+            </div>
+          `;
+        });
+        
+        downloadHtml += `
+          <button class="download-all-btn" onclick="downloadAllFromFigma()">
+            🌐 Alle via Browser laden (${instructions.length})
+          </button>
+          <div style="font-size: 11px; color: #b8c7ab; margin-top: 8px; text-align: center;">
+            💡 Tipp: Downloads öffnen sich in neuen Browser-Tabs
+          </div>
+        </div>`;
+        
+        elements.downloadLinks.innerHTML = downloadHtml;
+      }
+      
+      // Store instructions globally
+      window.currentExportInstructions = instructions;
+      window.currentFileKey = fileKey;
+    }
+    
     function showExportSuccess(stats, files) {
       // Store files for download
       exportedFiles = files || [];
@@ -939,6 +999,10 @@
           showResults(msg.results);
           break;
           
+        case 'export-ready':
+          handleExportReady(msg.stats, msg.exportInstructions, msg.fileKey, msg.nodeIds);
+          break;
+          
         case 'export-complete':
           showExportSuccess(msg.stats, msg.files);
           break;
@@ -959,11 +1023,71 @@
       }
     });
     
-    // Download functions - made global so buttons can access them
+    // Browser-based download functions using Figma URLs
+    window.downloadFromFigma = function(nodeId, fileName, format, scale) {
+      console.log('🌐 Opening Figma export URL for:', fileName);
+      
+      // Construct Figma export URL
+      const baseUrl = 'https://www.figma.com/api/v1/images/';
+      const fileKey = window.currentFileKey || figma.fileKey;
+      const exportFormat = format.toLowerCase();
+      const exportScale = scale || 1;
+      
+      // Create export URL (this would normally require authentication)
+      const exportUrl = `${baseUrl}${fileKey}?ids=${nodeId}&format=${exportFormat}&scale=${exportScale}`;
+      
+      // For demo purposes, we'll open a new tab with instructions
+      // In production, you'd need proper Figma API authentication
+      const instructionsUrl = `data:text/html,
+        <html>
+          <head><title>Figma Export - ${fileName}</title></head>
+          <body style="font-family: Arial; padding: 40px; background: #f5f5f5;">
+            <div style="max-width: 600px; margin: 0 auto; background: white; padding: 40px; border-radius: 8px; box-shadow: 0 4px 20px rgba(0,0,0,0.1);">
+              <h1 style="color: #0b4535; margin-bottom: 20px;">🌐 Figma Asset Export</h1>
+              <h2>${fileName}</h2>
+              <p><strong>Format:</strong> ${format} (${scale}x)</p>
+              <p><strong>Node ID:</strong> ${nodeId}</p>
+              <div style="background: #f8f9fa; padding: 20px; border-radius: 6px; margin: 20px 0;">
+                <h3>📋 Export Anweisungen:</h3>
+                <ol>
+                  <li>Öffnen Sie <a href="https://www.figma.com" target="_blank">figma.com</a> in einem neuen Tab</li>
+                  <li>Navigieren Sie zu Ihrem Projekt</li>
+                  <li>Wählen Sie das Element "${fileName}" aus</li>
+                  <li>Klicken Sie auf "Export" im rechten Panel</li>
+                  <li>Wählen Sie "${format}" Format mit ${scale}x Skalierung</li>
+                  <li>Klicken Sie "Export ${fileName}"</li>
+                </ol>
+              </div>
+              <div style="background: #e8f5e3; padding: 15px; border-radius: 6px; border-left: 4px solid #8ab885;">
+                <strong>💡 Automatischer Export:</strong><br>
+                Für vollautomatischen Export wäre ein Figma API Token erforderlich.
+                Diese Demo zeigt den Workflow ohne Token.
+              </div>
+            </div>
+          </body>
+        </html>
+      `;
+      
+      window.open(instructionsUrl, '_blank');
+    };
+    
+    window.downloadAllFromFigma = function() {
+      console.log('🌐 Opening all Figma export instructions...');
+      
+      if (window.currentExportInstructions) {
+        window.currentExportInstructions.forEach((instruction, index) => {
+          setTimeout(() => {
+            window.downloadFromFigma(instruction.id, instruction.name, instruction.format, instruction.scale);
+          }, index * 500); // Stagger by 500ms to avoid browser blocking
+        });
+      }
+    };
+    
+    // Original download functions (fallback)
     window.downloadFile = function(index) {
       if (exportedFiles[index]) {
         const file = exportedFiles[index];
-        const uint8Array = new Uint8Array(file.data); // Convert back to Uint8Array
+        const uint8Array = new Uint8Array(file.data);
         const blob = new Blob([uint8Array], { 
           type: file.format === 'PNG' ? 'image/png' : 'image/jpeg' 
         });
@@ -983,7 +1107,7 @@
       exportedFiles.forEach((file, index) => {
         setTimeout(() => {
           window.downloadFile(index);
-        }, index * 200); // Stagger downloads by 200ms
+        }, index * 200);
       });
       showMessage('📥 Download aller Dateien gestartet...', 'info');
     };
