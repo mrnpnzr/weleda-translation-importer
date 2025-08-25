@@ -140,21 +140,24 @@ async function handleScanGroups() {
 
 async function handleExportAssets(selectedAssetIds) {
   try {
-    console.log('📤 Starting URL-based export for', selectedAssetIds.length, 'assets...');
+    console.log('📤 Starting smart export for', selectedAssetIds.length, 'assets...');
+    
+    // Limit concurrent exports to prevent crashes
+    const MAX_CONCURRENT = 1; // Export one at a time
+    const MAX_SIZE = 2048; // Max dimension to prevent memory issues
     
     figma.ui.postMessage({
       type: 'progress-update',
       title: 'Export wird vorbereitet...',
-      current: 'Generiere Export-URLs',
+      current: 'Smart Memory Management aktiviert',
       progress: 5
     });
     
-    // Find all groups again (we need the actual nodes)
+    // Find and filter selected groups
     var allGroups = figma.currentPage.findAll(function(node) {
       return (node.type === 'GROUP' || node.type === 'FRAME') && node.visible;
     });
     
-    // Filter selected groups
     var selectedGroups = [];
     var pngCount = 0;
     var jpegCount = 0;
@@ -164,6 +167,13 @@ async function handleExportAssets(selectedAssetIds) {
       if (selectedAssetIds.indexOf(group.id) !== -1) {
         var width = Math.round(group.width);
         var height = Math.round(group.height);
+        
+        // Skip assets that are too large to prevent crashes
+        var maxDimension = Math.max(width, height);
+        if (maxDimension > MAX_SIZE) {
+          console.log('⚠️ Skipping large asset:', group.name, width + 'x' + height);
+          continue;
+        }
         
         var exportInfo = {
           node: group,
@@ -175,12 +185,14 @@ async function handleExportAssets(selectedAssetIds) {
         
         // Determine export settings
         if (width === height) {
-          // 1:1 ratio -> PNG 2x
           exportInfo.format = 'PNG';
-          exportInfo.scale = 2;
+          exportInfo.scale = 2; // Reduce scale if too large
+          if (width * 2 > MAX_SIZE) {
+            exportInfo.scale = 1;
+            console.log('⚠️ Reduced scale for large PNG:', group.name);
+          }
           pngCount++;
         } else if (width === 768 && height === 1344) {
-          // 768×1344 -> JPEG 1x
           exportInfo.format = 'JPEG';
           exportInfo.scale = 1;
           jpegCount++;
@@ -190,66 +202,115 @@ async function handleExportAssets(selectedAssetIds) {
       }
     }
     
-    console.log('📊 Export plan: PNG=' + pngCount + ' (2x), JPEG=' + jpegCount + ' (1x)');
+    console.log('📊 Smart export plan: PNG=' + pngCount + ', JPEG=' + jpegCount);
     
     if (selectedGroups.length === 0) {
       figma.ui.postMessage({
         type: 'export-error',
-        message: 'Keine gültigen Assets zum Exportieren gefunden.'
+        message: 'Keine exportierbaren Assets gefunden (möglicherweise zu groß).'
+      });
+      return;
+    }
+    
+    // Export one by one to prevent memory issues
+    var exportedFiles = [];
+    var failedExports = [];
+    
+    for (var i = 0; i < selectedGroups.length; i++) {
+      var assetInfo = selectedGroups[i];
+      var progressPercent = 20 + (i / selectedGroups.length) * 70;
+      
+      figma.ui.postMessage({
+        type: 'progress-update',
+        title: 'Exportiere Assets...',
+        current: `${i + 1}/${selectedGroups.length}: ${assetInfo.name}`,
+        progress: progressPercent
+      });
+      
+      try {
+        // Conservative export settings
+        var exportSettings = {
+          format: assetInfo.format,
+          constraint: {
+            type: 'SCALE',
+            value: assetInfo.scale
+          }
+        };
+        
+        if (assetInfo.format === 'JPEG') {
+          exportSettings.jpegQuality = 0.8; // Reduce quality to save memory
+        }
+        
+        console.log('🎯 Exporting:', assetInfo.name, assetInfo.format, assetInfo.scale + 'x');
+        
+        // Export with timeout protection
+        var uint8Array = await Promise.race([
+          assetInfo.node.exportAsync(exportSettings),
+          new Promise((_, reject) => 
+            setTimeout(() => reject(new Error('Export timeout')), 10000)
+          )
+        ]);
+        
+        // Check file size (skip if too large)
+        if (uint8Array.length > 5 * 1024 * 1024) { // 5MB limit
+          console.log('⚠️ File too large, skipping:', assetInfo.name);
+          failedExports.push(assetInfo.name + ' (too large)');
+          continue;
+        }
+        
+        var fileName = sanitizeFileName(assetInfo.name) + '.' + (assetInfo.format === 'PNG' ? 'png' : 'jpg');
+        
+        exportedFiles.push({
+          name: fileName,
+          data: uint8Array,
+          format: assetInfo.format,
+          originalName: assetInfo.name,
+          size: uint8Array.length
+        });
+        
+        console.log('✅ Exported:', fileName, Math.round(uint8Array.length / 1024) + ' KB');
+        
+        // Small delay to prevent memory buildup
+        await new Promise(resolve => setTimeout(resolve, 100));
+        
+      } catch (exportError) {
+        console.error('❌ Export failed for', assetInfo.name, ':', exportError.message);
+        failedExports.push(assetInfo.name + ' (' + exportError.message + ')');
+      }
+    }
+    
+    if (exportedFiles.length === 0) {
+      figma.ui.postMessage({
+        type: 'export-error',
+        message: 'Alle Exports fehlgeschlagen. Assets möglicherweise zu komplex oder zu groß.'
       });
       return;
     }
     
     figma.ui.postMessage({
       type: 'progress-update',
-      title: 'Export-URLs werden erstellt...',
-      current: 'Bereite ' + selectedGroups.length + ' Assets vor',
-      progress: 50
-    });
-    
-    // Instead of exporting files, we'll send export instructions to UI
-    var exportInstructions = [];
-    
-    for (var i = 0; i < selectedGroups.length; i++) {
-      var assetInfo = selectedGroups[i];
-      var fileName = sanitizeFileName(assetInfo.name) + '.' + (assetInfo.format === 'PNG' ? 'png' : 'jpg');
-      
-      exportInstructions.push({
-        id: assetInfo.id,
-        name: fileName,
-        originalName: assetInfo.name,
-        format: assetInfo.format,
-        scale: assetInfo.scale,
-        width: assetInfo.width,
-        height: assetInfo.height
-      });
-    }
-    
-    figma.ui.postMessage({
-      type: 'progress-update',
-      title: 'Export vorbereitet',
-      current: 'Sende Anweisungen an Browser',
+      title: 'Export abgeschlossen',
+      current: `${exportedFiles.length} erfolgreich, ${failedExports.length} fehlgeschlagen`,
       progress: 100
     });
     
-    // Send export instructions instead of actual files
+    // Send files for download
     figma.ui.postMessage({
-      type: 'export-ready',
+      type: 'export-complete',
       stats: {
-        totalAssets: selectedGroups.length,
-        pngCount: pngCount,
-        jpegCount: jpegCount
+        totalExported: exportedFiles.length,
+        pngCount: exportedFiles.filter(f => f.format === 'PNG').length,
+        jpegCount: exportedFiles.filter(f => f.format === 'JPEG').length,
+        failed: failedExports
       },
-      exportInstructions: exportInstructions,
-      fileKey: figma.fileKey, // Needed for Figma API calls
-      nodeIds: selectedGroups.map(function(g) { return g.id; })
+      files: exportedFiles
     });
     
   } catch (error) {
-    console.error('❌ Export preparation failed:', error);
+    console.error('❌ Export failed:', error);
     figma.ui.postMessage({
       type: 'export-error',
-      message: 'Export-Vorbereitung fehlgeschlagen: ' + error.message
+      message: 'Export-Fehler: ' + error.message
     });
   }
 }
