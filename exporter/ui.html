@@ -969,11 +969,11 @@ downloadHtml += `
         });
         
         downloadHtml += `
-          <button class="download-all-btn" onclick="downloadAllFiles()">
-            📦 Alle Dateien herunterladen (${exportedFiles.length})
+          <button class="download-all-btn" onclick="startInteractiveDownload()">
+            📦 Alle Dateien laden (interaktiv)
           </button>
-          <button class="btn-secondary" onclick="downloadAllFilesAlternative()" style="margin-top: 8px; width: 100%;">
-            🔄 Alternative: Alle einzeln laden
+          <button class="btn-secondary" onclick="createZipDownload()" style="margin-top: 8px; width: 100%;">
+            📦 Als ZIP herunterladen
           </button>
         </div>`;
         
